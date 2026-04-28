@@ -1,0 +1,1294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Surgical Dexterity Trainer - Chabot STEM 2026</title>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #1B3A5C;
+      --teal: #2A9D8F;
+      --teal-dark: #1A6B6B;
+      --gold: #D4A843;
+      --coral: #E65C3C;
+      --monitor-bg: #0a0a0a;
+      --monitor-glow: #0ABAB5;
+    }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #F0F4F8; min-height: 100vh; }
+
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes pop { 0% { transform: scale(0.85); opacity: 0; } 60% { transform: scale(1.06); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
+    @keyframes scoreGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(42,157,143,0.3); } 50% { box-shadow: 0 0 0 12px rgba(42,157,143,0); } }
+    @keyframes streakGlow { 0%, 100% { box-shadow: 0 0 0 0 rgba(212,168,67,0.4); } 50% { box-shadow: 0 0 0 10px rgba(212,168,67,0); } }
+    @keyframes scorePop { 0% { transform: scale(0.8); opacity: 0; } 50% { transform: scale(1.15); } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes countdownPulse { 0% { transform: scale(0.5); opacity: 0; } 50% { transform: scale(1.2); opacity: 1; } 100% { transform: scale(1); opacity: 0.8; } }
+    @keyframes celebrationBurst { 0% { transform: scale(0); opacity: 0; } 40% { transform: scale(1.3); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+    @keyframes ringProgress { from { stroke-dashoffset: 251; } }
+    @keyframes gentleBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+    @keyframes monitorFlicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.92; } }
+
+    /* EKG-style monitor readouts: dark canvas, monospace, neon-teal glow */
+    .or-monitor {
+      display: inline-flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--monitor-bg);
+      border: 1px solid #111;
+      border-radius: 10px;
+      padding: 6px 14px;
+      min-width: 76px;
+      font-family: 'Courier New', monospace;
+      box-shadow: inset 0 0 12px rgba(0,0,0,0.7), 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .or-monitor-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--monitor-glow);
+      text-shadow: 0 0 6px rgba(10,186,181,0.6);
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.05;
+    }
+    .or-monitor-value.warn {
+      color: #FFB347;
+      text-shadow: 0 0 6px rgba(255,179,71,0.6);
+    }
+    .or-monitor-value.alert {
+      color: #FF6B5C;
+      text-shadow: 0 0 8px rgba(255,107,92,0.7);
+      animation: monitorFlicker 0.6s infinite;
+    }
+    .or-monitor-label {
+      font-size: 9px;
+      color: rgba(10,186,181,0.75);
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .pop-feedback { animation: pop 0.45s ease-out; }
+    .shake-feedback { animation: shake 0.45s ease-out; }
+    .slide-up { animation: slideUp 0.45s ease-out; }
+
+    @media (max-width: 600px) {
+      body { padding: 0; }
+      .or-monitor { min-width: 64px; padding: 5px 10px; }
+      .or-monitor-value { font-size: 17px; }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useRef, useCallback, useEffect } = React;
+
+    const NAVY = "#1B3A5C";
+    const TEAL = "#2A9D8F";
+    const TEAL_DARK = "#1A6B6B";
+    const GOLD = "#D4A843";
+    const DARK = "#333333";
+    const MED = "#555555";
+    const LIGHT_BG = "#F0F4F8";
+    const TEAL_BG = "#E8F5F2";
+    const CASE_BG = "#FFF8E1";
+    const ALERT_BG = "#FDE8E8";
+    const WHITE = "#FFFFFF";
+    const CARD_RADIUS = 14;
+    const CARD_SHADOW = "0 1px 6px rgba(0,0,0,0.06)";
+    const BTN_GRADIENT = "linear-gradient(135deg, #2A9D8F, #1A6B6B)";
+
+    const DIFFICULTY_LABELS = ["", "Intern", "Resident", "Attending", "Chief", "Legendary"];
+    const DIFFICULTY_COLORS = ["", "#3498DB", TEAL, GOLD, "#E67E22", "#C0392B"];
+
+    const SURGEON_TIPS = [
+      "Surgeons train for years to develop the fine motor control you just practiced. Most spend 5-7 years in residency!",
+      "In laparoscopic surgery, surgeons operate through tiny incisions using long instruments -- they watch a screen, not their hands.",
+      "A steady hand matters: neurosurgeons operate on structures thinner than a human hair.",
+      "Speed matters, but accuracy matters more. In the OR, a careful surgeon is a safe surgeon.",
+      "Surgical teams use checklists before every procedure. Even experts rely on systems to stay precise.",
+      "Robotic surgery (da Vinci system) translates hand movements into micro-movements -- scaling down tremor by 10x.",
+      "Memory is critical in surgery: teams must recall hundreds of instrument names and procedural steps under pressure.",
+      "The best surgeons have exceptional spatial awareness -- they build a 3D mental model from 2D images.",
+      "Surgeons practice on simulators before operating on patients, much like pilots use flight simulators.",
+      "Hand-eye coordination peaks in your 30s-40s, which is when most surgeons hit their stride.",
+    ];
+
+    function getRandomTip() {
+      return SURGEON_TIPS[Math.floor(Math.random() * SURGEON_TIPS.length)];
+    }
+
+    // ========== WOVEN DIAMOND LOGO (inline SVG) ==========
+    function WovenLogo({ size = 20 }) {
+      return (
+        <svg viewBox="0 0 40 40" width={size} height={size} style={{ flexShrink: 0 }}>
+          <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity="0.85"/>
+          <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity="0.85"/>
+          <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity="0.85"/>
+          <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity="0.85"/>
+        </svg>
+      );
+    }
+
+    // ========== BRANDED HEADER ==========
+    function AppHeader() {
+      return (
+        <div style={{
+          background: "linear-gradient(135deg, #1B3A5C 0%, #2A9D8F 100%)",
+          padding: "12px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          boxShadow: "0 2px 8px rgba(0,0,0,0.12)",
+          borderBottom: "3px solid #D4A843",
+        }}>
+          <WovenLogo size={24} />
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: WHITE, letterSpacing: 0.3 }}>Chabot STEM 2026</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>Surgical Dexterity Trainer</div>
+          </div>
+          <span style={{ fontSize: 20 }}>{"\u{1FA7A}"}</span>
+        </div>
+      );
+    }
+
+    // ========== BRANDED FOOTER ==========
+    function AppFooter() {
+      return (
+        <div style={{
+          textAlign: "center", padding: "12px 16px", borderTop: "3px solid #D4A843",
+          background: WHITE, fontSize: 11, color: "#999",
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <WovenLogo size={14} />
+          <span>Built by <strong style={{ color: TEAL_DARK }}>Woven Learning & Technology</strong></span>
+        </div>
+      );
+    }
+
+    // ========== PROGRESS RING ==========
+    function ProgressRing({ value, max, size = 56, strokeWidth = 5, color = TEAL, label, sublabel }) {
+      const radius = (size - strokeWidth) / 2;
+      const circumference = 2 * Math.PI * radius;
+      const progress = Math.min(value / Math.max(max, 1), 1);
+      const offset = circumference * (1 - progress);
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke="#E8ECF0" strokeWidth={strokeWidth} />
+            <circle cx={size/2} cy={size/2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth}
+              strokeDasharray={circumference} strokeDashoffset={offset}
+              strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.3s ease" }} />
+          </svg>
+          {label && <div style={{ fontSize: 11, fontWeight: 700, color, marginTop: -size/2 - 4, position: "relative", top: -size/2 + (size/2 - 6), textAlign: "center", lineHeight: 1 }}>{label}</div>}
+          {sublabel && <div style={{ fontSize: 9, color: MED, fontWeight: 600 }}>{sublabel}</div>}
+        </div>
+      );
+    }
+
+    // ========== COMPACT STAT DISPLAY ==========
+    function StatRing({ value, max, color, icon, label }) {
+      const pct = Math.min(Math.round((value / Math.max(max, 1)) * 100), 100);
+      const r = 22, sw = 4;
+      const circ = 2 * Math.PI * r;
+      const off = circ * (1 - pct / 100);
+      return (
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+          <div style={{ position: "relative", width: 52, height: 52, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width={52} height={52} style={{ position: "absolute", transform: "rotate(-90deg)" }}>
+              <circle cx={26} cy={26} r={r} fill="none" stroke="#E8ECF0" strokeWidth={sw} />
+              <circle cx={26} cy={26} r={r} fill="none" stroke={color} strokeWidth={sw}
+                strokeDasharray={circ} strokeDashoffset={off}
+                strokeLinecap="round" style={{ transition: "stroke-dashoffset 0.4s ease" }} />
+            </svg>
+            <span style={{ fontSize: 14, fontWeight: 800, color }}>{value}</span>
+          </div>
+          <div style={{ fontSize: 9, color: MED, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>{label}</div>
+        </div>
+      );
+    }
+
+    // ========== COUNTDOWN OVERLAY ==========
+    function Countdown({ onDone }) {
+      const [count, setCount] = useState(3);
+      useEffect(() => {
+        if (count <= 0) { onDone(); return; }
+        const t = setTimeout(() => setCount(c => c - 1), 700);
+        return () => clearTimeout(t);
+      }, [count, onDone]);
+
+      return (
+        <div style={{
+          position: "absolute", inset: 0, zIndex: 10,
+          background: "rgba(27, 58, 92, 0.85)", borderRadius: CARD_RADIUS,
+          display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column",
+        }}>
+          {count > 0 ? (
+            <div key={count} style={{
+              fontSize: 72, fontWeight: 900, color: WHITE,
+              animation: "countdownPulse 0.6s ease",
+              textShadow: "0 4px 20px rgba(0,0,0,0.3)",
+            }}>{count}</div>
+          ) : (
+            <div style={{
+              fontSize: 28, fontWeight: 800, color: GOLD,
+              animation: "countdownPulse 0.5s ease",
+              textShadow: "0 2px 12px rgba(0,0,0,0.3)",
+            }}>GO!</div>
+          )}
+        </div>
+      );
+    }
+
+    // ========== SURGEON'S TIP ==========
+    function SurgeonTip({ tip }) {
+      return (
+        <div style={{
+          display: "flex", gap: 10, padding: "12px 14px",
+          background: "linear-gradient(135deg, #F0F4F8, #E8F5F2)",
+          borderRadius: 10, border: "1px solid #D0E0DA",
+          marginTop: 12, animation: "slideIn 0.5s ease",
+        }}>
+          <span style={{ fontSize: 20, flexShrink: 0 }}>&#x1F9D1;&#x200D;&#x2695;&#xFE0F;</span>
+          <div>
+            <div style={{ fontSize: 10, fontWeight: 700, color: TEAL, textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>Surgeon's Tip</div>
+            <div style={{ fontSize: 12, color: MED, lineHeight: 1.5 }}>{tip}</div>
+          </div>
+        </div>
+      );
+    }
+
+    // ========== PERSONAL BEST CELEBRATION ==========
+    function PersonalBestBanner() {
+      return (
+        <div style={{
+          textAlign: "center", padding: "8px 16px", marginBottom: 10,
+          background: `linear-gradient(135deg, ${CASE_BG}, #FFF0C0)`,
+          border: `2px solid ${GOLD}`, borderRadius: 10,
+          animation: "celebrationBurst 0.6s ease",
+        }}>
+          <span style={{ fontSize: 18 }}>&#x1F3C6;</span>
+          <span style={{ fontSize: 14, fontWeight: 800, color: GOLD, marginLeft: 6 }}>New Personal Best!</span>
+        </div>
+      );
+    }
+
+    // ========== DIFFICULTY BADGE ==========
+    function DifficultyBadge({ level }) {
+      return (
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: DIFFICULTY_COLORS[level] || TEAL,
+          background: (DIFFICULTY_COLORS[level] || TEAL) + "15",
+          padding: "3px 10px", borderRadius: 20,
+          border: `1px solid ${(DIFFICULTY_COLORS[level] || TEAL)}30`,
+        }}>{DIFFICULTY_LABELS[level] || `Level ${level}`}</span>
+      );
+    }
+
+    function ProgressBar({ value, max, color = TEAL }) {
+      return (
+        <div style={{ height: 8, background: "#E4E9EF", borderRadius: 12, overflow: "hidden", marginBottom: 14, border: "1px solid #DCE3EA" }}>
+          <div style={{
+            height: "100%",
+            background: `linear-gradient(90deg, ${color} 0%, ${NAVY} 100%)`,
+            width: `${Math.round((value / max) * 100)}%`,
+            transition: "width 0.25s ease-out",
+            borderRadius: 12,
+            boxShadow: `0 0 8px ${color}60`,
+          }} />
+        </div>
+      );
+    }
+
+    // ========== OR MONITOR (EKG-style live data display) ==========
+    function OrMonitor({ value, label, tone = "ok", suffix = "" }) {
+      const valClass = "or-monitor-value" + (tone === "warn" ? " warn" : tone === "alert" ? " alert" : "");
+      return (
+        <div className="or-monitor">
+          <span className={valClass}>{value}{suffix}</span>
+          <span className="or-monitor-label">{label}</span>
+        </div>
+      );
+    }
+
+    const CHALLENGES = [
+      {
+        id: "trace",
+        name: "Precision Path Tracing",
+        desc: "Draw along a surgical path with your mouse or finger. The path gets trickier each round -- random curves that test fine motor control, just like navigating tissue with a scalpel.",
+        skill: "Suturing / Laparoscopic Control",
+        icon: "\u{1F3AF}",
+      },
+      {
+        id: "targets",
+        name: "Precision Targeting",
+        desc: "Click the targets as they appear. Smaller targets = more points. Tests speed and accuracy -- like finding and grasping tissue with laparoscopic graspers.",
+        skill: "Laparoscopic Grasping",
+        icon: "\u{1FA78}",
+      },
+      {
+        id: "sequence",
+        name: "Instrument Memory",
+        desc: "Memorize the sequence of highlighted instruments, then repeat it. Tests working memory under pressure -- essential during complex surgical procedures.",
+        skill: "OR Memory / Focus",
+        icon: "\u{1F9E0}",
+      },
+    ];
+
+    // ========== GENERATE RANDOM PATH ==========
+    function generatePath(difficulty = 1, canvasW = 600, canvasH = 300) {
+      const pts = [];
+      const margin = 40;
+      const segments = 80 + difficulty * 20;
+      const numControls = 3 + Math.floor(difficulty * 1.5);
+      const controls = [];
+      for (let i = 0; i <= numControls; i++) {
+        const t = i / numControls;
+        const x = margin + t * (canvasW - 2 * margin);
+        const amplitude = 40 + difficulty * 25;
+        const yBase = canvasH / 2;
+        const yOffset = (Math.random() - 0.5) * amplitude * 2;
+        controls.push({ x, y: Math.max(margin, Math.min(canvasH - margin, yBase + yOffset)) });
+      }
+      for (let i = 0; i < segments; i++) {
+        const t = i / (segments - 1);
+        const scaledT = t * (controls.length - 1);
+        const idx = Math.min(Math.floor(scaledT), controls.length - 2);
+        const localT = scaledT - idx;
+        const p0 = controls[Math.max(0, idx - 1)];
+        const p1 = controls[idx];
+        const p2 = controls[Math.min(controls.length - 1, idx + 1)];
+        const p3 = controls[Math.min(controls.length - 1, idx + 2)];
+        const tt = localT;
+        const x = 0.5 * (2 * p1.x + (-p0.x + p2.x) * tt + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * tt * tt + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * tt * tt * tt);
+        const y = 0.5 * (2 * p1.y + (-p0.y + p2.y) * tt + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * tt * tt + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * tt * tt * tt);
+        pts.push({ x: Math.max(margin, Math.min(canvasW - margin, x)), y: Math.max(margin, Math.min(canvasH - margin, y)) });
+      }
+      return pts;
+    }
+
+    // ========== STEADY HAND TRACE (REWRITTEN) ==========
+    function SteadyHandTrace({ onComplete, onRestart }) {
+      const canvasRef = useRef(null);
+      const [phase, setPhase] = useState("ready");
+      const [countdown, setCountdown] = useState(false);
+      const [errors, setErrors] = useState(0);
+      const [progress, setProgress] = useState(0);
+      const [timer, setTimer] = useState(0);
+      const [difficulty, setDifficulty] = useState(1);
+      const [bestTime, setBestTime] = useState(null);
+      const [bestErrors, setBestErrors] = useState(null);
+      const [isNewBest, setIsNewBest] = useState(false);
+      const [tip, setTip] = useState("");
+      const [round, setRound] = useState(1);
+      const timerRef = useRef(null);
+      const pathRef = useRef([]);
+      const drawingRef = useRef(false);
+      const errorsRef = useRef(0);
+      const progressRef = useRef(0);
+      const userStrokeRef = useRef([]);
+
+      const CW = 600, CH = 300;
+      const PATH_WIDTH = 32 - difficulty * 4;
+
+      const drawScene = useCallback((ctx, pts, highlightIdx = -1, userStroke = []) => {
+        ctx.clearRect(0, 0, CW, CH);
+
+        ctx.strokeStyle = "#E8ECF0";
+        ctx.lineWidth = 0.5;
+        for (let x = 0; x < CW; x += 30) {
+          ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, CH); ctx.stroke();
+        }
+        for (let y = 0; y < CH; y += 30) {
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(CW, y); ctx.stroke();
+        }
+
+        ctx.strokeStyle = "#C0C8D0";
+        ctx.lineWidth = PATH_WIDTH + 4;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.beginPath();
+        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+
+        ctx.strokeStyle = "#F0F4F8";
+        ctx.lineWidth = PATH_WIDTH;
+        ctx.beginPath();
+        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+
+        ctx.strokeStyle = "#D0D8E0";
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+        ctx.beginPath();
+        pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        if (userStroke.length > 1) {
+          ctx.strokeStyle = TEAL;
+          ctx.lineWidth = 3;
+          ctx.lineCap = "round";
+          ctx.lineJoin = "round";
+          ctx.beginPath();
+          userStroke.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = TEAL;
+        ctx.beginPath();
+        ctx.arc(pts[0].x, pts[0].y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = WHITE;
+        ctx.font = "bold 8px 'Segoe UI', Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("START", pts[0].x, pts[0].y);
+
+        ctx.fillStyle = "#C0392B";
+        ctx.beginPath();
+        ctx.arc(pts[pts.length - 1].x, pts[pts.length - 1].y, 12, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = WHITE;
+        ctx.fillText("END", pts[pts.length - 1].x, pts[pts.length - 1].y);
+      }, [PATH_WIDTH]);
+
+      const initPath = useCallback(() => {
+        const pts = generatePath(difficulty, CW, CH);
+        pathRef.current = pts;
+        progressRef.current = 0;
+        errorsRef.current = 0;
+        userStrokeRef.current = [];
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          drawScene(ctx, pts);
+        }
+      }, [difficulty, drawScene]);
+
+      useEffect(() => {
+        initPath();
+      }, [initPath]);
+
+      const actuallyStart = useCallback(() => {
+        setCountdown(false);
+        setPhase("drawing");
+        setErrors(0);
+        setProgress(0);
+        setTimer(0);
+        setIsNewBest(false);
+        errorsRef.current = 0;
+        progressRef.current = 0;
+        userStrokeRef.current = [];
+        initPath();
+        timerRef.current = setInterval(() => setTimer(t => t + 0.1), 100);
+      }, [initPath]);
+
+      const startDrawing = () => {
+        setCountdown(true);
+      };
+
+      const getCanvasPos = (e) => {
+        const canvas = canvasRef.current;
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = CW / rect.width;
+        const scaleY = CH / rect.height;
+        const clientX = e.clientX !== undefined ? e.clientX : e.touches?.[0]?.clientX;
+        const clientY = e.clientY !== undefined ? e.clientY : e.touches?.[0]?.clientY;
+        return {
+          x: (clientX - rect.left) * scaleX,
+          y: (clientY - rect.top) * scaleY
+        };
+      };
+
+      const handlePointerDown = (e) => {
+        if (phase !== "drawing") return;
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        const start = pathRef.current[0];
+        const distToStart = Math.sqrt((pos.x - start.x) ** 2 + (pos.y - start.y) ** 2);
+        if (distToStart > 30) return;
+        drawingRef.current = true;
+        userStrokeRef.current = [pos];
+      };
+
+      const handlePointerMove = (e) => {
+        if (!drawingRef.current || phase !== "drawing") return;
+        e.preventDefault();
+        const pos = getCanvasPos(e);
+        userStrokeRef.current.push(pos);
+
+        const pts = pathRef.current;
+        let minDist = Infinity;
+        let closestIdx = 0;
+        pts.forEach((p, i) => {
+          const d = Math.sqrt((p.x - pos.x) ** 2 + (p.y - pos.y) ** 2);
+          if (d < minDist) { minDist = d; closestIdx = i; }
+        });
+
+        const halfWidth = PATH_WIDTH / 2;
+        if (minDist > halfWidth + 2) {
+          errorsRef.current++;
+          setErrors(errorsRef.current);
+        }
+
+        if (closestIdx > progressRef.current) {
+          progressRef.current = closestIdx;
+          setProgress(closestIdx);
+        }
+
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext("2d");
+        drawScene(ctx, pts, closestIdx, userStrokeRef.current);
+
+        if (closestIdx >= pts.length - 5) {
+          drawingRef.current = false;
+          setPhase("finished");
+          clearInterval(timerRef.current);
+          setTip(getRandomTip());
+          const finalErrors = errorsRef.current;
+          const newBest = bestErrors === null || finalErrors < bestErrors;
+          if (newBest) {
+            setBestErrors(finalErrors);
+            setIsNewBest(true);
+          }
+          onComplete({ errors: finalErrors, time: 0, progress: 100 });
+        }
+      };
+
+      const handlePointerUp = () => {
+        drawingRef.current = false;
+      };
+
+      const handleNewRound = () => {
+        const newDiff = Math.min(difficulty + 1, 5);
+        setDifficulty(newDiff);
+        setRound(r => r + 1);
+        setPhase("ready");
+        setProgress(0);
+        setErrors(0);
+        setTimer(0);
+        setIsNewBest(false);
+        userStrokeRef.current = [];
+      };
+
+      const handleRetry = () => {
+        setPhase("ready");
+        setProgress(0);
+        setErrors(0);
+        setTimer(0);
+        setIsNewBest(false);
+        userStrokeRef.current = [];
+        initPath();
+      };
+
+      return (
+        <div>
+          {/* Difficulty selector */}
+          <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 12, alignItems: "center" }}>
+            {[1, 2, 3, 4, 5].map(d => (
+              <button key={d} onClick={() => { if (phase === "ready") { setDifficulty(d); } }}
+                style={{
+                  width: 32, height: 32, borderRadius: "50%", fontSize: 12, fontWeight: 700,
+                  background: d === difficulty ? BTN_GRADIENT : WHITE,
+                  color: d === difficulty ? WHITE : MED,
+                  border: `2px solid ${d === difficulty ? TEAL : "#E0E0E0"}`,
+                  cursor: phase === "ready" ? "pointer" : "default",
+                  transition: "all 0.25s ease"
+                }}>{d}</button>
+            ))}
+            <DifficultyBadge level={difficulty} />
+          </div>
+
+          {phase === "ready" && (
+            <div style={{ textAlign: "center", marginBottom: 16, animation: "slideIn 0.3s ease" }}>
+              <p style={{ fontSize: 13, color: MED, marginBottom: 8 }}>
+                Click <strong>Start</strong>, then click and drag from the START circle along the path to the END. Stay inside the corridor!
+              </p>
+              <p style={{ fontSize: 11, color: TEAL, marginBottom: 12 }}>
+                Round {round} &middot; {DIFFICULTY_LABELS[difficulty]} &middot; Path width: {PATH_WIDTH}px
+              </p>
+              <button onClick={startDrawing} style={{
+                background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                padding: "12px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 3px 10px rgba(42,157,143,0.3)",
+                transition: "transform 0.15s ease",
+              }}
+              onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
+              onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+              >Start Challenge</button>
+            </div>
+          )}
+
+          {phase === "drawing" && (
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 12, fontSize: 13, flexWrap: "wrap", alignItems: "center" }}>
+              <OrMonitor value={timer.toFixed(1)} suffix="s" label="OR Clock" tone={timer > 30 ? "warn" : "ok"} />
+              <OrMonitor value={errors} label="Errors" tone={errors > 15 ? "alert" : errors > 5 ? "warn" : "ok"} />
+              <OrMonitor value={Math.round((progress / Math.max(1, pathRef.current.length - 1)) * 100)} suffix="%" label="Progress" />
+            </div>
+          )}
+
+          <ProgressBar value={progress} max={Math.max(1, pathRef.current.length - 1)} />
+
+          <div style={{ position: "relative" }}>
+            {countdown && <Countdown onDone={actuallyStart} />}
+            <canvas
+              ref={canvasRef}
+              width={CW} height={CH}
+              onMouseDown={handlePointerDown}
+              onMouseMove={handlePointerMove}
+              onMouseUp={handlePointerUp}
+              onMouseLeave={handlePointerUp}
+              onTouchStart={handlePointerDown}
+              onTouchMove={handlePointerMove}
+              onTouchEnd={handlePointerUp}
+              style={{
+                width: "100%", height: "auto",
+                border: `2px solid ${phase === "drawing" ? TEAL : "#E0E0E0"}`,
+                borderRadius: CARD_RADIUS,
+                cursor: phase === "drawing" ? "crosshair" : "default",
+                touchAction: "none", display: "block",
+                transition: "border-color 0.3s ease",
+              }}
+            />
+          </div>
+
+          {phase === "drawing" && (
+            <p style={{ textAlign: "center", fontSize: 11, color: TEAL, marginTop: 8, fontWeight: 600 }}>
+              Click and drag from START to END. Stay inside the corridor!
+            </p>
+          )}
+
+          {phase === "finished" && (
+            <div style={{ marginTop: 16, animation: "slideUp 0.45s ease-out" }}>
+              {isNewBest && <PersonalBestBanner />}
+              <div className={errors <= 15 ? "pop-feedback" : "shake-feedback"} style={{
+                textAlign: "center", padding: 18, borderRadius: CARD_RADIUS, marginBottom: 12,
+                background: errors <= 5 ? TEAL_BG : errors <= 15 ? CASE_BG : ALERT_BG,
+                border: `2px solid ${errors <= 5 ? TEAL : errors <= 15 ? GOLD : "#C0392B"}`
+              }}>
+                <div style={{
+                  fontSize: 22, fontWeight: 800, animation: "scorePop 0.5s ease",
+                  color: errors <= 5 ? TEAL : errors <= 15 ? GOLD : "#C0392B"
+                }}>
+                  {errors <= 5 ? "Surgeon-Level Precision!" : errors <= 15 ? "Good Control -- Keep Practicing!" : "Tricky Path! Try Again."}
+                </div>
+                <div style={{ fontSize: 13, color: MED, marginTop: 8 }}>
+                  Time: {timer.toFixed(1)}s &middot; Errors: {errors} &middot; {DIFFICULTY_LABELS[difficulty]}
+                </div>
+                {bestErrors !== null && <div style={{ fontSize: 11, color: TEAL, fontWeight: 600, marginTop: 6 }}>Personal best: {bestErrors} errors</div>}
+              </div>
+              <SurgeonTip tip={tip} />
+              <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
+                <button onClick={handleRetry}
+                  style={{
+                    flex: 1, background: WHITE, border: `2px solid ${NAVY}`, borderRadius: 10,
+                    padding: "12px", fontSize: 13, fontWeight: 700, color: NAVY, cursor: "pointer",
+                    transition: "all 0.2s",
+                  }}>Retry Same Path</button>
+                <button onClick={handleNewRound}
+                  style={{
+                    flex: 1, background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                    padding: "12px", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(42,157,143,0.25)",
+                  }}>Harder Path &#8594;</button>
+              </div>
+              <button onClick={onRestart}
+                style={{
+                  width: "100%", marginTop: 8, background: LIGHT_BG, border: "2px solid #E0E0E0",
+                  borderRadius: 10, padding: "10px", fontSize: 12, fontWeight: 600, color: MED, cursor: "pointer"
+                }}>&larr; Back to Challenges</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========== PRECISION TARGETING ==========
+    function PrecisionTargeting({ onComplete, onRestart }) {
+      const [targets, setTargets] = useState([]);
+      const [score, setScore] = useState(0);
+      const [hits, setHits] = useState(0);
+      const [misses, setMisses] = useState(0);
+      const [streak, setStreak] = useState(0);
+      const [active, setActive] = useState(false);
+      const [countdown, setCountdown] = useState(false);
+      const [timer, setTimer] = useState(30);
+      const [finished, setFinished] = useState(false);
+      const [bestScore, setBestScore] = useState(null);
+      const [isNewBest, setIsNewBest] = useState(false);
+      const [tip, setTip] = useState("");
+      const [lastHitPts, setLastHitPts] = useState(null);
+      const timerRef = useRef(null);
+      const scoreRef = useRef(0);
+      const hitsRef = useRef(0);
+      const missRef = useRef(0);
+      const streakRef = useRef(0);
+
+      const spawnTarget = useCallback(() => {
+        const size = 18 + Math.random() * 42;
+        const points = Math.round(60 / size * 10);
+        return { x: 30 + Math.random() * 540, y: 20 + Math.random() * 220, size, points, id: Date.now() + Math.random() };
+      }, []);
+
+      const actuallyStart = useCallback(() => {
+        setCountdown(false);
+        setActive(true);
+        setScore(0); setHits(0); setMisses(0); setStreak(0);
+        scoreRef.current = 0; hitsRef.current = 0; missRef.current = 0; streakRef.current = 0;
+        setFinished(false); setTimer(30); setLastHitPts(null); setIsNewBest(false);
+        setTargets([spawnTarget(), spawnTarget(), spawnTarget()]);
+        timerRef.current = setInterval(() => {
+          setTimer(t => {
+            if (t <= 0.1) {
+              clearInterval(timerRef.current);
+              setActive(false);
+              setFinished(true);
+              return 0;
+            }
+            return t - 0.1;
+          });
+        }, 100);
+      }, [spawnTarget]);
+
+      const start = () => {
+        setCountdown(true);
+      };
+
+      useEffect(() => {
+        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+      }, []);
+
+      useEffect(() => {
+        if (finished) {
+          const acc = hitsRef.current > 0 ? Math.round(hitsRef.current / (hitsRef.current + missRef.current) * 100) : 0;
+          const newBest = !bestScore || scoreRef.current > bestScore;
+          if (newBest) { setBestScore(scoreRef.current); setIsNewBest(true); }
+          setTip(getRandomTip());
+          onComplete({ score: scoreRef.current, hits: hitsRef.current, misses: missRef.current, accuracy: acc });
+        }
+      }, [finished]);
+
+      const handleClick = (e, target) => {
+        e.stopPropagation();
+        if (!active) return;
+        const bonus = streakRef.current >= 3 ? Math.round(target.points * 0.5) : 0;
+        const pts = target.points + bonus;
+        scoreRef.current += pts;
+        hitsRef.current++;
+        streakRef.current++;
+        setScore(scoreRef.current);
+        setHits(hitsRef.current);
+        setStreak(streakRef.current);
+        setLastHitPts(pts);
+        setTimeout(() => setLastHitPts(null), 400);
+        setTargets(prev => prev.filter(t => t.id !== target.id).concat(spawnTarget()));
+      };
+
+      const handleMiss = () => {
+        if (!active) return;
+        missRef.current++;
+        streakRef.current = 0;
+        setMisses(missRef.current);
+        setStreak(0);
+      };
+
+      return (
+        <div>
+          {!active && !finished && !countdown && (
+            <div style={{ textAlign: "center", marginBottom: 16, animation: "slideIn 0.3s ease" }}>
+              <p style={{ fontSize: 13, color: MED, marginBottom: 12 }}>Click targets as fast as you can. Smaller targets = more points. Streaks of 3+ earn bonus points! You have 30 seconds.</p>
+              <button onClick={start} style={{
+                background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                padding: "12px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 3px 10px rgba(42,157,143,0.3)",
+              }}>Start Challenge</button>
+            </div>
+          )}
+
+          {(active || finished) && (
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 12, fontSize: 13, flexWrap: "wrap", alignItems: "center" }}>
+              <OrMonitor value={timer.toFixed(1)} suffix="s" label="OR Clock" tone={timer < 10 ? "alert" : timer < 20 ? "warn" : "ok"} />
+              <OrMonitor value={score} label="Score" />
+              <OrMonitor value={hits} label="Hits" />
+              {streak >= 3 && (
+                <span style={{
+                  fontSize: 12, fontWeight: 700, color: GOLD,
+                  background: CASE_BG, padding: "4px 12px", borderRadius: 12,
+                  animation: "streakGlow 1.5s infinite",
+                  border: `1px solid ${GOLD}40`,
+                }}>{streak}x Streak (+50%)</span>
+              )}
+            </div>
+          )}
+
+          <ProgressBar value={timer} max={30} color={timer < 10 ? "#C0392B" : TEAL} />
+
+          <div style={{ position: "relative" }}>
+            {countdown && <Countdown onDone={actuallyStart} />}
+            <div
+              onClick={handleMiss}
+              style={{
+                position: "relative", width: "100%", height: 280,
+                background: LIGHT_BG, border: `2px solid ${active ? TEAL : "#E0E0E0"}`,
+                borderRadius: CARD_RADIUS, overflow: "hidden", cursor: active ? "crosshair" : "default",
+                transition: "border-color 0.3s ease",
+              }}
+            >
+              {active && targets.map(t => (
+                <div key={t.id} onClick={(e) => handleClick(e, t)}
+                  style={{
+                    position: "absolute", left: t.x - t.size / 2, top: t.y - t.size / 2,
+                    width: t.size, height: t.size, borderRadius: "50%",
+                    background: `radial-gradient(circle, ${TEAL} 30%, ${NAVY} 100%)`,
+                    cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.25)", animation: "pulse 1.2s ease-in-out infinite"
+                  }}>
+                  <span style={{ color: WHITE, fontSize: Math.max(9, t.size / 3.5), fontWeight: 700 }}>{t.points}</span>
+                </div>
+              ))}
+              {lastHitPts && (
+                <div style={{
+                  position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+                  fontSize: 28, fontWeight: 800, color: TEAL, animation: "scorePop 0.4s ease", pointerEvents: "none"
+                }}>+{lastHitPts}</div>
+              )}
+              {!active && !finished && !countdown && (
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: MED, fontSize: 14 }}>
+                  Click "Start Challenge" to begin
+                </div>
+              )}
+            </div>
+          </div>
+
+          {finished && (
+            <div style={{ marginTop: 16, animation: "slideUp 0.45s ease-out" }}>
+              {isNewBest && <PersonalBestBanner />}
+              <div className={score >= 100 ? "pop-feedback" : "shake-feedback"} style={{
+                textAlign: "center", padding: 18, borderRadius: CARD_RADIUS, marginBottom: 12,
+                background: score >= 200 ? TEAL_BG : score >= 100 ? CASE_BG : ALERT_BG,
+                border: `2px solid ${score >= 200 ? TEAL : score >= 100 ? GOLD : "#C0392B"}`
+              }}>
+                <div style={{
+                  fontSize: 36, fontWeight: 800, animation: "scorePop 0.5s ease",
+                  color: score >= 200 ? TEAL : score >= 100 ? GOLD : "#C0392B"
+                }}>
+                  {score} points
+                </div>
+                <div style={{ fontSize: 13, color: MED, marginTop: 8 }}>
+                  {score >= 200 ? "Exceptional hand-eye coordination!" : score >= 100 ? "Good targeting. Getting faster!" : "Keep practicing!"}
+                </div>
+                <div style={{ fontSize: 12, color: MED, marginTop: 4 }}>
+                  Accuracy: {hits > 0 ? Math.round(hits / (hits + misses) * 100) : 0}%
+                </div>
+                {bestScore && <div style={{ fontSize: 11, color: TEAL, fontWeight: 600, marginTop: 6 }}>Personal best: {bestScore} pts</div>}
+              </div>
+              <SurgeonTip tip={tip} />
+              <button onClick={() => { setActive(false); setFinished(false); setIsNewBest(false); }}
+                style={{
+                  width: "100%", background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                  padding: "14px", fontSize: 14, fontWeight: 700, cursor: "pointer", marginTop: 12, marginBottom: 8,
+                  boxShadow: "0 2px 8px rgba(42,157,143,0.25)",
+                }}>Try Again</button>
+              <button onClick={onRestart}
+                style={{
+                  width: "100%", background: LIGHT_BG, border: "2px solid #E0E0E0",
+                  borderRadius: 10, padding: "10px", fontSize: 12, fontWeight: 600, color: MED, cursor: "pointer"
+                }}>&larr; Back to Challenges</button>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========== INSTRUMENT MEMORY ==========
+    function InstrumentMemory({ onComplete, onRestart }) {
+      const instruments = ["Scalpel", "Forceps", "Retractor", "Hemostat", "Scissors", "Clamp", "Needle Driver", "Trocar", "Grasper"];
+      const colors = ["#E74C3C", "#3498DB", "#2ECC71", "#F39C12", "#9B59B6", "#1ABC9C", "#E67E22", "#2980B9", "#C0392B"];
+      const [sequence, setSequence] = useState([]);
+      const [playerSeq, setPlayerSeq] = useState([]);
+      const [phase, setPhase] = useState("idle");
+      const [level, setLevel] = useState(3);
+      const [showIdx, setShowIdx] = useState(-1);
+      const [score, setScore] = useState(0);
+      const [streak, setStreak] = useState(0);
+      const [feedback, setFeedback] = useState("");
+      const [bestLevel, setBestLevel] = useState(null);
+      const [isNewBest, setIsNewBest] = useState(false);
+      const [tip, setTip] = useState("");
+
+      const memoryRank = level <= 4 ? "Intern" : level <= 6 ? "Resident" : level <= 8 ? "Attending" : "Chief";
+      const memoryColor = level <= 4 ? "#3498DB" : level <= 6 ? TEAL : level <= 8 ? GOLD : "#E67E22";
+
+      const startRound = useCallback(() => {
+        const seq = [];
+        for (let i = 0; i < level; i++) {
+          seq.push(Math.floor(Math.random() * instruments.length));
+        }
+        setSequence(seq);
+        setPlayerSeq([]);
+        setPhase("showing");
+        setFeedback("");
+        setIsNewBest(false);
+
+        let idx = 0;
+        const show = setInterval(() => {
+          setShowIdx(seq[idx]);
+          setTimeout(() => setShowIdx(-1), 500);
+          idx++;
+          if (idx >= seq.length) {
+            clearInterval(show);
+            setTimeout(() => setPhase("input"), 600);
+          }
+        }, 800);
+      }, [level, instruments.length]);
+
+      const handleInstrumentClick = (idx) => {
+        if (phase !== "input") return;
+        const newSeq = [...playerSeq, idx];
+        setPlayerSeq(newSeq);
+        const pos = newSeq.length - 1;
+
+        if (newSeq[pos] !== sequence[pos]) {
+          setPhase("wrong");
+          setFeedback(`Incorrect! The sequence was: ${sequence.map(i => instruments[i]).join(" \u2192 ")}`);
+          const reachedLevel = level - 1;
+          const newBest = !bestLevel || reachedLevel > bestLevel;
+          if (newBest) { setBestLevel(reachedLevel); setIsNewBest(true); }
+          setTip(getRandomTip());
+          onComplete({ level: reachedLevel, streak, score });
+          return;
+        }
+
+        if (newSeq.length === sequence.length) {
+          const pts = level * 10;
+          setScore(s => s + pts);
+          setStreak(s => s + 1);
+          setLevel(l => l + 1);
+          setFeedback(`Correct! +${pts} points`);
+          setPhase("correct");
+          setTimeout(() => startRound(), 1500);
+        }
+      };
+
+      return (
+        <div>
+          {phase === "idle" && (
+            <div style={{ textAlign: "center", marginBottom: 16, animation: "slideIn 0.3s ease" }}>
+              <p style={{ fontSize: 13, color: MED, marginBottom: 12 }}>Watch the instruments light up in sequence, then repeat the pattern. Each round adds one more!</p>
+              <button onClick={startRound} style={{
+                background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                padding: "12px 32px", fontSize: 15, fontWeight: 700, cursor: "pointer",
+                boxShadow: "0 3px 10px rgba(42,157,143,0.3)",
+              }}>Start Challenge</button>
+            </div>
+          )}
+
+          {phase !== "idle" && (
+            <div style={{ display: "flex", justifyContent: "center", gap: 10, marginBottom: 16, fontSize: 13, flexWrap: "wrap", alignItems: "center" }}>
+              <OrMonitor value={level} label="Level" />
+              <OrMonitor value={score} label="Score" />
+              <DifficultyBadge level={level <= 4 ? 1 : level <= 6 ? 2 : level <= 8 ? 3 : 4} />
+              {streak > 0 && (
+                <span style={{ color: GOLD, fontWeight: 700, animation: "streakGlow 2s infinite", padding: "4px 12px", borderRadius: 12, background: CASE_BG, border: `1px solid ${GOLD}40` }}>
+                  {streak} streak
+                </span>
+              )}
+              <span style={{ color: phase === "showing" ? "#E67E22" : TEAL, fontWeight: 600 }}>
+                {phase === "showing" ? "Watch carefully..." : phase === "input" ? `Your turn (${playerSeq.length}/${sequence.length})` : ""}
+              </span>
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 12 }}>
+            {instruments.map((name, i) => (
+              <button key={i} onClick={() => handleInstrumentClick(i)}
+                disabled={phase !== "input"}
+                style={{
+                  padding: "14px 8px", borderRadius: 10,
+                  border: `2px solid ${showIdx === i ? colors[i] : "#E0E0E0"}`,
+                  background: showIdx === i ? colors[i] + "22" : WHITE,
+                  color: showIdx === i ? colors[i] : DARK,
+                  fontSize: 12, fontWeight: 600,
+                  cursor: phase === "input" ? "pointer" : "default",
+                  transition: "all 0.25s ease",
+                  opacity: phase === "showing" ? (showIdx === i ? 1 : 0.4) : 1,
+                  transform: showIdx === i ? "scale(1.08)" : "scale(1)",
+                  boxShadow: showIdx === i ? `0 0 12px ${colors[i]}40` : CARD_SHADOW,
+                }}>
+                {name}
+              </button>
+            ))}
+          </div>
+
+          {feedback && (
+            <div className={phase === "correct" ? "pop-feedback" : "shake-feedback"} style={{
+              textAlign: "center", padding: 12, borderRadius: 12, fontSize: 14, fontWeight: 600,
+              background: phase === "correct" ? TEAL_BG : ALERT_BG,
+              color: phase === "correct" ? TEAL : "#C0392B",
+              marginBottom: 12,
+              border: `1px solid ${phase === "correct" ? TEAL + "40" : "#C0392B40"}`,
+            }}>{feedback}</div>
+          )}
+
+          {phase === "wrong" && (
+            <div style={{ textAlign: "center" }}>
+              {isNewBest && <PersonalBestBanner />}
+              {bestLevel && !isNewBest && <div style={{ fontSize: 12, color: MED, marginBottom: 12, fontWeight: 600 }}>Personal best: Level {bestLevel}</div>}
+              <SurgeonTip tip={tip} />
+              <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <button onClick={() => { setLevel(3); setScore(0); setStreak(0); setPhase("idle"); setPlayerSeq([]); setIsNewBest(false); }}
+                  style={{
+                    flex: 1, background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 10,
+                    padding: "12px", fontSize: 14, fontWeight: 700, cursor: "pointer",
+                    boxShadow: "0 2px 8px rgba(42,157,143,0.25)",
+                  }}>Try Again</button>
+                <button onClick={onRestart}
+                  style={{
+                    flex: 1, background: LIGHT_BG, border: "2px solid #E0E0E0", borderRadius: 10,
+                    padding: "12px", fontSize: 12, fontWeight: 600, color: MED, cursor: "pointer"
+                  }}>&larr; Back</button>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ========== WELCOME SCREEN ==========
+    function WelcomeScreen({ onStart }) {
+      return (
+        <div style={{ animation: "fadeIn 0.5s ease" }}>
+          <div style={{
+            textAlign: "center", padding: "28px 20px 20px",
+            background: `linear-gradient(135deg, ${TEAL_BG}, ${WHITE})`,
+            borderRadius: CARD_RADIUS, border: "1px solid #D0E0DA",
+            marginBottom: 20, boxShadow: CARD_SHADOW,
+          }}>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>&#x1F3E5;</div>
+            <h2 style={{ fontSize: 22, fontWeight: 800, color: NAVY, marginBottom: 6 }}>Welcome, Future Surgeon!</h2>
+            <p style={{ fontSize: 13, color: MED, lineHeight: 1.6, maxWidth: 480, margin: "0 auto 16px" }}>
+              Surgeons need extraordinary hand-eye coordination, precision, and memory. Test yours with three challenges inspired by real surgical skills training. The precision you build here is exactly what Marco Torres's surgical team needs in Sessions 3 and 5.
+            </p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
+            {CHALLENGES.map((ch, i) => (
+              <div key={ch.id} style={{
+                display: "flex", alignItems: "center", gap: 14, padding: "14px 16px",
+                background: WHITE, borderRadius: CARD_RADIUS,
+                border: "1px solid #E8ECF0", boxShadow: CARD_SHADOW,
+                animation: `slideIn ${0.3 + i * 0.1}s ease`,
+              }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: `linear-gradient(135deg, ${TEAL}15, ${NAVY}10)`,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 22, flexShrink: 0,
+                }}>{ch.icon}</div>
+                <div>
+                  <div style={{ fontWeight: 700, color: NAVY, fontSize: 14, marginBottom: 2 }}>{ch.name}</div>
+                  <div style={{ fontSize: 11, color: MED }}>{ch.skill}</div>
+                </div>
+                <div style={{
+                  marginLeft: "auto", width: 24, height: 24, borderRadius: "50%",
+                  background: LIGHT_BG, border: "2px solid #E0E0E0",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 12, fontWeight: 700, color: MED,
+                }}>{i + 1}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ textAlign: "center" }}>
+            <button onClick={onStart} style={{
+              background: BTN_GRADIENT, color: WHITE, border: "none", borderRadius: 12,
+              padding: "14px 40px", fontSize: 16, fontWeight: 700, cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(42,157,143,0.3)",
+              transition: "transform 0.15s ease",
+            }}
+            onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
+            onMouseLeave={e => e.currentTarget.style.transform = "scale(1)"}
+            >Begin Training &#8594;</button>
+          </div>
+        </div>
+      );
+    }
+
+    // ========== MAIN COMPONENT ==========
+    function SurgicalDexterityTrainer() {
+      const [started, setStarted] = useState(false);
+      const [activeChallenge, setActiveChallenge] = useState(null);
+      const [results, setResults] = useState({});
+      const [personalRecords, setPersonalRecords] = useState({ trace: null, targets: null, sequence: null });
+
+      const handleComplete = (challengeId, result) => {
+        setResults(prev => ({ ...prev, [challengeId]: result }));
+        setPersonalRecords(prev => {
+          const updated = { ...prev };
+          if (challengeId === "trace") {
+            if (!updated.trace || result.errors < (updated.trace.errors ?? Infinity)) {
+              updated.trace = result;
+            }
+          } else if (challengeId === "targets") {
+            if (!updated.targets || result.score > (updated.targets?.score ?? 0)) {
+              updated.targets = result;
+            }
+          } else if (challengeId === "sequence") {
+            if (!updated.sequence || result.level > (updated.sequence?.level ?? 0)) {
+              updated.sequence = result;
+            }
+          }
+          return updated;
+        });
+      };
+
+      const completedCount = Object.keys(results).length;
+
+      return (
+        <div style={{ fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif", minHeight: "100vh", display: "flex", flexDirection: "column" }}>
+          <AppHeader />
+
+          <div style={{ flex: 1, maxWidth: 720, margin: "0 auto", padding: "20px 16px", width: "100%" }}>
+
+            {!started && <WelcomeScreen onStart={() => setStarted(true)} />}
+
+            {started && (
+              <>
+                <div style={{ textAlign: "center", marginBottom: 16 }}>
+                  <h1 style={{ fontSize: 24, fontWeight: 900, color: NAVY, margin: "0 0 4px", letterSpacing: -0.5 }}>Surgical Dexterity Trainer</h1>
+                  <p style={{ fontSize: 13, color: MED, margin: 0 }}>Build the motor skills and precision used by surgeons in the OR</p>
+                </div>
+
+                {/* Records bar */}
+                <div style={{
+                  display: "flex", justifyContent: "space-between", alignItems: "center",
+                  gap: 8, marginBottom: 16, padding: "10px 16px",
+                  background: WHITE, borderRadius: CARD_RADIUS, boxShadow: CARD_SHADOW,
+                  border: "1px solid #E8ECF0", flexWrap: "wrap",
+                }}>
+                  <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                    {completedCount > 0 && (
+                      <div style={{
+                        width: 32, height: 32, borderRadius: "50%",
+                        background: completedCount === 3 ? `linear-gradient(135deg, ${GOLD}, #E6C466)` : LIGHT_BG,
+                        border: `2px solid ${completedCount === 3 ? GOLD : "#E0E0E0"}`,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 800,
+                        color: completedCount === 3 ? WHITE : MED,
+                      }}>{completedCount}/3</div>
+                    )}
+                    {personalRecords.trace && (
+                      <div>
+                        <div style={{ fontSize: 9, color: MED, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Trace</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: TEAL }}>{personalRecords.trace.errors} err</div>
+                      </div>
+                    )}
+                    {personalRecords.targets && (
+                      <div>
+                        <div style={{ fontSize: 9, color: MED, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Target</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: GOLD }}>{personalRecords.targets.score} pts</div>
+                      </div>
+                    )}
+                    {personalRecords.sequence && (
+                      <div>
+                        <div style={{ fontSize: 9, color: MED, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Memory</div>
+                        <div style={{ fontSize: 13, fontWeight: 800, color: NAVY }}>Lv {personalRecords.sequence.level}</div>
+                      </div>
+                    )}
+                    {completedCount === 0 && (
+                      <div style={{ fontSize: 12, color: MED }}>3 challenges to complete</div>
+                    )}
+                  </div>
+                  {activeChallenge !== null && (
+                    <button onClick={() => setActiveChallenge(null)}
+                      style={{
+                        background: "none", border: `2px solid ${TEAL}`, color: TEAL,
+                        borderRadius: 8, padding: "6px 14px", fontSize: 12, fontWeight: 700, cursor: "pointer",
+                        transition: "all 0.2s",
+                      }}>&larr; Home</button>
+                  )}
+                </div>
+
+                {!activeChallenge && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12, animation: "fadeIn 0.4s ease" }}>
+                    {CHALLENGES.map((ch) => (
+                      <button key={ch.id} onClick={() => setActiveChallenge(ch.id)}
+                        style={{
+                          display: "flex", alignItems: "center", gap: 16, padding: 18,
+                          background: WHITE, border: `2px solid ${results[ch.id] ? TEAL : "#E0E0E0"}`,
+                          borderRadius: CARD_RADIUS, cursor: "pointer", textAlign: "left",
+                          transition: "all 0.25s ease", boxShadow: CARD_SHADOW,
+                        }}
+                        onMouseEnter={(e) => { e.currentTarget.style.borderColor = TEAL; e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)"; }}
+                        onMouseLeave={(e) => { e.currentTarget.style.borderColor = results[ch.id] ? TEAL : "#E0E0E0"; e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = CARD_SHADOW; }}>
+                        <div style={{
+                          width: 48, height: 48, borderRadius: 12,
+                          background: results[ch.id] ? `linear-gradient(135deg, ${TEAL}20, ${TEAL}10)` : `linear-gradient(135deg, ${LIGHT_BG}, ${WHITE})`,
+                          display: "flex", alignItems: "center", justifyContent: "center",
+                          fontSize: 26, flexShrink: 0,
+                          border: `1px solid ${results[ch.id] ? TEAL + "40" : "#E8ECF0"}`,
+                        }}>{ch.icon}</div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontWeight: 700, color: NAVY, fontSize: 16, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
+                            {ch.name}
+                            {results[ch.id] && <span style={{ color: TEAL, fontSize: 11, fontWeight: 600, background: TEAL_BG, padding: "2px 8px", borderRadius: 8 }}>&#10003; Done</span>}
+                          </div>
+                          <div style={{ fontSize: 12, color: MED, lineHeight: 1.4, marginBottom: 6 }}>{ch.desc}</div>
+                          <div style={{ fontSize: 11, color: TEAL, fontWeight: 600 }}>Skill: {ch.skill}</div>
+                        </div>
+                      </button>
+                    ))}
+
+                    {completedCount === 3 && (
+                      <div style={{
+                        textAlign: "center", padding: "20px 16px", marginTop: 4,
+                        background: `linear-gradient(135deg, ${CASE_BG}, #FFF0C0)`,
+                        borderRadius: CARD_RADIUS, border: `2px solid ${GOLD}`,
+                        animation: "slideIn 0.5s ease",
+                      }}>
+                        <div style={{ fontSize: 28, marginBottom: 6 }}>&#x1F3C6;</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: GOLD }}>All Challenges Complete!</div>
+                        <div style={{ fontSize: 13, color: MED, marginTop: 4 }}>You've tested all three surgical skill domains. Try again to beat your personal bests!</div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {activeChallenge && (
+                  <div key={activeChallenge} style={{ animation: "slideUp 0.45s ease-out" }}>
+                    <div style={{
+                      fontWeight: 800, color: NAVY, fontSize: 18, marginBottom: 14,
+                      display: "flex", alignItems: "center", gap: 10,
+                    }}>
+                      <span style={{ fontSize: 24 }}>{CHALLENGES.find(c => c.id === activeChallenge)?.icon}</span>
+                      {CHALLENGES.find(c => c.id === activeChallenge)?.name}
+                    </div>
+                    {activeChallenge === "trace" && <SteadyHandTrace onComplete={(r) => handleComplete("trace", r)} onRestart={() => setActiveChallenge(null)} />}
+                    {activeChallenge === "targets" && <PrecisionTargeting onComplete={(r) => handleComplete("targets", r)} onRestart={() => setActiveChallenge(null)} />}
+                    {activeChallenge === "sequence" && <InstrumentMemory onComplete={(r) => handleComplete("sequence", r)} onRestart={() => setActiveChallenge(null)} />}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+
+          <AppFooter />
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<SurgicalDexterityTrainer />);
+  </script>
+</body>
+</html>

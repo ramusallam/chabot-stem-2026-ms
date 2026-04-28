@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 \u2014 Middle School",
+    "title": "Chabot STEM 2026 — Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -75,6 +75,12 @@
               "type": "callout",
               "style": "tip",
               "content": "Interactive App: Launch Fingerprint Ridge Classifier. Use the Launch button below to open the app inline."
+            },
+            {
+              "type": "app",
+              "title": "Fingerprint Ridge Classifier",
+              "url": "apps/fingerprint-classifier.html",
+              "embed": true
             },
             {
               "type": "step",
@@ -239,6 +245,12 @@
               "type": "callout",
               "style": "tip",
               "content": "Interactive App: Launch Spatter Angle Calculator. Use the Launch button below to open the app inline."
+            },
+            {
+              "type": "app",
+              "title": "Blood Spatter Angle Calculator",
+              "url": "apps/blood-spatter-calculator.html",
+              "embed": true
             },
             {
               "type": "step",
@@ -418,6 +430,38 @@
             {
               "type": "step",
               "content": "Record conclusions: Record your observations and conclusions in your lab notebook."
+            },
+            {
+              "type": "heading",
+              "content": "Launch the Trace Evidence Microscope"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Real microscopes magnify and isolate. The virtual microscope adds structured practice: identify the diagnostic feature on each specimen at low and high magnification, then apply your skill to real cases."
+            },
+            {
+              "type": "app",
+              "title": "Trace Evidence Microscope",
+              "url": "apps/trace-microscope.html",
+              "embed": true
+            },
+            {
+              "type": "step",
+              "content": "Tap 'Microscope View.' Adjust magnification from 10x to 400x for each of 12 specimens (hair, fiber, glass, soil). At 10x specimens look generic - at 400x diagnostic features emerge. Identify each."
+            },
+            {
+              "type": "step",
+              "content": "Switch to 'Match the Suspect.' 4 named cases load (Carpet Fiber Murder, Pet Hair Killer, Glass Window Burglary, Dyed Hair Stalker). Examine 3 trace samples from the body, match to one of 4 suspect profiles."
+            },
+            {
+              "type": "step",
+              "content": "Finish with 'Locard's Exchange Principle.' Watch how every contact between two characters leaves a bidirectional trace transfer. Then take the 8-question quiz on hair morphology, fiber types, and the FBI's 96% hair-misuse statistic."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Watch what happens at 400x with the 'human hair (dyed)' specimen - you'll see damaged cuticle scales near the root. That's how a real trace examiner ages a dye job to within 4 weeks."
             },
             {
               "type": "checklist",
@@ -621,6 +665,38 @@
               "content": "Discuss AI labeling: Should there be laws requiring AI-generated content to be labeled?"
             },
             {
+              "type": "heading",
+              "content": "Launch the Deepfake Detector"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "You watched a real disinformation case study. Now train your eye on 8 AI-generated images, 4 voice clips, and a 4-stage source verification chain. This is what Bay Area Trust & Safety analysts do every morning."
+            },
+            {
+              "type": "app",
+              "title": "Deepfake Detector",
+              "url": "apps/deepfake-detector.html",
+              "embed": true
+            },
+            {
+              "type": "step",
+              "content": "Tap 'Spot the Tells.' Click suspicious elements on each AI image (weird hands, mismatched earrings, garbled text). Each correct click reveals the tell + explanation. The 8th image is a TRAP - it's a real photo, so don't click anything. Tests over-triage."
+            },
+            {
+              "type": "step",
+              "content": "Switch to 'Voice Analyzer.' 4 voice transcripts with annotated waveforms. Look for AI tells: unnaturally consistent volume, no breathing pauses, robotic 's' sounds. Pick 'Real Human' or 'AI Generated.'"
+            },
+            {
+              "type": "step",
+              "content": "Finish with 'Source Verification Chain.' Watch a fake travel through 4 stages (AI generation -> social post -> viral repost -> mainstream news). At each stage, pick the verification step that would catch it. Then take the quiz."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Hands are the #1 deepfake tell as of 2024. Count fingers. Look for fused fingers, missing nails, weird thumbs. AI image generators still struggle with hand geometry."
+            },
+            {
               "type": "checklist",
               "items": [
                 {
@@ -725,6 +801,12 @@
               "type": "callout",
               "style": "tip",
               "content": "Interactive App: Launch EKG Waveform Explorer. Use the Launch button below to open the app inline."
+            },
+            {
+              "type": "app",
+              "title": "EKG Waveform Explorer",
+              "url": "apps/ekg-waveform-explorer.html",
+              "embed": true
             },
             {
               "type": "step",
@@ -900,6 +982,38 @@
             {
               "type": "step",
               "content": "Get feedback: Have a partner evaluate your sutures using the assessment checklist."
+            },
+            {
+              "type": "heading",
+              "content": "Launch the Surgical Dexterity Trainer"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Your hands are still learning the suture. The trainer gives you the tracking-and-precision drills surgeons use - same movements, no consequences if you wobble. Run the modules between rounds of real practice."
+            },
+            {
+              "type": "app",
+              "title": "Surgical Dexterity Trainer",
+              "url": "apps/surgical-dexterity-trainer.html",
+              "embed": true
+            },
+            {
+              "type": "step",
+              "content": "Tap 'Steady Hand.' Trace the path with your finger or mouse. The OR clock and error counter (monospace neon, EKG monitor style) score your steadiness. Each level adds a tighter tolerance."
+            },
+            {
+              "type": "step",
+              "content": "Switch to 'Precision Targeting.' Tap targets in sequence under a countdown. Same hand-eye coordination test surgeons run during warmup. Watch the error counter."
+            },
+            {
+              "type": "step",
+              "content": "Finish with 'Instrument Memory.' A sequence of surgical instruments flashes - tap them back in order. Working memory drill that real OR teams use. Score scales with sequence length."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "The OR clock turning red means you're past the time-target. Real surgeons train against a clock because every second under anesthesia matters. Speed AND accuracy."
             },
             {
               "type": "checklist",

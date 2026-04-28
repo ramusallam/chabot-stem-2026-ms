@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fingerprint Ridge Classifier - Woven Learning Chabot STEM 2026</title>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<style>
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2A9D8F;
+    --teal-dark: #1A6B6B;
+    --gold: #D4A843;
+    --coral: #E65C3C;
+    --maroon: #7A2D4E;
+    --green: #27AE60;
+    --red: #C0392B;
+    --yellow: #F39C12;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #F0F4F8;
+    min-height: 100vh;
+    color: #333;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.85); opacity: 0; }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  @keyframes scanLine {
+    0% { transform: translateY(-100%); opacity: 0; }
+    20% { opacity: 0.85; }
+    80% { opacity: 0.85; }
+    100% { transform: translateY(100%); opacity: 0; }
+  }
+  @keyframes glowPulse {
+    0%, 100% { text-shadow: 0 0 6px rgba(10,186,181,0.55), 0 0 12px rgba(10,186,181,0.25); }
+    50% { text-shadow: 0 0 10px rgba(10,186,181,0.85), 0 0 18px rgba(10,186,181,0.45); }
+  }
+  @keyframes correctFlash {
+    0% { background: rgba(39,174,96,0); }
+    30% { background: rgba(39,174,96,0.18); }
+    100% { background: rgba(39,174,96,0); }
+  }
+  @keyframes wrongShake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(5px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(3px); }
+  }
+  @keyframes minutiaPing {
+    0% { transform: scale(0); opacity: 1; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .fade-in { animation: fadeIn 0.35s ease-out; }
+  .slide-up { animation: slideUp 0.45s ease-out; }
+  .pop { animation: pop 0.45s ease-out; }
+  .glow-pulse { animation: glowPulse 2.2s ease-in-out infinite; }
+  .correct-flash { animation: correctFlash 0.7s ease-out; }
+  .wrong-shake { animation: wrongShake 0.45s ease-in-out; }
+
+  .mono {
+    font-family: 'Courier New', 'Menlo', monospace;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #E0E8EE;
+    outline: none;
+    cursor: pointer;
+    width: 100%;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2A9D8F, #1A6B6B);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(42,157,143,0.35);
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2A9D8F, #1A6B6B);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(42,157,143,0.35);
+  }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef, useMemo } = React;
+
+const NAVY = "#1B3A5C", TEAL = "#2A9D8F", TEAL_DARK = "#1A6B6B";
+const GOLD = "#D4A843", WHITE = "#FFFFFF";
+const RED = "#C0392B", GREEN = "#27AE60", YELLOW = "#F39C12";
+const DARK = "#333", MED = "#666";
+const R = 14, SHADOW = "0 2px 10px rgba(0,0,0,.08)";
+
+// ===== Reusable components =====
+const WovenLogo = ({ size = 20 }) => (
+  <svg viewBox="0 0 40 40" width={size} height={size} style={{ flexShrink: 0 }}>
+    <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity=".85"/>
+    <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity=".85"/>
+    <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity=".85"/>
+    <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity=".85"/>
+  </svg>
+);
+
+const AppHeader = ({ subtitle }) => (
+  <div style={{
+    background: "linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",
+    padding: "12px 20px",
+    display: "flex", alignItems: "center", gap: 10,
+    borderBottom: `3px solid ${GOLD}`
+  }}>
+    <WovenLogo size={26}/>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: 15, fontWeight: 800, color: WHITE, letterSpacing: 0.3 }}>Chabot STEM 2026</div>
+      <div style={{ fontSize: 11, color: "rgba(255,255,255,.78)", fontWeight: 500 }}>{subtitle || "Fingerprint Ridge Classifier"}</div>
+    </div>
+    <span style={{ fontSize: 22 }}>🔍</span>
+  </div>
+);
+
+const AppFooter = () => (
+  <div style={{
+    textAlign: "center", padding: "14px 20px",
+    borderTop: `3px solid ${GOLD}`, background: WHITE,
+    fontSize: 11, color: "#999",
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+    marginTop: 24
+  }}>
+    <WovenLogo size={14}/>
+    <span>Built by <strong style={{ color: TEAL_DARK }}>Woven Learning &amp; Technology</strong></span>
+  </div>
+);
+
+const Btn = ({ children, onClick, primary, disabled, style = {} }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    style={{
+      background: disabled ? "#E0E8EE" : (primary ? `linear-gradient(135deg,${TEAL},${TEAL_DARK})` : WHITE),
+      color: disabled ? "#999" : (primary ? WHITE : NAVY),
+      border: primary ? "none" : `2px solid ${TEAL}`,
+      borderRadius: 10,
+      padding: "11px 22px",
+      fontSize: 14,
+      fontWeight: 700,
+      cursor: disabled ? "not-allowed" : "pointer",
+      transition: "all .2s",
+      boxShadow: primary ? "0 2px 8px rgba(42,157,143,.25)" : SHADOW,
+      fontFamily: "inherit",
+      ...style
+    }}>
+    {children}
+  </button>
+);
+
+const Card = ({ children, style = {} }) => (
+  <div style={{
+    background: WHITE, borderRadius: R, padding: 20,
+    boxShadow: "0 4px 20px rgba(0,0,0,.08)",
+    marginBottom: 16, ...style
+  }}>{children}</div>
+);
+
+const SectionLabel = ({ children }) => (
+  <div style={{
+    fontSize: 10, fontWeight: 700, color: MED,
+    textTransform: "uppercase", letterSpacing: 1.5, marginBottom: 6
+  }}>{children}</div>
+);
+
+const Pill = ({ children, color = TEAL, bg = "#E8F5F3" }) => (
+  <span style={{
+    display: "inline-block",
+    padding: "3px 10px",
+    borderRadius: 99,
+    fontSize: 11,
+    fontWeight: 700,
+    color, background: bg,
+    letterSpacing: 0.4
+  }}>{children}</span>
+);
+
+// ===== Pearls =====
+const PEARLS = [
+  "Your fingerprints form in the womb at 13 weeks. Even identical twins have different prints.",
+  "Brandon Mayfield was wrongly arrested in 2004 after the FBI matched 16 minutiae points. The print actually belonged to an Algerian man tied to the Madrid bombing.",
+  "Loops show up in about 60-65% of the population. Whorls 30-35%. Arches just 5%. Yours is statistically guessable.",
+  "The Daubert standard requires a forensic technique have a known error rate. Fingerprint analysis still does not have one universally agreed upon.",
+  "Your fingerprint pattern is set for life by the time you are born. You wear it down, you do not change it.",
+  "IAFIS, the FBI fingerprint database, holds over 70 million criminal prints and 30 million civil prints.",
+  "Latent prints (the invisible ones at a crime scene) are developed using superglue fumes, ninhydrin, or fluorescent powder.",
+  "The minimum legal threshold in many U.S. courts is around 12 matching minutiae points. Some agencies require 16. There is no national standard.",
+  "Sweat, oil, and amino acids from your skin leave the print. Latex gloves stop most of it but not all of it.",
+  "A delta is the triangle-shaped ridge formation. Loops have 1 delta. Whorls have 2. Arches have 0.",
+  "Koalas have fingerprints almost identical to humans. So do gorillas and chimpanzees.",
+  "After the 2004 Madrid bombing, a federal judge ruled the FBI must disclose its fingerprint methodology in court. The case reshaped forensic standards."
+];
+const randomPearl = () => PEARLS[Math.floor(Math.random() * PEARLS.length)];
+
+// ===== Fingerprint pattern SVG generators =====
+// Each pattern function takes a seed for slight variation and returns SVG <path> children.
+// Drawn inside a 200x240 viewBox with center around (100, 120).
+
+function loopPaths(direction = "ulnar", seed = 0) {
+  // direction: ulnar (loops point right for right hand) vs radial (loops point left)
+  const d = direction === "ulnar" ? 1 : -1;
+  const paths = [];
+  const cx = 100, cy = 130;
+  // Series of nested loops opening to one side
+  for (let i = 0; i < 10; i++) {
+    const r = 15 + i * 7;
+    const offset = i * 1.2 * d;
+    // open loop - elliptical arc that doesn't close, ends drift toward side
+    const startX = cx - r * 0.95 + offset;
+    const startY = cy + r * 0.85;
+    const endX = cx + r * 0.95 + offset;
+    const endY = cy + r * 0.85;
+    const cpY = cy - r * 1.1;
+    paths.push(
+      <path key={i}
+        d={`M ${startX} ${startY} Q ${cx + offset} ${cpY} ${endX} ${endY}`}
+        fill="none" stroke="#1B3A5C" strokeWidth="1.6" strokeLinecap="round"/>
+    );
+  }
+  // Delta marker (triangle area where ridges converge)
+  const dx = cx + d * 50;
+  const dy = cy + 35;
+  paths.push(<circle key="delta" cx={dx} cy={dy} r="2.2" fill={GOLD}/>);
+  return paths;
+}
+
+function whorlPaths(subtype = "plain", seed = 0) {
+  const cx = 100, cy = 130;
+  const paths = [];
+  if (subtype === "plain") {
+    // Concentric circles
+    for (let i = 0; i < 9; i++) {
+      const r = 8 + i * 7;
+      paths.push(
+        <circle key={i} cx={cx} cy={cy} r={r}
+          fill="none" stroke="#1B3A5C" strokeWidth="1.6"/>
+      );
+    }
+  } else if (subtype === "central-pocket") {
+    // Spiral with tight center
+    const points = [];
+    for (let t = 0; t < 9 * Math.PI; t += 0.1) {
+      const r = 2 + t * 2.4;
+      const x = cx + r * Math.cos(t);
+      const y = cy + r * Math.sin(t);
+      if (r > 75) break;
+      points.push(`${t === 0 ? 'M' : 'L'} ${x.toFixed(1)} ${y.toFixed(1)}`);
+    }
+    paths.push(<path key="s" d={points.join(' ')} fill="none" stroke="#1B3A5C" strokeWidth="1.6"/>);
+    // Central pocket loop
+    paths.push(<ellipse key="p" cx={cx} cy={cy} rx="6" ry="9" fill="none" stroke="#1B3A5C" strokeWidth="1.6"/>);
+  } else if (subtype === "double") {
+    // Two interlocking S-shaped loops
+    for (let i = 0; i < 7; i++) {
+      const r = 10 + i * 8;
+      paths.push(
+        <path key={`a${i}`}
+          d={`M ${cx - r} ${cy + 5} Q ${cx} ${cy - r} ${cx + r} ${cy - 5} Q ${cx} ${cy + r * 0.6} ${cx - r * 0.7} ${cy + r * 0.4}`}
+          fill="none" stroke="#1B3A5C" strokeWidth="1.6"/>
+      );
+    }
+  } else { // accidental
+    // Mix of irregular curves
+    for (let i = 0; i < 8; i++) {
+      const r = 12 + i * 7;
+      const skew = Math.sin(i * 1.3) * 18;
+      paths.push(
+        <ellipse key={i} cx={cx + skew} cy={cy} rx={r * 1.1} ry={r * 0.85}
+          fill="none" stroke="#1B3A5C" strokeWidth="1.6"
+          transform={`rotate(${i * 12 - 30} ${cx} ${cy})`}/>
+      );
+    }
+  }
+  // Two deltas for whorl
+  paths.push(<circle key="d1" cx={cx - 50} cy={cy + 35} r="2.2" fill={GOLD}/>);
+  paths.push(<circle key="d2" cx={cx + 50} cy={cy + 35} r="2.2" fill={GOLD}/>);
+  return paths;
+}
+
+function archPaths(subtype = "plain") {
+  const cx = 100, cy = 130;
+  const paths = [];
+  if (subtype === "plain") {
+    // Wave-like flowing arches
+    for (let i = 0; i < 11; i++) {
+      const yOff = i * 7;
+      const peak = 18;
+      paths.push(
+        <path key={i}
+          d={`M ${cx - 75} ${cy + 35 - yOff} Q ${cx} ${cy - peak - yOff} ${cx + 75} ${cy + 35 - yOff}`}
+          fill="none" stroke="#1B3A5C" strokeWidth="1.6" strokeLinecap="round"/>
+      );
+    }
+  } else { // tented
+    // Sharp upward thrust in the middle
+    for (let i = 0; i < 11; i++) {
+      const yOff = i * 7;
+      const peak = 38 + i * 0.6;
+      paths.push(
+        <path key={i}
+          d={`M ${cx - 75} ${cy + 35 - yOff} L ${cx - 8} ${cy + 35 - yOff - peak * 0.5} L ${cx} ${cy + 35 - yOff - peak} L ${cx + 8} ${cy + 35 - yOff - peak * 0.5} L ${cx + 75} ${cy + 35 - yOff}`}
+          fill="none" stroke="#1B3A5C" strokeWidth="1.6" strokeLinejoin="round" strokeLinecap="round"/>
+      );
+    }
+  }
+  // No deltas in arches
+  return paths;
+}
+
+// Pattern bank: 12 prints with mixed types
+const PATTERN_BANK = [
+  { id: 1, type: "loop-ulnar",         label: "Ulnar Loop",        category: "Loop",  detail: "Loop opens toward the pinky side. One delta visible on the radial side. Most common pattern in the world." },
+  { id: 2, type: "whorl-plain",        label: "Plain Whorl",       category: "Whorl", detail: "Concentric circles with two clear deltas. The simplest whorl subtype." },
+  { id: 3, type: "arch-plain",         label: "Plain Arch",        category: "Arch",  detail: "Ridges flow from one side to the other with a gentle wave. No deltas, no loops." },
+  { id: 4, type: "loop-radial",        label: "Radial Loop",       category: "Loop",  detail: "Loop opens toward the thumb side. Less common than ulnar. One delta." },
+  { id: 5, type: "whorl-double",       label: "Double Loop Whorl", category: "Whorl", detail: "Two interlocking loops form an S-shape. Two deltas. Classic whorl subtype." },
+  { id: 6, type: "arch-tented",        label: "Tented Arch",       category: "Arch",  detail: "Sharp upward thrust in the center makes a 'tent'. Rarest subtype overall." },
+  { id: 7, type: "whorl-central-pocket", label: "Central Pocket Whorl", category: "Whorl", detail: "Spiraling ridges with a small loop trapped at the core. Two deltas." },
+  { id: 8, type: "loop-ulnar",         label: "Ulnar Loop",        category: "Loop",  detail: "Same family as #1 but a different print. Loops are 60-65% of all fingerprints." },
+  { id: 9, type: "whorl-accidental",   label: "Accidental Whorl",  category: "Whorl", detail: "Combination of two or more pattern types that don't fit cleanly. Rare." },
+  { id: 10, type: "arch-plain",        label: "Plain Arch",        category: "Arch",  detail: "Arches are only ~5% of the population. Smooth wave from edge to edge." },
+  { id: 11, type: "loop-ulnar",        label: "Ulnar Loop",        category: "Loop",  detail: "Note the single delta on the side opposite the loop opening." },
+  { id: 12, type: "whorl-plain",       label: "Plain Whorl",       category: "Whorl", detail: "Even circles around a single core. Two deltas frame it." },
+];
+
+function renderPattern(type) {
+  if (type === "loop-ulnar") return loopPaths("ulnar");
+  if (type === "loop-radial") return loopPaths("radial");
+  if (type === "whorl-plain") return whorlPaths("plain");
+  if (type === "whorl-central-pocket") return whorlPaths("central-pocket");
+  if (type === "whorl-double") return whorlPaths("double");
+  if (type === "whorl-accidental") return whorlPaths("accidental");
+  if (type === "arch-plain") return archPaths("plain");
+  if (type === "arch-tented") return archPaths("tented");
+  return null;
+}
+
+// ===== Welcome / mode select =====
+function Welcome({ onPick, cohort, setCohort }) {
+  return (
+    <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", marginBottom: 18 }}>
+        <div style={{ fontSize: 56, marginBottom: 6 }}>🔍</div>
+        <div style={{ fontSize: 26, fontWeight: 800, color: NAVY, letterSpacing: 0.2 }}>Fingerprint Ridge Classifier</div>
+        <div style={{ fontSize: 13, color: MED, maxWidth: 440, margin: "8px auto 0", lineHeight: 1.5 }}>
+          Step into the FBI Latent Print Unit. Identify pattern types, hunt minutiae,
+          and learn why the Daubert standard makes this work harder than CSI makes it look.
+        </div>
+      </div>
+
+      <Card style={{ background: "linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%)", borderLeft: `4px solid ${GOLD}` }}>
+        <SectionLabel>Cohort</SectionLabel>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            onClick={() => setCohort("MS")}
+            style={{
+              flex: 1, padding: "10px 12px", borderRadius: 10,
+              border: cohort === "MS" ? `2px solid ${TEAL_DARK}` : `2px solid #E0E8EE`,
+              background: cohort === "MS" ? `linear-gradient(135deg,${TEAL},${TEAL_DARK})` : WHITE,
+              color: cohort === "MS" ? WHITE : NAVY,
+              fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit"
+            }}>Middle School (Rising 7-8)</button>
+          <button
+            onClick={() => setCohort("HS")}
+            style={{
+              flex: 1, padding: "10px 12px", borderRadius: 10,
+              border: cohort === "HS" ? `2px solid ${TEAL_DARK}` : `2px solid #E0E8EE`,
+              background: cohort === "HS" ? `linear-gradient(135deg,${TEAL},${TEAL_DARK})` : WHITE,
+              color: cohort === "HS" ? WHITE : NAVY,
+              fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit"
+            }}>High School (Rising 9-11)</button>
+        </div>
+        <div style={{ fontSize: 11, color: "#8B6914", marginTop: 8, lineHeight: 1.5 }}>
+          {cohort === "MS"
+            ? "Focus: pattern ID + minutiae hunt. Daubert lab is unlocked but optional."
+            : "Focus: all four modes. The Daubert Probability Lab is the centerpiece for HS."}
+        </div>
+      </Card>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12 }}>
+        <ModeCard
+          num="1"
+          title="Pattern Identifier"
+          tag="APPLY"
+          desc="12 SVG fingerprint patterns. Click the right type. Loops, whorls, arches and their subtypes."
+          onClick={() => onPick("pattern")}
+        />
+        <ModeCard
+          num="2"
+          title="Minutiae Hunter"
+          tag="EXPLORE"
+          desc="Click every minutia point on a single print. Real-time counter. Learn the 8 standard types."
+          onClick={() => onPick("minutiae")}
+        />
+        <ModeCard
+          num="3"
+          title="Daubert Probability Lab"
+          tag={cohort === "HS" ? "HS FOCUS" : "PREVIEW"}
+          tagColor={cohort === "HS" ? RED : YELLOW}
+          desc="Slide the # of matching minutiae. See chance-match probability. Brandon Mayfield, Madrid bombing, Daubert standard."
+          onClick={() => onPick("daubert")}
+        />
+        <ModeCard
+          num="4"
+          title="Quiz"
+          tag="CHECK"
+          desc="8 questions. Pattern ID, IAFIS, Mayfield, twins, what makes a print legally admissible."
+          onClick={() => onPick("quiz")}
+        />
+      </div>
+
+      <Card style={{ marginTop: 16, background: "#F0F6F5", borderLeft: `4px solid ${TEAL}` }}>
+        <SectionLabel>Career Pathway</SectionLabel>
+        <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55 }}>
+          <strong>Forensic Identification Specialist</strong> &middot; FBI Latent Print Unit, local
+          crime labs, sheriff's office CSI teams. Bay Area entry: Chabot College Administration of Justice
+          AS-T degree, then Cal State East Bay Criminal Justice BA, then state DOJ exam.
+        </div>
+      </Card>
+
+      <AppFooter/>
+    </div>
+  );
+}
+
+function ModeCard({ num, title, tag, tagColor, desc, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      textAlign: "left", padding: 16, borderRadius: R, border: "1px solid #E4E9EF",
+      background: WHITE, cursor: "pointer", fontFamily: "inherit",
+      boxShadow: "0 2px 10px rgba(0,0,0,.05)", transition: "all .2s",
+      display: "flex", gap: 14, alignItems: "flex-start"
+    }}>
+      <div style={{
+        width: 38, height: 38, borderRadius: 10,
+        background: `linear-gradient(135deg,${TEAL},${TEAL_DARK})`,
+        color: WHITE, fontWeight: 800, fontSize: 18,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0, boxShadow: "0 2px 8px rgba(42,157,143,.3)"
+      }}>{num}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 16, fontWeight: 800, color: NAVY }}>{title}</div>
+          <Pill color={tagColor || TEAL} bg={tagColor === RED ? "#FADBD8" : tagColor === YELLOW ? "#FFF8E1" : "#E8F5F3"}>{tag}</Pill>
+        </div>
+        <div style={{ fontSize: 12, color: MED, lineHeight: 1.5, marginTop: 4 }}>{desc}</div>
+      </div>
+    </button>
+  );
+}
+
+// ===== Mode 1: Pattern Identifier =====
+function ModePattern({ onBack }) {
+  const [round, setRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [feedback, setFeedback] = useState(null);
+  const [done, setDone] = useState(false);
+  const [pearl] = useState(randomPearl());
+
+  // Shuffle order once
+  const order = useMemo(() => {
+    const arr = [...PATTERN_BANK];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }, []);
+
+  const current = order[round];
+  const choices = ["Loop", "Whorl", "Arch"];
+
+  function pick(choice) {
+    if (picked) return;
+    setPicked(choice);
+    const correct = choice === current.category;
+    setFeedback({ correct, label: current.label, detail: current.detail });
+    if (correct) setScore(s => s + 1);
+  }
+
+  function next() {
+    if (round + 1 >= order.length) {
+      setDone(true);
+    } else {
+      setRound(r => r + 1);
+      setPicked(null);
+      setFeedback(null);
+    }
+  }
+
+  function restart() {
+    setRound(0); setScore(0); setPicked(null); setFeedback(null); setDone(false);
+  }
+
+  if (done) {
+    return (
+      <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+        <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+        <Card>
+          <SectionLabel>Pattern Identifier - Results</SectionLabel>
+          <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+            <div style={{ fontSize: 56 }}>{score >= 10 ? "🏆" : score >= 7 ? "👍" : "🔬"}</div>
+            <div className="mono" style={{ fontSize: 32, fontWeight: 800, color: NAVY, marginTop: 6 }}>
+              {score} / {order.length}
+            </div>
+            <div style={{ fontSize: 13, color: MED, marginTop: 4 }}>
+              {score >= 10 ? "Latent Print Examiner level." : score >= 7 ? "Solid trainee accuracy." : "Worth a second pass."}
+            </div>
+          </div>
+        </Card>
+        <Card style={{ background: "#F0F6F5", borderLeft: `4px solid ${TEAL}` }}>
+          <SectionLabel>Population Frequency</SectionLabel>
+          <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.7 }}>
+            <div><strong>Loops:</strong> 60-65% of all fingerprints in the population</div>
+            <div><strong>Whorls:</strong> 30-35%</div>
+            <div><strong>Arches:</strong> ~5%</div>
+            <div style={{ marginTop: 8, fontSize: 12, color: MED, fontStyle: "italic" }}>
+              If you guessed loop on every print, you'd be right ~60% of the time. That is not a working forensic identification.
+            </div>
+          </div>
+        </Card>
+        <Card style={{ background: "linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%)", borderLeft: `4px solid ${GOLD}` }}>
+          <SectionLabel>Forensic Pearl</SectionLabel>
+          <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55, fontStyle: "italic" }}>{pearl}</div>
+        </Card>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Btn onClick={restart}>Replay</Btn>
+          <Btn primary onClick={onBack}>Back to Menu</Btn>
+        </div>
+        <AppFooter/>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+      <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+
+      <Card>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <SectionLabel>Print {round + 1} of {order.length}</SectionLabel>
+          <div className="mono" style={{ fontSize: 14, fontWeight: 800, color: TEAL_DARK }}>
+            SCORE {score}/{order.length}
+          </div>
+        </div>
+
+        {/* Dark monitor screen with the print */}
+        <div style={{
+          position: "relative",
+          background: "#0a0f10",
+          borderRadius: 10,
+          padding: "16px 16px 22px",
+          border: "1px solid #102a2a",
+          overflow: "hidden"
+        }}>
+          <div className="mono glow-pulse" style={{
+            position: "absolute", top: 8, left: 12,
+            fontSize: 10, color: "#0ABAB5", letterSpacing: 1.5
+          }}>
+            FBI-IAFIS &middot; SCAN {String(round + 1).padStart(2, "0")}
+          </div>
+          <div className="mono" style={{
+            position: "absolute", top: 8, right: 12,
+            fontSize: 10, color: "#0ABAB5", letterSpacing: 1.5,
+            opacity: 0.85
+          }}>
+            500 PPI
+          </div>
+          <div style={{
+            background: "#F4EDE0",
+            margin: "22px auto 0",
+            width: 220, height: 260,
+            borderRadius: 12,
+            boxShadow: "inset 0 0 30px rgba(0,0,0,.18)",
+            display: "flex", alignItems: "center", justifyContent: "center"
+          }} className={feedback && !feedback.correct ? "wrong-shake" : ""}>
+            <svg viewBox="0 0 200 240" width="200" height="240" key={round}>
+              {renderPattern(current.type)}
+            </svg>
+          </div>
+        </div>
+
+        <div style={{ marginTop: 14, fontSize: 13, color: NAVY, lineHeight: 1.5 }}>
+          What pattern category is this?
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8, marginTop: 10 }}>
+          {choices.map(c => {
+            const isPicked = picked === c;
+            const isCorrect = feedback && c === current.category;
+            const showRed = picked && isPicked && !feedback?.correct;
+            const showGreen = picked && (isCorrect);
+            return (
+              <button key={c} onClick={() => pick(c)}
+                style={{
+                  padding: "12px 8px",
+                  borderRadius: 10,
+                  border: showGreen ? `2px solid ${GREEN}` : showRed ? `2px solid ${RED}` : `2px solid #E0E8EE`,
+                  background: showGreen ? "#E8F8F1" : showRed ? "#FADBD8" : WHITE,
+                  color: showGreen ? "#1E6F44" : showRed ? "#7B1F18" : NAVY,
+                  fontWeight: 800, fontSize: 14,
+                  cursor: picked ? "default" : "pointer",
+                  fontFamily: "inherit",
+                  transition: "all .15s"
+                }}>
+                {c}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      {feedback && (
+        <Card className="slide-up" style={{
+          background: feedback.correct ? "#E8F8F1" : "#FADBD8",
+          borderLeft: `4px solid ${feedback.correct ? GREEN : RED}`
+        }}>
+          <SectionLabel>{feedback.correct ? "Match Confirmed" : "Reclassified"}</SectionLabel>
+          <div style={{ fontSize: 14, fontWeight: 800, color: NAVY, marginBottom: 4 }}>
+            {feedback.label}
+          </div>
+          <div style={{ fontSize: 13, color: DARK, lineHeight: 1.55 }}>
+            {feedback.detail}
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <Btn primary onClick={next}>{round + 1 >= order.length ? "See Results" : "Next Print"}</Btn>
+          </div>
+        </Card>
+      )}
+
+      <AppFooter/>
+    </div>
+  );
+}
+
+// ===== Mode 2: Minutiae Hunter =====
+// Single large fingerprint with embedded minutiae targets at known coordinates.
+const MINUTIAE = [
+  { id: "m1", type: "Ridge ending",  x: 90,  y: 110, hint: "A ridge that simply stops." },
+  { id: "m2", type: "Bifurcation",   x: 165, y: 145, hint: "A ridge that splits into two." },
+  { id: "m3", type: "Dot",           x: 230, y: 200, hint: "A tiny isolated ridge fragment." },
+  { id: "m4", type: "Lake (enclosure)", x: 270, y: 130, hint: "A ridge that splits then rejoins, forming a small loop." },
+  { id: "m5", type: "Island (short ridge)", x: 195, y: 90,  hint: "A short ridge that is longer than a dot." },
+  { id: "m6", type: "Bifurcation",   x: 130, y: 230, hint: "Another ridge fork." },
+  { id: "m7", type: "Ridge ending",  x: 320, y: 240, hint: "Edge of a ridge." },
+  { id: "m8", type: "Spur",          x: 105, y: 175, hint: "A small ridge branching off a longer one." },
+  { id: "m9", type: "Crossover",     x: 250, y: 80,  hint: "A short ridge connecting two parallel ridges." },
+  { id: "m10", type: "Bifurcation",  x: 65,  y: 240, hint: "Ridge fork near the edge." },
+];
+
+const MINUTIAE_TYPES = [
+  { name: "Ridge ending", desc: "A ridge that abruptly stops." },
+  { name: "Bifurcation", desc: "A ridge that splits into two ridges." },
+  { name: "Dot", desc: "A tiny isolated ridge, smaller than the surrounding spacing." },
+  { name: "Island", desc: "A short ridge longer than a dot but isolated." },
+  { name: "Lake", desc: "A single ridge that splits and rejoins, forming an enclosure." },
+  { name: "Spur", desc: "A small ridge branching off a longer one." },
+  { name: "Crossover", desc: "A short ridge that connects two adjacent ridges." },
+  { name: "Bridge", desc: "A short ridge connecting two parallel ridges." },
+];
+
+function bigPrintPaths() {
+  // Generate a textured large fingerprint for hunting. Loop pattern with many ridges.
+  const cx = 200, cy = 180;
+  const paths = [];
+  for (let i = 0; i < 22; i++) {
+    const r = 18 + i * 9;
+    const xOff = i * 2;
+    const startX = cx - r * 0.95 + xOff;
+    const startY = cy + r * 0.85;
+    const endX = cx + r * 0.95 + xOff;
+    const endY = cy + r * 0.85;
+    const cpY = cy - r * 1.05;
+    paths.push(
+      <path key={i}
+        d={`M ${startX} ${startY} Q ${cx + xOff * 0.6} ${cpY} ${endX} ${endY}`}
+        fill="none" stroke="#1B3A5C" strokeWidth="1.6" strokeLinecap="round" opacity="0.95"/>
+    );
+  }
+  return paths;
+}
+
+function ModeMinutiae({ onBack }) {
+  const [found, setFound] = useState([]);
+  const [showWrong, setShowWrong] = useState(null);
+  const [done, setDone] = useState(false);
+  const [pearl] = useState(randomPearl());
+  const svgRef = useRef(null);
+
+  function handleSvgClick(e) {
+    if (done) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const sx = 400 / rect.width;
+    const sy = 320 / rect.height;
+    const cx = (e.clientX - rect.left) * sx;
+    const cy = (e.clientY - rect.top) * sy;
+
+    // Check if any unfound minutia is within radius
+    const TOLERANCE = 24;
+    for (const m of MINUTIAE) {
+      if (found.includes(m.id)) continue;
+      const d = Math.sqrt((m.x - cx) ** 2 + (m.y - cy) ** 2);
+      if (d <= TOLERANCE) {
+        const next = [...found, m.id];
+        setFound(next);
+        if (next.length >= MINUTIAE.length) setDone(true);
+        return;
+      }
+    }
+    // Wrong click - show ping briefly
+    setShowWrong({ x: cx, y: cy, t: Date.now() });
+    setTimeout(() => setShowWrong(prev => (prev && prev.t === showWrong?.t) ? null : prev), 600);
+  }
+
+  // Clear stale wrong markers
+  useEffect(() => {
+    if (!showWrong) return;
+    const t = setTimeout(() => setShowWrong(null), 600);
+    return () => clearTimeout(t);
+  }, [showWrong]);
+
+  function reset() {
+    setFound([]); setShowWrong(null); setDone(false);
+  }
+
+  return (
+    <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+      <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+
+      <Card>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+          <SectionLabel>Minutiae Hunter</SectionLabel>
+          <div className="mono" style={{ fontSize: 14, fontWeight: 800, color: TEAL_DARK }}>
+            FOUND {found.length}/{MINUTIAE.length}
+          </div>
+        </div>
+        <div style={{ fontSize: 12, color: MED, lineHeight: 1.5, marginBottom: 12 }}>
+          Click each minutia (ridge ending, bifurcation, dot, lake, island, spur, crossover) you can spot on the print.
+        </div>
+
+        {/* Dark monitor screen */}
+        <div style={{
+          position: "relative",
+          background: "#0a0f10",
+          borderRadius: 10,
+          padding: "20px 16px 16px",
+          border: "1px solid #102a2a",
+          overflow: "hidden"
+        }}>
+          <div className="mono glow-pulse" style={{
+            position: "absolute", top: 8, left: 12,
+            fontSize: 10, color: "#0ABAB5", letterSpacing: 1.5
+          }}>
+            FBI LATENT &middot; ENHANCED SCAN
+          </div>
+          <div className="mono" style={{
+            position: "absolute", top: 8, right: 12,
+            fontSize: 10, color: "#0ABAB5", letterSpacing: 1.5
+          }}>
+            {found.length === MINUTIAE.length ? "MATCH READY" : "ANALYZING..."}
+          </div>
+
+          <div style={{
+            background: "#F4EDE0",
+            margin: "16px auto 0",
+            maxWidth: 480,
+            borderRadius: 10,
+            boxShadow: "inset 0 0 30px rgba(0,0,0,.18)",
+            position: "relative"
+          }}>
+            <svg
+              ref={svgRef}
+              viewBox="0 0 400 320"
+              width="100%"
+              style={{ display: "block", cursor: done ? "default" : "crosshair" }}
+              onClick={handleSvgClick}>
+              {bigPrintPaths()}
+              {/* Found markers */}
+              {MINUTIAE.filter(m => found.includes(m.id)).map(m => (
+                <g key={m.id}>
+                  <circle cx={m.x} cy={m.y} r="9" fill="none" stroke={GREEN} strokeWidth="2.2"/>
+                  <circle cx={m.x} cy={m.y} r="3" fill={GREEN}/>
+                </g>
+              ))}
+              {/* Hint markers when done - all 10 */}
+              {done && MINUTIAE.map(m => (
+                <text key={`l-${m.id}`} x={m.x + 12} y={m.y - 8}
+                  fill={NAVY} fontSize="9" fontWeight="800"
+                  style={{ fontFamily: "Courier New, monospace" }}>
+                  {m.type.split(' ')[0]}
+                </text>
+              ))}
+              {/* Wrong click ping */}
+              {showWrong && (
+                <circle cx={showWrong.x} cy={showWrong.y} r="6" fill="none" stroke={RED} strokeWidth="2"
+                  style={{ animation: "minutiaPing 0.6s ease-out forwards", transformOrigin: `${showWrong.x}px ${showWrong.y}px` }}/>
+              )}
+            </svg>
+          </div>
+
+          <div className="mono" style={{
+            marginTop: 12, textAlign: "center",
+            fontSize: 12, color: "#0ABAB5", letterSpacing: 1.5,
+            textShadow: "0 0 6px rgba(10,186,181,0.55)"
+          }}>
+            {done
+              ? `>>  ALL ${MINUTIAE.length} MINUTIAE LOCATED  <<`
+              : `>>  ${MINUTIAE.length - found.length} REMAINING  <<`}
+          </div>
+        </div>
+
+        <div style={{ marginTop: 12, display: "flex", gap: 8 }}>
+          <Btn onClick={reset}>Reset</Btn>
+          {done && <Btn primary onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}>Show Reference</Btn>}
+        </div>
+      </Card>
+
+      <Card style={{ background: "#F0F6F5", borderLeft: `4px solid ${TEAL}` }}>
+        <SectionLabel>IAFIS Threshold</SectionLabel>
+        <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.6 }}>
+          The FBI's IAFIS (Integrated Automated Fingerprint Identification System) holds <strong>over 70 million criminal prints</strong>.
+          A latent print examiner typically needs <strong className="mono">~12 matching minutiae</strong> for a court-admissible identification,
+          though some agencies require 16. There is <em>no</em> single national standard, which is part of the Daubert critique.
+        </div>
+      </Card>
+
+      {done && (
+        <Card className="slide-up">
+          <SectionLabel>The 8 Standard Minutiae Types</SectionLabel>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+            {MINUTIAE_TYPES.map(t => (
+              <div key={t.name} style={{
+                padding: 12, borderRadius: 10,
+                background: "#F8FAFC", border: "1px solid #E4E9EF"
+              }}>
+                <div style={{ fontWeight: 800, fontSize: 13, color: NAVY }}>{t.name}</div>
+                <div style={{ fontSize: 12, color: MED, marginTop: 3, lineHeight: 1.5 }}>{t.desc}</div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {done && (
+        <Card style={{ background: "linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%)", borderLeft: `4px solid ${GOLD}` }}>
+          <SectionLabel>Forensic Pearl</SectionLabel>
+          <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55, fontStyle: "italic" }}>{pearl}</div>
+        </Card>
+      )}
+
+      <AppFooter/>
+    </div>
+  );
+}
+
+// ===== Mode 3: Daubert Probability Lab =====
+function ModeDaubert({ onBack, cohort }) {
+  const [n, setN] = useState(8);
+  const [pearl] = useState(randomPearl());
+
+  // Probability that two random fingerprints share n matching minutiae by chance:
+  // P = (1/40)^n  -- the basic 1-in-40 rule taught in forensic stats.
+  const p = Math.pow(1 / 40, n);
+  const oneIn = 1 / p;
+
+  function fmt(x) {
+    if (x === Infinity || isNaN(x)) return "?";
+    if (x >= 1e15) return x.toExponential(2);
+    if (x >= 1e9) return (x / 1e9).toFixed(2) + " billion";
+    if (x >= 1e6) return (x / 1e6).toFixed(2) + " million";
+    if (x >= 1e3) return Math.round(x).toLocaleString();
+    return Math.round(x).toString();
+  }
+
+  // Comparison reference points
+  const POPULATIONS = [
+    { label: "World population", n: 8.1e9 },
+    { label: "U.S. population", n: 3.3e8 },
+    { label: "California", n: 3.9e7 },
+    { label: "Bay Area", n: 7.7e6 },
+    { label: "FBI IAFIS database", n: 1.0e8 },
+  ];
+
+  return (
+    <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+      <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+
+      {cohort === "MS" && (
+        <Card style={{ background: "#FFF8E1", borderLeft: `4px solid ${GOLD}` }}>
+          <SectionLabel>Preview Mode</SectionLabel>
+          <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55 }}>
+            Mode 3 unlocks for the High School cohort. You can explore here, but the focus for Middle School is Modes 1 and 2.
+          </div>
+        </Card>
+      )}
+
+      <Card>
+        <SectionLabel>Daubert Probability Lab</SectionLabel>
+        <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55, marginBottom: 14 }}>
+          Forensic statisticians estimate each minutia is roughly <strong className="mono">1 in 40</strong> unique.
+          So the chance of two unrelated prints sharing <span className="mono">n</span> minutiae by chance is <span className="mono">(1/40)<sup>n</sup></span>.
+          Slide to see how fast that probability collapses.
+        </div>
+
+        {/* Dark monitor for live readout */}
+        <div style={{
+          background: "#0a0f10",
+          borderRadius: 10,
+          padding: "18px 18px 14px",
+          border: "1px solid #102a2a",
+          marginBottom: 14
+        }}>
+          <div className="mono" style={{ fontSize: 10, color: "#0ABAB5", letterSpacing: 1.5, marginBottom: 8 }}>
+            CHANCE-MATCH CALCULATOR &middot; LIVE
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div>
+              <div style={{ fontSize: 10, color: "rgba(10,186,181,.6)", letterSpacing: 1.5 }}>MATCHING POINTS</div>
+              <div className="mono glow-pulse" style={{ fontSize: 36, fontWeight: 800, color: "#0ABAB5", lineHeight: 1.1 }}>
+                {String(n).padStart(2, "0")}
+              </div>
+            </div>
+            <div>
+              <div style={{ fontSize: 10, color: "rgba(10,186,181,.6)", letterSpacing: 1.5 }}>1 IN ...</div>
+              <div className="mono" style={{
+                fontSize: n >= 12 ? 22 : 28,
+                fontWeight: 800,
+                color: n >= 12 ? "#7BE3DC" : "#0ABAB5",
+                lineHeight: 1.1,
+                textShadow: "0 0 6px rgba(10,186,181,0.5)"
+              }}>
+                {fmt(oneIn)}
+              </div>
+            </div>
+          </div>
+          <div className="mono" style={{
+            marginTop: 12, paddingTop: 12,
+            borderTop: "1px dashed rgba(10,186,181,.25)",
+            fontSize: 11, color: "#0ABAB5", lineHeight: 1.55, opacity: 0.85
+          }}>
+            P(chance match) = (1/40)<sup>{n}</sup> = {p.toExponential(2)}
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: MED, marginBottom: 4 }}>
+          <span>0</span><span>10</span><span>20</span>
+        </div>
+        <input type="range" min="0" max="20" value={n} onChange={e => setN(parseInt(e.target.value))}/>
+        <div style={{ fontSize: 12, color: NAVY, marginTop: 10, lineHeight: 1.5 }}>
+          {n === 0 && "0 matches: probability of chance match is 1 (guaranteed). Useless."}
+          {n >= 1 && n < 8 && "Below typical court thresholds. A defense attorney would tear this apart on cross."}
+          {n >= 8 && n < 12 && "Approaching legal threshold. Some agencies, not all, would call this an identification."}
+          {n >= 12 && n < 16 && "At or above the common 12-point threshold. Court-admissible in many U.S. jurisdictions."}
+          {n >= 16 && "FBI's old 16-point standard. This is the threshold the FBI used to wrongly accuse Brandon Mayfield."}
+        </div>
+      </Card>
+
+      <Card>
+        <SectionLabel>Compare to Real Populations</SectionLabel>
+        <div style={{ fontSize: 12, color: MED, marginBottom: 10, lineHeight: 1.5 }}>
+          Your "1 in {fmt(oneIn)}" only beats chance once it exceeds the size of the population you are searching.
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 6 }}>
+          {POPULATIONS.map(pop => {
+            const exceeds = oneIn > pop.n;
+            return (
+              <div key={pop.label} style={{
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+                padding: "8px 12px", borderRadius: 8,
+                background: exceeds ? "#E8F8F1" : "#FADBD8",
+                border: `1px solid ${exceeds ? "#C5E8D6" : "#F1C4BF"}`
+              }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: NAVY }}>{pop.label}</span>
+                <span className="mono" style={{ fontSize: 11, fontWeight: 700, color: exceeds ? "#1E6F44" : "#7B1F18" }}>
+                  {fmt(pop.n)} {exceeds ? "✓" : "✗"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card style={{ background: "#FADBD8", borderLeft: `4px solid ${RED}` }}>
+        <SectionLabel>Brandon Mayfield Case &middot; 2004</SectionLabel>
+        <div style={{ fontSize: 13, color: DARK, lineHeight: 1.6 }}>
+          After the Madrid train bombings killed 193 people in March 2004, Spanish police shared a partial latent print
+          recovered from a bag of detonators. The FBI ran it through IAFIS and got a match: <strong>Brandon Mayfield</strong>,
+          an Oregon attorney and Muslim convert. Three FBI examiners and an independent court-appointed examiner all confirmed
+          a <strong className="mono">15-16 point match</strong>. The FBI arrested him.
+          <br/><br/>
+          Spanish police kept investigating. They matched the print to <strong>Ouhnane Daoud</strong>, an Algerian.
+          Mayfield was released and the FBI paid $2 million in damages. The case prompted a National Academy of Sciences
+          report (2009) calling for tighter forensic standards.
+        </div>
+      </Card>
+
+      <Card style={{ background: "#F0F6F5", borderLeft: `4px solid ${TEAL}` }}>
+        <SectionLabel>The Daubert Standard</SectionLabel>
+        <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.6 }}>
+          From <em>Daubert v. Merrell Dow Pharmaceuticals (1993)</em>. Federal judges decide whether scientific evidence is admissible by asking:
+          <ol style={{ marginTop: 8, paddingLeft: 22, lineHeight: 1.7 }}>
+            <li>Has the technique been <strong>tested</strong>?</li>
+            <li>Has it been <strong>peer-reviewed and published</strong>?</li>
+            <li>Does it have a <strong>known error rate</strong>?</li>
+            <li>Are there <strong>standards controlling its operation</strong>?</li>
+            <li>Is it <strong>generally accepted</strong> by the scientific community?</li>
+          </ol>
+          <div style={{ marginTop: 8, fontStyle: "italic", color: MED }}>
+            Fingerprint analysis fails #3 most clearly. The 2009 NAS report concluded latent print analysis still does not have a
+            published, agreed-upon error rate.
+          </div>
+        </div>
+      </Card>
+
+      <Card style={{ background: "linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%)", borderLeft: `4px solid ${GOLD}` }}>
+        <SectionLabel>Forensic Pearl</SectionLabel>
+        <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55, fontStyle: "italic" }}>{pearl}</div>
+      </Card>
+
+      <AppFooter/>
+    </div>
+  );
+}
+
+// ===== Mode 4: Quiz =====
+const QUIZ = [
+  {
+    q: "A fingerprint with 1 delta and ridges that loop back the way they came is called a:",
+    choices: ["Whorl", "Loop", "Arch", "Tented arch"],
+    answer: 1,
+    why: "Loops have exactly 1 delta. Whorls have 2. Arches have none."
+  },
+  {
+    q: "What percentage of the human population has loops as their most common pattern?",
+    choices: ["About 5%", "About 30%", "About 60-65%", "About 90%"],
+    answer: 2,
+    why: "Loops dominate at 60-65%. Whorls 30-35%. Arches just 5%."
+  },
+  {
+    q: "What is the Daubert standard?",
+    choices: [
+      "A required number of matching minutiae for FBI cases",
+      "A federal rule judges use to decide if scientific evidence is admissible",
+      "A type of fingerprint pattern",
+      "A computer system that scans prints"
+    ],
+    answer: 1,
+    why: "Daubert v. Merrell Dow (1993) gave federal judges a 5-factor test for scientific evidence including known error rate and peer review."
+  },
+  {
+    q: "Brandon Mayfield was wrongly arrested in 2004 because the FBI matched him to a print from:",
+    choices: ["A bank robbery in Oregon", "The Madrid train bombings", "A 9/11 hijacker", "An Oklahoma City suspect"],
+    answer: 1,
+    why: "The print was from a bag of detonators at the Madrid bombings. It actually belonged to Ouhnane Daoud, an Algerian."
+  },
+  {
+    q: "Do identical twins have identical fingerprints?",
+    choices: [
+      "Yes - they are genetically identical",
+      "Yes, but only the right hand",
+      "No - fingerprints form from random in-utero contact, not just genes",
+      "Only if they were born by C-section"
+    ],
+    answer: 2,
+    why: "Fingerprints form around week 13 in the womb. Random pressure from amniotic fluid and the womb shape make them unique even in identical twins."
+  },
+  {
+    q: "What does IAFIS stand for and what is it?",
+    choices: [
+      "International Association of Fingerprint Inspectors - a professional society",
+      "Integrated Automated Fingerprint Identification System - the FBI's print database",
+      "Inter-Agency Forensic Identity System - a state-level tool",
+      "Interpol Automated Forensic Index Service - a European database"
+    ],
+    answer: 1,
+    why: "IAFIS holds 70+ million criminal prints and 30+ million civil prints. It is the FBI's database, replaced/augmented by Next Generation Identification (NGI) starting 2014."
+  },
+  {
+    q: "About how many matching minutiae do many U.S. courts treat as the threshold for fingerprint identification?",
+    choices: ["3", "About 12", "100", "There is no number, it is whatever the analyst feels"],
+    answer: 1,
+    why: "Around 12 is common. Some agencies require 16. There is no single national standard, which is part of the Daubert critique."
+  },
+  {
+    q: "Which of the following would make a fingerprint NOT legally admissible in court?",
+    choices: [
+      "Examiner has 10 years of experience",
+      "Print was developed using superglue fumigation",
+      "Examiner cannot articulate any error rate or standardized methodology",
+      "Print came from a public crime scene"
+    ],
+    answer: 2,
+    why: "The Daubert standard requires a known error rate and standardized methodology. An examiner who cannot articulate either fails the test."
+  },
+];
+
+function ModeQuiz({ onBack }) {
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const [pearl] = useState(randomPearl());
+
+  const q = QUIZ[idx];
+
+  function pick(i) {
+    if (picked !== null) return;
+    setPicked(i);
+    if (i === q.answer) setScore(s => s + 1);
+  }
+  function next() {
+    if (idx + 1 >= QUIZ.length) setDone(true);
+    else { setIdx(idx + 1); setPicked(null); }
+  }
+  function restart() {
+    setIdx(0); setPicked(null); setScore(0); setDone(false);
+  }
+
+  if (done) {
+    return (
+      <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+        <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+        <Card>
+          <SectionLabel>Quiz Complete</SectionLabel>
+          <div style={{ textAlign: "center", padding: "10px 0 6px" }}>
+            <div style={{ fontSize: 56 }}>{score === QUIZ.length ? "🏆" : score >= 6 ? "🎯" : score >= 4 ? "👍" : "🔬"}</div>
+            <div className="mono" style={{ fontSize: 32, fontWeight: 800, color: NAVY, marginTop: 6 }}>
+              {score} / {QUIZ.length}
+            </div>
+            <div style={{ fontSize: 13, color: MED, marginTop: 4 }}>
+              {score === QUIZ.length ? "Examiner-grade. You'd survive a Daubert hearing."
+                : score >= 6 ? "Strong handle on the science."
+                : score >= 4 ? "Decent. A second pass will lock it in."
+                : "Worth replaying. The Mayfield case alone is worth re-reading."}
+            </div>
+          </div>
+        </Card>
+        <Card style={{ background: "linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%)", borderLeft: `4px solid ${GOLD}` }}>
+          <SectionLabel>Forensic Pearl</SectionLabel>
+          <div style={{ fontSize: 13, color: NAVY, lineHeight: 1.55, fontStyle: "italic" }}>{pearl}</div>
+        </Card>
+        <div style={{ display: "flex", gap: 10 }}>
+          <Btn onClick={restart}>Retry Quiz</Btn>
+          <Btn primary onClick={onBack}>Back to Menu</Btn>
+        </div>
+        <AppFooter/>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in" style={{ padding: 20, maxWidth: 720, margin: "0 auto" }}>
+      <Btn onClick={onBack} style={{ marginBottom: 14 }}>&larr; Back to Menu</Btn>
+      <Card>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+          <SectionLabel>Question {idx + 1} of {QUIZ.length}</SectionLabel>
+          <div className="mono" style={{ fontSize: 13, fontWeight: 800, color: TEAL_DARK }}>
+            SCORE {score}/{QUIZ.length}
+          </div>
+        </div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: NAVY, lineHeight: 1.5, marginBottom: 14 }}>
+          {q.q}
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 8 }}>
+          {q.choices.map((c, i) => {
+            const showCorrect = picked !== null && i === q.answer;
+            const showWrong = picked === i && i !== q.answer;
+            return (
+              <button key={i} onClick={() => pick(i)}
+                style={{
+                  textAlign: "left",
+                  padding: "12px 14px",
+                  borderRadius: 10,
+                  border: showCorrect ? `2px solid ${GREEN}` : showWrong ? `2px solid ${RED}` : `2px solid #E0E8EE`,
+                  background: showCorrect ? "#E8F8F1" : showWrong ? "#FADBD8" : WHITE,
+                  color: showCorrect ? "#1E6F44" : showWrong ? "#7B1F18" : NAVY,
+                  fontWeight: 600, fontSize: 13,
+                  cursor: picked === null ? "pointer" : "default",
+                  fontFamily: "inherit", transition: "all .15s"
+                }}>
+                {c}
+              </button>
+            );
+          })}
+        </div>
+        {picked !== null && (
+          <div className="slide-up" style={{
+            marginTop: 14,
+            padding: 12,
+            borderRadius: 10,
+            background: picked === q.answer ? "#E8F8F1" : "#FADBD8",
+            borderLeft: `4px solid ${picked === q.answer ? GREEN : RED}`,
+            fontSize: 13, color: DARK, lineHeight: 1.55
+          }}>
+            <strong style={{ color: picked === q.answer ? "#1E6F44" : "#7B1F18" }}>
+              {picked === q.answer ? "Correct. " : "Reclassified. "}
+            </strong>
+            {q.why}
+          </div>
+        )}
+        {picked !== null && (
+          <div style={{ marginTop: 12 }}>
+            <Btn primary onClick={next}>{idx + 1 >= QUIZ.length ? "See Score" : "Next Question"}</Btn>
+          </div>
+        )}
+      </Card>
+      <AppFooter/>
+    </div>
+  );
+}
+
+// ===== App shell =====
+function App() {
+  const [mode, setMode] = useState("welcome");
+  const [cohort, setCohort] = useState("MS");
+
+  return (
+    <div style={{
+      maxWidth: 760, margin: "0 auto",
+      background: WHITE, minHeight: "100vh",
+      boxShadow: "0 0 40px rgba(27,58,92,0.06)"
+    }}>
+      <AppHeader subtitle="Fingerprint Ridge Classifier"/>
+      {mode === "welcome" && <Welcome onPick={setMode} cohort={cohort} setCohort={setCohort}/>}
+      {mode === "pattern" && <ModePattern onBack={() => setMode("welcome")}/>}
+      {mode === "minutiae" && <ModeMinutiae onBack={() => setMode("welcome")}/>}
+      {mode === "daubert" && <ModeDaubert onBack={() => setMode("welcome")} cohort={cohort}/>}
+      {mode === "quiz" && <ModeQuiz onBack={() => setMode("welcome")}/>}
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

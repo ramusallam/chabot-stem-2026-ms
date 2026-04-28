@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Trace Evidence Microscope - Chabot STEM 2026</title>
+<script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:#F0F4F8;min-height:100vh;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;color:#333}
+  body{padding-bottom:40px}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pop{0%{transform:scale(.85);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+  @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.04)}}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+  @keyframes traceFlow{0%{stroke-dashoffset:60}100%{stroke-dashoffset:0}}
+  @keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+  .fade-in{animation:fadeIn .3s ease-out}
+  .slide-up{animation:slideUp .4s ease-out}
+  .pop{animation:pop .45s ease-out}
+  .shake{animation:shake .35s ease}
+  input[type=range]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:#E0E8EE;outline:none;cursor:pointer;width:100%}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#2A9D8F,#1A6B6B);cursor:pointer;box-shadow:0 2px 6px rgba(42,157,143,.3)}
+  input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#2A9D8F,#1A6B6B);cursor:pointer;border:none;box-shadow:0 2px 6px rgba(42,157,143,.3)}
+  select{font-family:inherit;font-size:14px;padding:10px 12px;border:2px solid #E4E9EF;border-radius:10px;background:#fff;color:#1B3A5C;font-weight:600;width:100%;cursor:pointer}
+  select:focus{outline:none;border-color:#2A9D8F}
+  button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useEffect,useRef,useMemo} = React;
+
+const NAVY="#1B3A5C", TEAL="#2A9D8F", TEAL_DARK="#1A6B6B",
+      GOLD="#D4A843", WHITE="#FFFFFF",
+      RED="#C0392B", GREEN="#27AE60", YELLOW="#F39C12",
+      DARK="#333", MED="#666",
+      R=14, SHADOW="0 2px 10px rgba(0,0,0,.08)";
+
+// ============ Common UI ============
+const WovenLogo=({size=20})=>(<svg viewBox="0 0 40 40" width={size} height={size} style={{flexShrink:0}}>
+  <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity=".85"/>
+  <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity=".85"/>
+  <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity=".85"/>
+  <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity=".85"/>
+</svg>);
+
+const AppHeader=({subtitle})=>(<div style={{background:"linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",padding:"12px 20px",display:"flex",alignItems:"center",gap:10,borderBottom:`3px solid ${GOLD}`}}>
+  <WovenLogo size={24}/>
+  <div style={{flex:1}}>
+    <div style={{fontSize:15,fontWeight:800,color:WHITE,letterSpacing:.3}}>Chabot STEM 2026</div>
+    <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500}}>{subtitle||"Trace Evidence Microscope"}</div>
+  </div>
+  <span style={{fontSize:20}}>🔬</span>
+</div>);
+
+const AppFooter=()=>(<div style={{textAlign:"center",padding:"14px 20px",borderTop:`3px solid ${GOLD}`,background:WHITE,fontSize:11,color:"#999",display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:24}}>
+  <WovenLogo size={14}/>
+  <span>Built by <strong style={{color:TEAL_DARK}}>Woven Learning &amp; Technology</strong></span>
+</div>);
+
+const Btn=({children,onClick,primary,style={},disabled})=>(<button onClick={onClick} disabled={disabled} style={{background:disabled?"#CCC":(primary?`linear-gradient(135deg,${TEAL},${TEAL_DARK})`:WHITE),color:primary?WHITE:NAVY,border:primary?"none":`2px solid ${TEAL}`,borderRadius:10,padding:"11px 24px",fontSize:14,fontWeight:700,cursor:disabled?"not-allowed":"pointer",transition:"all .2s",boxShadow:primary?"0 2px 8px rgba(42,157,143,.25)":SHADOW,fontFamily:"inherit",opacity:disabled?.6:1,...style}}>{children}</button>);
+
+const Card=({children,style={}})=>(<div style={{background:WHITE,borderRadius:R,padding:20,boxShadow:"0 4px 20px rgba(0,0,0,.08)",marginBottom:16,...style}}>{children}</div>);
+
+const SectionLabel=({children})=>(<div style={{fontSize:10,fontWeight:700,color:MED,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>{children}</div>);
+
+const BackBtn=({onClick})=>(<button onClick={onClick} style={{background:WHITE,color:NAVY,border:`2px solid ${TEAL}`,borderRadius:10,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",marginBottom:14,fontFamily:"inherit"}}>&larr; Back to Menu</button>);
+
+// ============ Pearls ============
+const PEARLS = [
+  "Locard's Exchange Principle (1910): every contact between two objects leaves a trace. It's the foundation of all forensic science.",
+  "Human hair under a microscope shows medulla, cortex, cuticle. Dog hair has no continuous medulla, and cat hair's medulla looks like a string of pearls. That's species-level ID.",
+  "Hair color is in the cortex. Bleached or dyed hair shows damaged cuticle within about 1 cm of the root, which dates the chemical treatment.",
+  "FBI's Trace Evidence Unit handled around 2,500 cases in 2023. Most weren't murder. Many were burglary, hit-and-run, and arson.",
+  "Hair morphology was famously misused before 2015. The FBI/DOJ review of 2,500 pre-2000 cases found that examiners overstated the match in 96% of trial testimonies. The lab now requires mtDNA confirmation.",
+  "Tempered glass shatters into small cubic chunks. Annealed window glass breaks in long sharp shards. That difference alone can tell you which window a burglar came through.",
+  "Laminated glass (windshields) holds together because of a polyvinyl butyral (PVB) layer between two glass sheets. Side windows are tempered. Glass on a suspect tells you where they entered.",
+  "Polarized light microscopy is the workhorse for fibers. Synthetic fibers like nylon and polyester are birefringent and have signature colors under crossed polars.",
+  "Polyester fibers look like smooth glass rods. Nylon often has tiny TiO2 particles ('delustrant') giving it a speckled look. That alone can distinguish two synthetic fibers that look identical to the naked eye.",
+  "SF State's Forensic Science program is the only Bay Area undergrad track where you can specialize in trace evidence. Cal State East Bay pairs Criminal Justice with a lab science minor for the same career.",
+  "A single fiber on a sweater can be matched to a car carpet only by combining shape + color + dye chemistry + manufacturer. One fiber alone is rarely enough.",
+  "Soil is trace evidence too. The mineral profile (mica, quartz, feldspar) plus pollen grains can place a body within a few miles of where it was buried.",
+];
+const randomPearl = () => PEARLS[Math.floor(Math.random()*PEARLS.length)];
+
+const PearlCallout=({pearl})=>(<div style={{background:"linear-gradient(135deg,#FFF8E1 0%,#FEF3D1 100%)",borderLeft:`4px solid ${GOLD}`,borderRadius:12,padding:"14px 16px",margin:"14px 0"}}>
+  <div style={{fontSize:10,fontWeight:800,letterSpacing:1.5,color:"#8B6914",textTransform:"uppercase",marginBottom:6}}>Trace Pearl</div>
+  <div style={{fontSize:13,lineHeight:1.55,color:NAVY,fontWeight:500}}>{pearl}</div>
+</div>);
+
+// ============ Specimens (12) ============
+// Each specimen has a renderer that takes (mag) and returns SVG content centered at (200,200) inside the 400x400 viewfield.
+const SPECIMENS = [
+  {
+    id: "hair-human",
+    name: "Human Hair (Brown)",
+    category: "hair",
+    diagnostic: "Round cross-section, scaled cuticle, continuous medulla",
+    color: "#5B3A1E",
+  },
+  {
+    id: "hair-dog",
+    name: "Dog Hair (Golden Retriever)",
+    category: "hair",
+    diagnostic: "Oval shaft, no continuous medulla, ladder-like pigment",
+    color: "#C8993D",
+  },
+  {
+    id: "hair-cat",
+    name: "Cat Hair (Domestic Shorthair)",
+    category: "hair",
+    diagnostic: "Very fine, beaded medulla like string of pearls",
+    color: "#4A3018",
+  },
+  {
+    id: "hair-dyed",
+    name: "Human Hair (Dyed Black)",
+    category: "hair",
+    diagnostic: "Damaged cuticle within 1 cm of root, even dye saturation",
+    color: "#1A1A1A",
+  },
+  {
+    id: "fiber-cotton",
+    name: "Cotton Fiber",
+    category: "fiber",
+    diagnostic: "Twisted ribbon (kidney-shaped) with collapsed lumen",
+    color: "#F5EFE0",
+  },
+  {
+    id: "fiber-wool",
+    name: "Wool Fiber",
+    category: "fiber",
+    diagnostic: "Scaled cuticle like overlapping shingles",
+    color: "#C9A875",
+  },
+  {
+    id: "fiber-polyester",
+    name: "Polyester Fiber",
+    category: "fiber",
+    diagnostic: "Smooth uniform rod, glass-like under polarized light",
+    color: "#7AA8C7",
+  },
+  {
+    id: "fiber-nylon",
+    name: "Nylon Fiber (Delustered)",
+    category: "fiber",
+    diagnostic: "Smooth rod with TiO2 particles (dark speckles)",
+    color: "#B0B5BC",
+  },
+  {
+    id: "glass-tempered",
+    name: "Glass Shard - Tempered",
+    category: "glass",
+    diagnostic: "Cubic break pattern, no sharp points",
+    color: "#A0D4D9",
+  },
+  {
+    id: "glass-annealed",
+    name: "Glass Shard - Annealed",
+    category: "glass",
+    diagnostic: "Long sharp irregular dagger shapes",
+    color: "#B0D8D9",
+  },
+  {
+    id: "glass-laminated",
+    name: "Glass Shard - Laminated",
+    category: "glass",
+    diagnostic: "Curved with PVB adhesive layer visible",
+    color: "#9CCDD1",
+  },
+  {
+    id: "soil-mica",
+    name: "Soil with Mica Flakes",
+    category: "soil",
+    diagnostic: "Reflective hexagonal mica plates among quartz grains",
+    color: "#7A5A3C",
+  },
+];
+
+// Render the specimen as SVG. Returns an SVG <g> ready to drop into the viewfield.
+function renderSpecimen(id, mag){
+  // mag: 10, 100, or 400
+  const detail = mag >= 400 ? "high" : mag >= 100 ? "med" : "low";
+  switch(id){
+    case "hair-human": return <HairHuman detail={detail}/>;
+    case "hair-dog": return <HairDog detail={detail}/>;
+    case "hair-cat": return <HairCat detail={detail}/>;
+    case "hair-dyed": return <HairDyed detail={detail}/>;
+    case "fiber-cotton": return <FiberCotton detail={detail}/>;
+    case "fiber-wool": return <FiberWool detail={detail}/>;
+    case "fiber-polyester": return <FiberPolyester detail={detail}/>;
+    case "fiber-nylon": return <FiberNylon detail={detail}/>;
+    case "glass-tempered": return <GlassTempered detail={detail}/>;
+    case "glass-annealed": return <GlassAnnealed detail={detail}/>;
+    case "glass-laminated": return <GlassLaminated detail={detail}/>;
+    case "soil-mica": return <SoilMica detail={detail}/>;
+    default: return null;
+  }
+}
+
+// ----- Hair specimens -----
+const HairHuman = ({detail}) => {
+  // Round shaft brown, with scaled cuticle visible at high mag and medulla as central dark line
+  const stroke = detail==="low" ? "#6B4A2E" : "#5B3A1E";
+  const scales = detail==="high";
+  const mid = detail!=="low";
+  return (<g>
+    {/* shaft */}
+    <rect x={50} y={170} width={300} height={60} rx={6} fill="#7A5836" />
+    {/* shading */}
+    <rect x={50} y={170} width={300} height={18} fill="#A07750" opacity=".55" />
+    <rect x={50} y={212} width={300} height={18} fill="#3E2810" opacity=".4" />
+    {/* medulla */}
+    {mid && <rect x={50} y={195} width={300} height={10} fill="#2B1A06" opacity=".7" />}
+    {/* cuticle scales (stacked V's) */}
+    {scales && Array.from({length:14}).map((_,i)=>(
+      <path key={i} d={`M${65+i*20} 170 Q${75+i*20} 178 ${85+i*20} 170`} stroke={stroke} strokeWidth={1.4} fill="none" opacity=".7"/>
+    ))}
+    {scales && Array.from({length:14}).map((_,i)=>(
+      <path key={"b"+i} d={`M${65+i*20} 230 Q${75+i*20} 222 ${85+i*20} 230`} stroke={stroke} strokeWidth={1.4} fill="none" opacity=".7"/>
+    ))}
+    {/* pigment granules at high mag */}
+    {scales && Array.from({length:30}).map((_,i)=>(
+      <circle key={"p"+i} cx={60+i*10} cy={185+(i%3)*10} r={1.4} fill="#2B1A06" opacity=".65"/>
+    ))}
+  </g>);
+};
+
+const HairDog = ({detail}) => {
+  // Oval shaft golden tan, ladder pigment, no continuous medulla
+  return (<g>
+    <ellipse cx={200} cy={200} rx={150} ry={36} fill="#C8993D"/>
+    <ellipse cx={200} cy={193} rx={150} ry={12} fill="#E8C375" opacity=".55"/>
+    <ellipse cx={200} cy={210} rx={150} ry={12} fill="#7A5A1A" opacity=".4"/>
+    {/* ladder bands of pigment */}
+    {detail!=="low" && Array.from({length:14}).map((_,i)=>(
+      <rect key={i} x={60+i*22} y={188} width={6} height={24} fill="#5B3F0F" opacity=".55"/>
+    ))}
+    {detail==="high" && Array.from({length:40}).map((_,i)=>(
+      <circle key={"d"+i} cx={60+i*7} cy={195+(i%4)*4} r={1.1} fill="#3A2807" opacity=".7"/>
+    ))}
+  </g>);
+};
+
+const HairCat = ({detail}) => {
+  // Very fine shaft with beaded (string of pearls) medulla
+  return (<g>
+    <rect x={70} y={188} width={260} height={24} rx={4} fill="#4A3018"/>
+    <rect x={70} y={188} width={260} height={8} fill="#7A5538" opacity=".5"/>
+    <rect x={70} y={204} width={260} height={8} fill="#2B1A06" opacity=".4"/>
+    {/* beaded medulla */}
+    {detail!=="low" && Array.from({length:18}).map((_,i)=>(
+      <circle key={i} cx={80+i*14} cy={200} r={detail==="high"?4.5:3} fill="#0F0904" opacity=".85"/>
+    ))}
+    {detail==="high" && Array.from({length:18}).map((_,i)=>(
+      <circle key={"l"+i} cx={80+i*14} cy={200} r={1.4} fill="#FFF6E6" opacity=".6"/>
+    ))}
+  </g>);
+};
+
+const HairDyed = ({detail}) => {
+  // Even dark dye with damaged cuticle near root (left side)
+  return (<g>
+    <rect x={50} y={170} width={300} height={60} rx={6} fill="#1A1A1A"/>
+    <rect x={50} y={170} width={300} height={14} fill="#3A3A3A" opacity=".7"/>
+    <rect x={50} y={216} width={300} height={14} fill="#000" opacity=".5"/>
+    {/* root indicator */}
+    {detail!=="low" && <text x={65} y={158} fontSize={11} fill="#999" fontFamily="monospace">root</text>}
+    {detail!=="low" && <line x1={62} y1={162} x2={62} y2={170} stroke="#999" strokeWidth={1.2}/>}
+    {/* damaged cuticle near root - cracks and lifted scales */}
+    {detail==="high" && Array.from({length:6}).map((_,i)=>(
+      <path key={i} d={`M${60+i*14} 170 Q${66+i*14} 162 ${72+i*14} 170`} stroke="#5C5C5C" strokeWidth={1.6} fill="none"/>
+    ))}
+    {detail==="high" && Array.from({length:6}).map((_,i)=>(
+      <line key={"c"+i} x1={62+i*14} y1={170} x2={62+i*14+(i%2?-3:3)} y2={185} stroke="#444" strokeWidth={1} opacity=".7"/>
+    ))}
+    {/* even dye granules across shaft */}
+    {detail==="high" && Array.from({length:30}).map((_,i)=>(
+      <circle key={"g"+i} cx={60+i*10} cy={185+(i%3)*10} r={1.2} fill="#000" opacity=".8"/>
+    ))}
+  </g>);
+};
+
+// ----- Fiber specimens -----
+const FiberCotton = ({detail}) => {
+  // Twisted kidney-shaped ribbon with collapsed lumen (twist visible at high mag)
+  return (<g>
+    {/* base ribbon */}
+    <path d="M50 200 Q120 170 200 200 T350 200 L350 220 Q280 230 200 220 T50 220 Z" fill="#F5EFE0" stroke="#C8B789" strokeWidth={1.4}/>
+    {detail!=="low" && (
+      <>
+        {/* twists shown as overlapping ribbons */}
+        <path d="M70 195 Q110 180 150 200 Q190 220 230 200 Q270 180 310 200 Q340 215 350 210" stroke="#A8946A" strokeWidth={1.6} fill="none"/>
+        <path d="M70 215 Q110 220 150 210 Q190 200 230 215 Q270 230 310 215 Q340 205 350 215" stroke="#7A6A48" strokeWidth={1.2} fill="none"/>
+      </>
+    )}
+    {detail==="high" && (
+      <>
+        {/* lumen as dashed central line */}
+        <line x1={60} y1={208} x2={345} y2={208} stroke="#5C4A28" strokeWidth={1} strokeDasharray="6 4" opacity=".7"/>
+        {/* node-like twist shadows */}
+        {Array.from({length:5}).map((_,i)=>(
+          <ellipse key={i} cx={90+i*55} cy={210} rx={12} ry={8} fill="#A8946A" opacity=".35"/>
+        ))}
+      </>
+    )}
+  </g>);
+};
+
+const FiberWool = ({detail}) => {
+  // Scaled cuticle like overlapping shingles - clearly different from cotton
+  return (<g>
+    <rect x={50} y={185} width={300} height={32} rx={6} fill="#C9A875"/>
+    <rect x={50} y={185} width={300} height={8} fill="#E5C99A" opacity=".7"/>
+    <rect x={50} y={209} width={300} height={8} fill="#7A5C2A" opacity=".5"/>
+    {/* overlapping scale shingles */}
+    {detail!=="low" && Array.from({length:18}).map((_,i)=>(
+      <path key={i} d={`M${52+i*16.5} 188 Q${60+i*16.5} 193 ${68+i*16.5} 188 L${68+i*16.5} 195 Q${60+i*16.5} 200 ${52+i*16.5} 195 Z`} fill="#A88752" stroke="#7A5C2A" strokeWidth={detail==="high"?1.3:.8} opacity=".75"/>
+    ))}
+    {detail!=="low" && Array.from({length:18}).map((_,i)=>(
+      <path key={"b"+i} d={`M${52+i*16.5} 207 Q${60+i*16.5} 212 ${68+i*16.5} 207 L${68+i*16.5} 214 Q${60+i*16.5} 219 ${52+i*16.5} 214 Z`} fill="#A88752" stroke="#7A5C2A" strokeWidth={detail==="high"?1.3:.8} opacity=".75"/>
+    ))}
+    {detail==="high" && Array.from({length:36}).map((_,i)=>(
+      <circle key={"p"+i} cx={56+i*8} cy={199+(i%2)*4} r={.9} fill="#5C4218" opacity=".5"/>
+    ))}
+  </g>);
+};
+
+const FiberPolyester = ({detail}) => {
+  // Smooth uniform glass-like rod, slight transparency
+  return (<g>
+    <rect x={50} y={188} width={300} height={28} rx={14} fill="#7AA8C7"/>
+    <rect x={50} y={188} width={300} height={8} fill="#C5DEEB" opacity=".75"/>
+    <rect x={50} y={210} width={300} height={6} fill="#3E6884" opacity=".55"/>
+    {/* highlight stripe */}
+    <rect x={60} y={193} width={280} height={2} fill="#FFFFFF" opacity=".7"/>
+    {/* under polarized light, signature interference colors at high mag */}
+    {detail==="high" && (
+      <>
+        <rect x={50} y={188} width={75} height={28} rx={14} fill="#FFD66B" opacity=".25"/>
+        <rect x={125} y={188} width={75} height={28} fill="#E65C3C" opacity=".22"/>
+        <rect x={200} y={188} width={75} height={28} fill="#7A2D4E" opacity=".22"/>
+        <rect x={275} y={188} width={75} height={28} rx={14} fill="#0ABAB5" opacity=".22"/>
+      </>
+    )}
+  </g>);
+};
+
+const FiberNylon = ({detail}) => {
+  // Smooth rod with TiO2 dark speckles (delustered)
+  return (<g>
+    <rect x={50} y={188} width={300} height={28} rx={14} fill="#B0B5BC"/>
+    <rect x={50} y={188} width={300} height={8} fill="#D8DCE0" opacity=".7"/>
+    <rect x={50} y={210} width={300} height={6} fill="#5C636B" opacity=".55"/>
+    {/* TiO2 particles - dark speckles */}
+    {detail!=="low" && Array.from({length:detail==="high"?60:24}).map((_,i)=>{
+      const x = 60 + (i*13.7)%280;
+      const y = 192 + ((i*7)%20);
+      const sz = detail==="high" ? (1+(i%3)*.5) : 1.2;
+      return <circle key={i} cx={x} cy={y} r={sz} fill="#1F2A33" opacity=".75"/>;
+    })}
+    {detail==="high" && Array.from({length:30}).map((_,i)=>(
+      <circle key={"l"+i} cx={62+i*9.5} cy={196+(i%3)*7} r={.7} fill="#FFFFFF" opacity=".6"/>
+    ))}
+  </g>);
+};
+
+// ----- Glass specimens -----
+const GlassTempered = ({detail}) => {
+  // Cubic chunks scattered - small even cubes
+  const cubes = detail==="low" ? 6 : detail==="med" ? 14 : 24;
+  const arr = useMemo(()=>Array.from({length:24}).map((_,i)=>({
+    x: 70 + (i*47)%270,
+    y: 130 + ((i*73)%140),
+    sz: 14 + ((i*11)%14),
+    rot: (i*37)%80,
+  })),[]);
+  return (<g>
+    {arr.slice(0,cubes).map((c,i)=>(
+      <g key={i} transform={`translate(${c.x} ${c.y}) rotate(${c.rot})`}>
+        <rect x={-c.sz/2} y={-c.sz/2} width={c.sz} height={c.sz} fill="#A0D4D9" stroke="#6FA5AB" strokeWidth={detail==="high"?1.4:1} opacity=".85"/>
+        <rect x={-c.sz/2} y={-c.sz/2} width={c.sz} height={c.sz/3} fill="#D8F0F2" opacity=".6"/>
+      </g>
+    ))}
+  </g>);
+};
+
+const GlassAnnealed = ({detail}) => {
+  // Long sharp dagger shards
+  const shards = [
+    "M80 230 L150 130 L165 135 L90 240 Z",
+    "M170 110 L240 200 L235 215 L160 120 Z",
+    "M250 130 L320 250 L310 260 L240 140 Z",
+    "M120 280 L210 240 L218 250 L130 290 Z",
+    "M260 280 L320 200 L330 205 L270 290 Z",
+    "M70 150 L140 270 L130 275 L60 155 Z",
+  ];
+  return (<g>
+    {shards.map((d,i)=>(
+      <g key={i}>
+        <path d={d} fill="#B0D8D9" stroke="#5A8085" strokeWidth={detail==="low"?.8:1.4} opacity=".88"/>
+        <path d={d} fill="#FFFFFF" opacity=".18"/>
+      </g>
+    ))}
+    {/* highlight glints */}
+    {detail!=="low" && Array.from({length:8}).map((_,i)=>(
+      <line key={i} x1={90+i*30} y1={180+(i%2)*40} x2={100+i*30} y2={170+(i%2)*40} stroke="#FFFFFF" strokeWidth={1.4} opacity=".7"/>
+    ))}
+  </g>);
+};
+
+const GlassLaminated = ({detail}) => {
+  // Curved fragments with central PVB layer (yellowish adhesive)
+  return (<g>
+    {/* outer glass layer 1 */}
+    <path d="M80 140 Q200 120 320 140 L320 195 Q200 185 80 195 Z" fill="#9CCDD1" stroke="#5A8085" strokeWidth={1.2} opacity=".85"/>
+    {/* PVB adhesive layer */}
+    <path d="M80 195 Q200 185 320 195 L320 210 Q200 200 80 210 Z" fill="#F5D67E" stroke="#B89930" strokeWidth={detail==="high"?1.4:.8} opacity=".75"/>
+    {/* outer glass layer 2 */}
+    <path d="M80 210 Q200 200 320 210 L320 265 Q200 280 80 265 Z" fill="#9CCDD1" stroke="#5A8085" strokeWidth={1.2} opacity=".85"/>
+    {/* spider crack pattern */}
+    {detail!=="low" && (
+      <>
+        <line x1={200} y1={140} x2={200} y2={265} stroke="#3E6064" strokeWidth={1} opacity=".55"/>
+        <line x1={140} y1={155} x2={260} y2={250} stroke="#3E6064" strokeWidth={1} opacity=".5"/>
+        <line x1={260} y1={155} x2={140} y2={250} stroke="#3E6064" strokeWidth={1} opacity=".5"/>
+        <line x1={100} y1={200} x2={300} y2={200} stroke="#3E6064" strokeWidth={1} opacity=".4"/>
+      </>
+    )}
+    {detail==="high" && <text x={130} y={206} fontSize={9} fill="#7A5510" fontFamily="monospace">PVB layer</text>}
+  </g>);
+};
+
+// ----- Soil specimen -----
+const SoilMica = ({detail}) => {
+  const grains = useMemo(()=>Array.from({length:80}).map((_,i)=>({
+    x: 60 + (i*33)%280,
+    y: 110 + ((i*61)%180),
+    r: 2 + ((i*7)%6),
+    type: i%5,
+  })),[]);
+  const micaCount = detail==="low" ? 3 : detail==="med" ? 8 : 14;
+  return (<g>
+    {grains.map((g,i)=>{
+      const colors = ["#7A5A3C","#5C4426","#A88060","#3E2818","#8C6A48"];
+      return <circle key={i} cx={g.x} cy={g.y} r={g.r} fill={colors[g.type]} opacity=".85"/>;
+    })}
+    {/* mica flakes - hexagonal reflective plates */}
+    {Array.from({length:micaCount}).map((_,i)=>{
+      const x = 80 + (i*47)%240;
+      const y = 130 + ((i*89)%150);
+      const rot = (i*23)%60;
+      return (
+        <g key={"m"+i} transform={`translate(${x} ${y}) rotate(${rot})`}>
+          <polygon points="0,-12 10,-6 10,6 0,12 -10,6 -10,-6" fill="#E8E0D0" stroke="#9C9080" strokeWidth={1} opacity=".9"/>
+          <polygon points="0,-10 8,-5 8,5 0,10 -8,5 -8,-5" fill="#FFFFFF" opacity=".55"/>
+        </g>
+      );
+    })}
+  </g>);
+};
+
+// ============ Microscope Viewfield ============
+const Viewfield = ({specimenId, mag}) => {
+  // Render a circular microscope view with crosshairs, vignette, and the specimen
+  return (
+    <div style={{position:"relative",width:"100%",maxWidth:420,margin:"0 auto"}}>
+      <svg viewBox="0 0 400 400" style={{width:"100%",display:"block",background:"#0A0F12",borderRadius:"50%",boxShadow:"0 8px 28px rgba(0,0,0,.4), inset 0 0 60px rgba(0,0,0,.6)"}}>
+        <defs>
+          <radialGradient id="vignette" cx="50%" cy="50%" r="50%">
+            <stop offset="60%" stopColor="rgba(0,0,0,0)"/>
+            <stop offset="92%" stopColor="rgba(0,0,0,.55)"/>
+            <stop offset="100%" stopColor="rgba(0,0,0,.95)"/>
+          </radialGradient>
+          <radialGradient id="lighting" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stopColor="#FFF8E0" stopOpacity=".3"/>
+            <stop offset="60%" stopColor="#FFF8E0" stopOpacity=".05"/>
+            <stop offset="100%" stopColor="#FFF8E0" stopOpacity="0"/>
+          </radialGradient>
+          <clipPath id="circle-clip">
+            <circle cx="200" cy="200" r="195"/>
+          </clipPath>
+        </defs>
+
+        {/* lit field background */}
+        <circle cx={200} cy={200} r={195} fill="#F0E8D5"/>
+        <circle cx={200} cy={200} r={195} fill="url(#lighting)"/>
+
+        {/* specimen, clipped to circle */}
+        <g clipPath="url(#circle-clip)">
+          {renderSpecimen(specimenId, mag)}
+        </g>
+
+        {/* vignette */}
+        <circle cx={200} cy={200} r={195} fill="url(#vignette)" pointerEvents="none"/>
+
+        {/* crosshairs */}
+        <line x1={200} y1={20} x2={200} y2={380} stroke="rgba(20,40,30,.55)" strokeWidth={1}/>
+        <line x1={20} y1={200} x2={380} y2={200} stroke="rgba(20,40,30,.55)" strokeWidth={1}/>
+        <circle cx={200} cy={200} r={28} stroke="rgba(20,40,30,.5)" strokeWidth={1} fill="none"/>
+        <circle cx={200} cy={200} r={4} fill="rgba(20,40,30,.7)"/>
+
+        {/* graticule ticks */}
+        {Array.from({length:9}).map((_,i)=>(
+          <line key={"hx"+i} x1={170+i*7.5} y1={199} x2={170+i*7.5} y2={201} stroke="rgba(20,40,30,.65)" strokeWidth={1}/>
+        ))}
+        {Array.from({length:9}).map((_,i)=>(
+          <line key={"hy"+i} x1={199} y1={170+i*7.5} x2={201} y2={170+i*7.5} stroke="rgba(20,40,30,.65)" strokeWidth={1}/>
+        ))}
+
+        {/* outer ring */}
+        <circle cx={200} cy={200} r={196} stroke="#1B2025" strokeWidth={6} fill="none"/>
+        <circle cx={200} cy={200} r={199} stroke="#3A4248" strokeWidth={2} fill="none"/>
+      </svg>
+
+      {/* mag readout overlay */}
+      <div style={{position:"absolute",top:10,left:14,background:"rgba(0,0,0,.7)",color:"#0ABAB5",fontFamily:"'Courier New',monospace",fontSize:12,fontWeight:800,padding:"4px 10px",borderRadius:6,letterSpacing:1,textShadow:"0 0 6px rgba(10,186,181,.6)"}}>
+        {mag}x
+      </div>
+      <div style={{position:"absolute",top:10,right:14,background:"rgba(0,0,0,.7)",color:"#0ABAB5",fontFamily:"'Courier New',monospace",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6}}>
+        LEICA DM750
+      </div>
+    </div>
+  );
+};
+
+// ============ Mode 1: Microscope View (Apply) ============
+const MicroscopeMode = ({onBack}) => {
+  const [idx, setIdx] = useState(0);
+  const [mag, setMag] = useState(100);
+  const [guess, setGuess] = useState("");
+  const [revealed, setRevealed] = useState(false);
+  const [score, setScore] = useState({correct:0, total:0});
+  const [pearl, setPearl] = useState(randomPearl());
+  const [shaking, setShaking] = useState(false);
+
+  const spec = SPECIMENS[idx];
+  const options = SPECIMENS.map(s => s.name);
+
+  const submit = () => {
+    if(!guess) return;
+    const ok = guess === spec.name;
+    setRevealed(true);
+    setScore(s => ({correct: s.correct + (ok?1:0), total: s.total + 1}));
+    if(!ok){ setShaking(true); setTimeout(()=>setShaking(false), 400); }
+    setPearl(randomPearl());
+  };
+
+  const next = () => {
+    setIdx((idx + 1) % SPECIMENS.length);
+    setGuess("");
+    setRevealed(false);
+  };
+
+  const magLabel = mag <= 20 ? "10x  - generic blob" : mag <= 200 ? "100x - features emerging" : "400x - diagnostic";
+
+  return (<div className="fade-in">
+    <BackBtn onClick={onBack}/>
+    <Card>
+      <SectionLabel>Mode 1 - Microscope View</SectionLabel>
+      <div style={{fontSize:18,fontWeight:800,color:NAVY,marginBottom:6}}>Specimen #{idx+1} of {SPECIMENS.length}</div>
+      <div style={{fontSize:13,color:MED,marginBottom:14,lineHeight:1.55}}>You're at the bench in the FBI Trace Evidence Unit. Adjust the magnification, examine the specimen, then identify it. The diagnostic features only appear at 400x.</div>
+
+      <div className={shaking?"shake":""}>
+        <Viewfield specimenId={spec.id} mag={mag}/>
+      </div>
+
+      <div style={{margin:"16px 0 6px",display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:12,color:MED,fontWeight:600}}>
+        <span>Magnification</span>
+        <span style={{color:TEAL_DARK,fontFamily:"'Courier New',monospace",fontWeight:800}}>{magLabel}</span>
+      </div>
+      <input type="range" min={10} max={400} step={10} value={mag} onChange={e=>setMag(parseInt(e.target.value))}/>
+      <div style={{display:"flex",justifyContent:"space-between",fontSize:10,color:MED,marginTop:4,fontWeight:700}}>
+        <span>10x</span><span>100x</span><span>400x</span>
+      </div>
+
+      <div style={{marginTop:16}}>
+        <SectionLabel>Identify the Specimen</SectionLabel>
+        <select value={guess} onChange={e=>setGuess(e.target.value)} disabled={revealed}>
+          <option value="">- choose -</option>
+          {options.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+      </div>
+
+      {revealed && (
+        <div className="fade-in" style={{marginTop:14,padding:"14px 16px",borderRadius:10,background:guess===spec.name?"#E8F8EE":"#FDECEA",borderLeft:`4px solid ${guess===spec.name?GREEN:RED}`}}>
+          <div style={{fontSize:13,fontWeight:800,color:guess===spec.name?GREEN:RED,marginBottom:6}}>
+            {guess===spec.name ? "Correct ID." : `Incorrect. This is ${spec.name}.`}
+          </div>
+          <div style={{fontSize:13,color:NAVY,lineHeight:1.55}}>
+            <strong>Diagnostic feature:</strong> {spec.diagnostic}
+          </div>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:10,marginTop:14,flexWrap:"wrap"}}>
+        {!revealed && <Btn primary onClick={submit} disabled={!guess}>Identify</Btn>}
+        {revealed && <Btn primary onClick={next}>Next Specimen &rarr;</Btn>}
+        <div style={{flex:1,minWidth:120,textAlign:"right",alignSelf:"center",fontSize:13,color:MED,fontWeight:700}}>
+          Score: <span style={{color:TEAL_DARK,fontWeight:800}}>{score.correct}/{score.total}</span>
+        </div>
+      </div>
+    </Card>
+
+    <PearlCallout pearl={pearl}/>
+  </div>);
+};
+
+// ============ Mode 2: Match the Suspect ============
+const CASES = [
+  {
+    id: "carpet",
+    title: "The Carpet Fiber Murder",
+    scene: "A body is found in an alley off Mission Street. Three trace items collected from the victim's jacket: a red synthetic fiber, a single human hair, and a tiny glass shard.",
+    items: [
+      {key:"a", specimenId:"fiber-nylon", label:"Red synthetic fiber (delustered)"},
+      {key:"b", specimenId:"hair-dyed", label:"Black hair, recently dyed"},
+      {key:"c", specimenId:"glass-tempered", label:"Cubic glass chunk"},
+    ],
+    suspects: [
+      {id:"s1", name:"Marcus Webb", desc:"Drives a 2018 Honda with stock blue cloth interior. Brown hair, no recent dye.", traits:["blue carpet"]},
+      {id:"s2", name:"Diana Cruz", desc:"Drives a 2021 Toyota with red nylon aftermarket carpet. Recently dyed black hair. Side window of car was broken last week.", traits:["red nylon carpet","dyed black hair","broken side window"]},
+      {id:"s3", name:"Ronnie Park", desc:"No vehicle. Owns a Persian cat. Blonde natural hair.", traits:["persian cat","blonde hair"]},
+      {id:"s4", name:"Tasha Kim", desc:"Drives a 2015 Subaru with gray carpet. Brown hair. No recent damage to vehicle.", traits:["gray carpet","brown hair"]},
+    ],
+    answer: {a:"s2", b:"s2", c:"s2"},
+    debrief: "All three traces point to Diana Cruz. The red nylon fiber matches the aftermarket carpet. The hair is freshly dyed. The cubic glass chunks are tempered side-window glass. Locard's principle says contact leaves traces in BOTH directions - check her clothing for fibers from the victim's jacket too.",
+  },
+  {
+    id: "pet",
+    title: "The Pet Hair Killer",
+    scene: "A homicide victim is recovered from a Pacifica beach. A single distinctive cat hair is found on the body, plus two fibers and a glass fragment.",
+    items: [
+      {key:"a", specimenId:"hair-cat", label:"Very fine hair, beaded medulla"},
+      {key:"b", specimenId:"fiber-wool", label:"Tan scaled wool fiber"},
+      {key:"c", specimenId:"glass-laminated", label:"Curved glass with adhesive layer"},
+    ],
+    suspects: [
+      {id:"s1", name:"Henry Chen", desc:"Owns 2 Persian cats. Tan wool peacoat. Drives a Tesla with intact windshield.", traits:["persian cats","wool peacoat"]},
+      {id:"s2", name:"Eve Martinez", desc:"No pets. Cotton-only wardrobe. Drives a delivery van.", traits:["no cats","cotton clothes"]},
+      {id:"s3", name:"Rashid Singh", desc:"Owns Persian cats. Wears a tan wool coat. Recently replaced windshield (laminated) on his Toyota.", traits:["persian cats","wool coat","new windshield"]},
+      {id:"s4", name:"Kelly Brown", desc:"Owns a Labrador. Polyester jacket. Side window damage on her sedan.", traits:["dog","polyester","tempered glass"]},
+    ],
+    answer: {a:"s3", b:"s3", c:"s3"},
+    debrief: "Singh is your suspect. The cat hair (beaded medulla, very fine) matches Persian. Tan wool with overlapping cuticle scales matches his coat. The curved laminated glass with PVB layer is windshield glass - he just replaced his. Chen has Persians and wool too, but no recent windshield work.",
+  },
+  {
+    id: "burglary",
+    title: "The Glass Window Burglary",
+    scene: "A jewelry store on Fillmore is hit. The thief left blood and three trace items on the broken display case. The question: did they come in through the windshield of a stolen car (laminated) or through the side store window (tempered)?",
+    items: [
+      {key:"a", specimenId:"glass-tempered", label:"Cubic glass chunks"},
+      {key:"b", specimenId:"fiber-cotton", label:"White twisted ribbon fiber"},
+      {key:"c", specimenId:"hair-human", label:"Brown human hair, round shaft"},
+    ],
+    suspects: [
+      {id:"s1", name:"Trevor Holt", desc:"Drove a stolen sedan, broke the windshield to enter. Polyester jacket, blonde hair.", traits:["laminated glass","polyester","blonde"]},
+      {id:"s2", name:"Marisol Vega", desc:"Came through the side window of the store. Wore a white cotton t-shirt. Brown hair, untreated.", traits:["tempered glass","cotton","brown hair"]},
+      {id:"s3", name:"Alex Park", desc:"Lookout, never entered the store. Wool sweater.", traits:["wool","no entry"]},
+      {id:"s4", name:"Jenna Ross", desc:"Distraction. Stayed in the car. Synthetic fibers only.", traits:["nylon","no entry"]},
+    ],
+    answer: {a:"s2", b:"s2", c:"s2"},
+    debrief: "The tempered glass alone tells you the entry was through the side store window, not a windshield. Cotton fiber + brown round hair both match Vega. Holt's laminated glass story doesn't match the trace. This case shows why glass type is a make-or-break trace: it tells you HOW they got in.",
+  },
+  {
+    id: "stalker",
+    title: "The Dyed Hair Stalker",
+    scene: "A stalking victim collects three trace items from her front porch and from a tampered package: a hair, a glass shard, and a fiber.",
+    items: [
+      {key:"a", specimenId:"hair-dyed", label:"Black hair, damaged cuticle near root"},
+      {key:"b", specimenId:"glass-annealed", label:"Long sharp dagger shard"},
+      {key:"c", specimenId:"fiber-polyester", label:"Smooth glass-like rod fiber"},
+    ],
+    suspects: [
+      {id:"s1", name:"Doug Reilly", desc:"Naturally brown hair, never dyed. Cotton clothing.", traits:["brown hair","cotton"]},
+      {id:"s2", name:"Whitney Cole", desc:"Dyed her hair black two weeks ago. Polyester athleisure. Smashed an annealed window in a prior incident.", traits:["dyed black","polyester","annealed glass"]},
+      {id:"s3", name:"Brett Avila", desc:"Shaved head. Wool sweaters only.", traits:["no hair","wool"]},
+      {id:"s4", name:"Lisa Yang", desc:"Long natural black hair, never dyed. Silk wardrobe.", traits:["black natural","silk"]},
+    ],
+    answer: {a:"s2", b:"s2", c:"s2"},
+    debrief: "Whitney Cole. The damaged cuticle within 1 cm of the root tells you the dye is recent (about 2 weeks based on hair growth rate of 1 cm/month). The long annealed dagger shards match a residential window. The polyester rod matches her athleisure. Hair age estimation from cuticle damage is one of the most useful trace techniques.",
+  },
+];
+
+const SuspectMatchMode = ({onBack}) => {
+  const [caseIdx, setCaseIdx] = useState(0);
+  const [picks, setPicks] = useState({});
+  const [submitted, setSubmitted] = useState(false);
+  const [pearl, setPearl] = useState(randomPearl());
+  const [examining, setExamining] = useState(null); // item key
+  const [examMag, setExamMag] = useState(400);
+
+  const c = CASES[caseIdx];
+
+  const pickedAll = c.items.every(it => picks[it.key]);
+  const score = c.items.filter(it => picks[it.key] === c.answer[it.key]).length;
+
+  const submit = () => {
+    setSubmitted(true);
+    setPearl(randomPearl());
+  };
+  const reset = () => {
+    setPicks({}); setSubmitted(false); setExamining(null);
+  };
+  const nextCase = () => {
+    setCaseIdx((caseIdx+1) % CASES.length);
+    reset();
+  };
+
+  return (<div className="fade-in">
+    <BackBtn onClick={onBack}/>
+    <Card>
+      <SectionLabel>Mode 2 - Match the Suspect</SectionLabel>
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
+        {CASES.map((cc,i) => (
+          <button key={cc.id} onClick={()=>{setCaseIdx(i); reset();}} style={{
+            padding:"7px 12px",borderRadius:8,fontSize:12,fontWeight:700,
+            border:`2px solid ${i===caseIdx?TEAL_DARK:"#E4E9EF"}`,
+            background:i===caseIdx?`linear-gradient(135deg,${TEAL},${TEAL_DARK})`:WHITE,
+            color:i===caseIdx?WHITE:NAVY,cursor:"pointer",fontFamily:"inherit"
+          }}>Case {i+1}</button>
+        ))}
+      </div>
+      <div style={{fontSize:18,fontWeight:800,color:NAVY,marginBottom:8}}>{c.title}</div>
+      <div style={{padding:"12px 14px",background:"linear-gradient(135deg,#FFF8E1 0%,#FEF3D1 100%)",borderLeft:`4px solid ${GOLD}`,borderRadius:10,fontSize:13,lineHeight:1.55,color:NAVY,marginBottom:14}}>
+        <div style={{fontSize:10,fontWeight:800,letterSpacing:1.3,color:"#8B6914",textTransform:"uppercase",marginBottom:6}}>Crime Scene</div>
+        {c.scene}
+      </div>
+
+      <SectionLabel>Trace Evidence Collected</SectionLabel>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:14}}>
+        {c.items.map(it => (
+          <button key={it.key} onClick={()=>setExamining(examining===it.key?null:it.key)} style={{
+            padding:12,borderRadius:10,
+            border:`2px solid ${examining===it.key?TEAL_DARK:"#E4E9EF"}`,
+            background:examining===it.key?"#E8F5F2":WHITE,
+            color:NAVY,fontSize:12,fontWeight:700,cursor:"pointer",textAlign:"left",fontFamily:"inherit",lineHeight:1.4
+          }}>
+            <div style={{fontSize:10,color:MED,marginBottom:4}}>Item {it.key.toUpperCase()}</div>
+            {it.label}
+            <div style={{fontSize:10,color:TEAL_DARK,marginTop:4,fontWeight:600}}>{examining===it.key?"hide scope":"examine scope"}</div>
+          </button>
+        ))}
+      </div>
+
+      {examining && (
+        <div className="fade-in" style={{marginBottom:14}}>
+          <Viewfield specimenId={c.items.find(it=>it.key===examining).specimenId} mag={examMag}/>
+          <div style={{margin:"10px 0 4px",display:"flex",justifyContent:"space-between",fontSize:11,color:MED,fontWeight:700}}>
+            <span>Magnification</span>
+            <span style={{color:TEAL_DARK,fontFamily:"'Courier New',monospace"}}>{examMag}x</span>
+          </div>
+          <input type="range" min={10} max={400} step={10} value={examMag} onChange={e=>setExamMag(parseInt(e.target.value))}/>
+        </div>
+      )}
+
+      <SectionLabel>Match Each Trace to a Suspect</SectionLabel>
+      <div style={{display:"grid",gap:10,marginBottom:14}}>
+        {c.items.map(it => (
+          <div key={it.key} style={{padding:12,background:"#F7FAFC",borderRadius:10,border:"1px solid #E4E9EF"}}>
+            <div style={{fontSize:12,fontWeight:700,color:NAVY,marginBottom:8}}>Item {it.key.toUpperCase()}: {it.label}</div>
+            <select value={picks[it.key]||""} onChange={e=>setPicks({...picks,[it.key]:e.target.value})} disabled={submitted}>
+              <option value="">- which suspect? -</option>
+              {c.suspects.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+            </select>
+            {submitted && (
+              <div style={{marginTop:6,fontSize:12,fontWeight:700,color:picks[it.key]===c.answer[it.key]?GREEN:RED}}>
+                {picks[it.key]===c.answer[it.key] ? "Match" : `Should be ${c.suspects.find(s=>s.id===c.answer[it.key]).name}`}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <SectionLabel>Suspect Profiles</SectionLabel>
+      <div style={{display:"grid",gap:8,marginBottom:14}}>
+        {c.suspects.map(s => (
+          <div key={s.id} style={{padding:"10px 12px",background:WHITE,border:"1px solid #E4E9EF",borderRadius:8,fontSize:12,lineHeight:1.5,color:NAVY}}>
+            <strong style={{color:TEAL_DARK}}>{s.name}</strong> - {s.desc}
+          </div>
+        ))}
+      </div>
+
+      {submitted && (
+        <div className="fade-in" style={{padding:"14px 16px",borderRadius:10,background:score===c.items.length?"#E8F8EE":"#FFF6E5",borderLeft:`4px solid ${score===c.items.length?GREEN:YELLOW}`,marginBottom:12}}>
+          <div style={{fontSize:14,fontWeight:800,color:score===c.items.length?GREEN:"#8B6914",marginBottom:6}}>
+            Case Result: {score} / {c.items.length} traces matched
+          </div>
+          <div style={{fontSize:13,color:NAVY,lineHeight:1.55}}>{c.debrief}</div>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
+        {!submitted && <Btn primary onClick={submit} disabled={!pickedAll}>Submit Matches</Btn>}
+        {submitted && <Btn primary onClick={nextCase}>Next Case &rarr;</Btn>}
+        <Btn onClick={reset}>Reset Case</Btn>
+      </div>
+    </Card>
+
+    <PearlCallout pearl={pearl}/>
+  </div>);
+};
+
+// ============ Mode 3: Locard's Exchange Principle ============
+const LocardMode = ({onBack}) => {
+  const [interaction, setInteraction] = useState("handshake");
+  const [playing, setPlaying] = useState(false);
+  const [tick, setTick] = useState(0);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if(playing){
+      timerRef.current = setInterval(()=>{
+        setTick(t => {
+          if(t >= 100){ setPlaying(false); return 100; }
+          return t + 4;
+        });
+      }, 60);
+    }
+    return () => { if(timerRef.current) clearInterval(timerRef.current); };
+  }, [playing]);
+
+  const start = () => { setTick(0); setPlaying(true); };
+  const reset = () => { setTick(0); setPlaying(false); };
+
+  // For each interaction, particle paths from A->B and B->A
+  const interactions = {
+    handshake: {
+      label: "Handshake",
+      desc: "A brief 2-second contact. Skin oil, sweat, microscopic skin cells, hair, fibers from sleeves.",
+      traces: [
+        {from:"A", to:"B", color:"#5B3A1E", label:"hair from A"},
+        {from:"A", to:"B", color:"#7AA8C7", label:"polyester from sleeve A"},
+        {from:"B", to:"A", color:"#C8993D", label:"dog hair from B's coat"},
+        {from:"B", to:"A", color:"#F5EFE0", label:"cotton fiber from B"},
+      ],
+    },
+    hug: {
+      label: "Hug",
+      desc: "10+ seconds of full-body contact with high pressure. Hundreds of fibers exchange.",
+      traces: [
+        {from:"A", to:"B", color:"#5B3A1E", label:"hair from A"},
+        {from:"A", to:"B", color:"#7AA8C7", label:"polyester sweater A"},
+        {from:"A", to:"B", color:"#C9A875", label:"wool scarf A"},
+        {from:"A", to:"B", color:"#F5EFE0", label:"cotton from A's shirt"},
+        {from:"B", to:"A", color:"#C8993D", label:"dog hair B"},
+        {from:"B", to:"A", color:"#1A1A1A", label:"dyed hair B"},
+        {from:"B", to:"A", color:"#A0D4D9", label:"glitter (glass) from B"},
+        {from:"B", to:"A", color:"#7A5A3C", label:"soil from B's shoes"},
+      ],
+    },
+    fight: {
+      label: "Fight / Struggle",
+      desc: "High-pressure violent contact. Hair pulled out by the root (with DNA), buttons broken off, blood and skin under fingernails. The motherlode of trace evidence.",
+      traces: [
+        {from:"A", to:"B", color:"#5B3A1E", label:"hair (rooted) from A"},
+        {from:"A", to:"B", color:"#5B3A1E", label:"hair from A"},
+        {from:"A", to:"B", color:"#C0392B", label:"blood drop A"},
+        {from:"A", to:"B", color:"#7AA8C7", label:"shirt fiber A"},
+        {from:"A", to:"B", color:"#1F2A33", label:"button A"},
+        {from:"B", to:"A", color:"#C8993D", label:"dog hair B"},
+        {from:"B", to:"A", color:"#C9A875", label:"wool fiber B"},
+        {from:"B", to:"A", color:"#C0392B", label:"skin cells under nail B"},
+        {from:"B", to:"A", color:"#7A5A3C", label:"dirt from B's boot"},
+      ],
+    },
+  };
+
+  const current = interactions[interaction];
+  const progress = tick / 100;
+
+  return (<div className="fade-in">
+    <BackBtn onClick={onBack}/>
+    <Card>
+      <SectionLabel>Mode 3 - Locard's Exchange Principle</SectionLabel>
+      <div style={{padding:"12px 14px",background:"linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",color:WHITE,borderRadius:12,marginBottom:14}}>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:GOLD,textTransform:"uppercase",marginBottom:6}}>1910 - Edmond Locard, Lyon, France</div>
+        <div style={{fontSize:14,fontWeight:600,lineHeight:1.55,fontStyle:"italic"}}>"Every contact leaves a trace."</div>
+        <div style={{fontSize:12,opacity:.9,marginTop:8,lineHeight:1.55}}>Locard ran the world's first forensic crime lab out of two attic rooms at the Lyon courthouse. His principle is the philosophical bedrock of forensic science: when two objects come into contact, material transfers in BOTH directions. The evidence may be too small to see, but it's there.</div>
+      </div>
+
+      <SectionLabel>Pick an Interaction</SectionLabel>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:14}}>
+        {Object.keys(interactions).map(k => (
+          <button key={k} onClick={()=>{setInteraction(k); reset();}} style={{
+            padding:"10px 6px",borderRadius:10,
+            border:`2px solid ${k===interaction?TEAL_DARK:"#E4E9EF"}`,
+            background:k===interaction?`linear-gradient(135deg,${TEAL},${TEAL_DARK})`:WHITE,
+            color:k===interaction?WHITE:NAVY,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"
+          }}>{interactions[k].label}</button>
+        ))}
+      </div>
+
+      {/* Animation stage */}
+      <div style={{position:"relative",background:"#F0F4F8",borderRadius:12,padding:20,minHeight:280,overflow:"hidden",border:"1px solid #E4E9EF"}}>
+        <svg viewBox="0 0 400 240" style={{width:"100%",display:"block"}}>
+          {/* Person A */}
+          <g transform="translate(80,120)">
+            <circle cx={0} cy={-30} r={20} fill="#F5D5B0" stroke="#1B3A5C" strokeWidth={1.5}/>
+            <rect x={-22} y={-10} width={44} height={50} rx={6} fill="#7AA8C7" stroke="#1B3A5C" strokeWidth={1.5}/>
+            <rect x={-22} y={-10} width={44} height={12} fill="#5B8AA7" opacity=".5"/>
+            <text x={0} y={70} textAnchor="middle" fontSize={12} fontWeight={800} fill={NAVY}>Person A</text>
+          </g>
+          {/* Person B */}
+          <g transform="translate(320,120)">
+            <circle cx={0} cy={-30} r={20} fill="#F5D5B0" stroke="#1B3A5C" strokeWidth={1.5}/>
+            <rect x={-22} y={-10} width={44} height={50} rx={6} fill="#C9A875" stroke="#1B3A5C" strokeWidth={1.5}/>
+            <rect x={-22} y={-10} width={44} height={12} fill="#9C7E54" opacity=".5"/>
+            <text x={0} y={70} textAnchor="middle" fontSize={12} fontWeight={800} fill={NAVY}>Person B</text>
+          </g>
+
+          {/* contact zone */}
+          {progress > 0.05 && progress < 0.6 && (
+            <circle cx={200} cy={120} r={20+progress*40} fill={GOLD} opacity={0.4*(1-progress)}/>
+          )}
+
+          {/* particles - bidirectional */}
+          {playing || tick>0 ? current.traces.map((t,i) => {
+            const startX = t.from==="A" ? 100 : 300;
+            const endX = t.to==="A" ? 100 : 300;
+            const offset = (i*0.07) % 0.5;
+            const localT = Math.max(0, Math.min(1, (progress - offset) * 2));
+            const x = startX + (endX-startX) * localT;
+            const arc = Math.sin(localT * Math.PI) * 35;
+            const y = 110 - arc + (i%3)*4;
+            const opacity = localT > 0 && localT < 1 ? 1 : (localT >= 1 ? 0.85 : 0);
+            return (
+              <g key={i} opacity={opacity}>
+                <circle cx={x} cy={y} r={3.2} fill={t.color} stroke="#1B3A5C" strokeWidth={.5}/>
+              </g>
+            );
+          }) : null}
+        </svg>
+      </div>
+
+      <div style={{padding:"12px 14px",background:"#F0F6F5",borderLeft:`3px solid ${TEAL}`,borderRadius:8,fontSize:13,lineHeight:1.55,color:NAVY,marginTop:12}}>
+        <strong>{current.label}:</strong> {current.desc}
+      </div>
+
+      {progress >= 1 && (
+        <div className="fade-in" style={{marginTop:12,padding:"14px 16px",background:"#E8F8EE",borderLeft:`4px solid ${GREEN}`,borderRadius:10}}>
+          <div style={{fontSize:12,fontWeight:800,color:GREEN,marginBottom:8,textTransform:"uppercase",letterSpacing:1}}>Trace Inventory</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,fontSize:12,color:NAVY}}>
+            <div>
+              <div style={{fontWeight:700,color:TEAL_DARK,marginBottom:4}}>A &rarr; B</div>
+              {current.traces.filter(t=>t.from==="A").map((t,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                  <span style={{width:10,height:10,borderRadius:"50%",background:t.color,border:"1px solid #888",display:"inline-block"}}/>
+                  {t.label}
+                </div>
+              ))}
+            </div>
+            <div>
+              <div style={{fontWeight:700,color:TEAL_DARK,marginBottom:4}}>B &rarr; A</div>
+              {current.traces.filter(t=>t.from==="B").map((t,i)=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:6,marginBottom:3}}>
+                  <span style={{width:10,height:10,borderRadius:"50%",background:t.color,border:"1px solid #888",display:"inline-block"}}/>
+                  {t.label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:10,marginTop:14,flexWrap:"wrap"}}>
+        <Btn primary onClick={start} disabled={playing}>{playing?"Tracing...":"Start Contact"}</Btn>
+        <Btn onClick={reset}>Reset</Btn>
+      </div>
+    </Card>
+
+    <PearlCallout pearl={"Locard's Exchange Principle (1910): every contact between two objects leaves a trace. It's the foundation of all forensic science."}/>
+  </div>);
+};
+
+// ============ Mode 4: Quiz ============
+const QUIZ = [
+  {
+    q: "Under a microscope, what's the most reliable way to tell human hair from dog hair?",
+    options: [
+      "Color of the hair",
+      "Length of the strand",
+      "Medulla pattern (continuous in humans, fragmented or absent in dogs)",
+      "Whether it has a root attached",
+    ],
+    correct: 2,
+    explain: "The medulla is the central core of the hair shaft. Humans have a thin continuous (or absent) medulla. Dogs have a thick fragmented medulla. Cats have a beaded 'string of pearls' medulla. Color and length tell you nothing about species.",
+  },
+  {
+    q: "An FBI/DOJ review found that hair morphology testimony was overstated in roughly what percentage of trial cases reviewed?",
+    options: ["10%", "50%", "75%", "96%"],
+    correct: 3,
+    explain: "The 2015 review of pre-2000 FBI hair cases found 96% of trial testimony contained errors that overstated the strength of microscopic hair matches. This is why mtDNA confirmation is now required - microscopy alone cannot uniquely identify a person.",
+  },
+  {
+    q: "Hair grows about 1 cm per month. A black-dyed hair shows damaged cuticle for the first 1.5 cm from the root. About how long ago was the dye applied?",
+    options: ["1-2 days ago", "About 6 weeks ago", "About 6 months ago", "Over a year ago"],
+    correct: 1,
+    explain: "If 1.5 cm of damaged cuticle has emerged from the scalp at 1 cm/month, the dye was applied roughly 6 weeks ago. This kind of timeline can place a suspect in or out of a window of opportunity.",
+  },
+  {
+    q: "A burglar leaves glass at the scene. The shards are CUBIC, with no sharp dagger points. Which window did they go through?",
+    options: [
+      "An annealed residential window",
+      "A tempered automotive side window or storefront",
+      "A laminated automotive windshield",
+      "Bulletproof glass",
+    ],
+    correct: 1,
+    explain: "Tempered glass shatters into small cubes (designed to prevent injury). Annealed glass breaks into long sharp daggers. Laminated glass holds together because of a PVB plastic layer. Cubic chunks = tempered = side window or storefront.",
+  },
+  {
+    q: "Polyester and nylon both look like smooth glass rods at low magnification. What's the easiest way to tell them apart?",
+    options: [
+      "Polyester is white, nylon is yellow",
+      "Polyester floats, nylon sinks",
+      "Nylon often has TiO2 delustrant particles (dark speckles); polyester is uniform",
+      "You can't - they look identical",
+    ],
+    correct: 2,
+    explain: "Many nylon fibers are 'delustered' with titanium dioxide particles, giving them a speckled look under high magnification. Polyester is generally uniform. Polarized light microscopy is the gold standard - both fibers show signature interference colors that differ.",
+  },
+  {
+    q: "Locard's Exchange Principle (1910) states:",
+    options: [
+      "Every crime can be solved with enough evidence",
+      "Every contact between two objects leaves a trace",
+      "DNA never lies",
+      "Fingerprints are unique to each individual",
+    ],
+    correct: 1,
+    explain: "Edmond Locard, working in Lyon, France in 1910, established that material transfers in BOTH directions whenever two objects come into contact. This is the philosophical foundation of all forensic science - the suspect carries something away AND leaves something behind.",
+  },
+  {
+    q: "When would you choose Scanning Electron Microscopy (SEM) over Polarized Light Microscopy (PLM) for trace evidence?",
+    options: [
+      "Always - SEM is just better",
+      "When you need to see fiber types and birefringence",
+      "When you need elemental composition (e.g., gunshot residue, paint chip layers, glass refractive index)",
+      "Never - PLM is always sufficient",
+    ],
+    correct: 2,
+    explain: "PLM is the workhorse for fibers because it shows birefringence and characteristic interference colors. SEM (with Energy Dispersive X-ray) is the choice when you need elemental composition - gunshot residue (Pb/Sb/Ba), paint chip layers, or trace metals on glass. They're complementary, not competing.",
+  },
+  {
+    q: "Why has 'race-based' hair morphology classification been controversial in forensic science?",
+    options: [
+      "It's too expensive to perform",
+      "Hair characteristics overlap massively between groups, and 'race' is a social rather than biological category - examiners overstated certainty in court",
+      "It requires DNA analysis",
+      "It only works on dyed hair",
+    ],
+    correct: 1,
+    explain: "While general hair morphology (cross-section shape, pigment distribution) does vary on average across ancestral populations, the variation WITHIN any group is huge and overlaps with other groups. Past testimony often presented this as a definitive ID, which the National Academy of Sciences and the 2015 FBI review explicitly criticized. Most labs no longer testify to ancestry from hair alone.",
+  },
+];
+
+const QuizMode = ({onBack}) => {
+  const [idx, setIdx] = useState(0);
+  const [picked, setPicked] = useState(null);
+  const [revealed, setRevealed] = useState(false);
+  const [score, setScore] = useState(0);
+  const [done, setDone] = useState(false);
+  const [pearl, setPearl] = useState(randomPearl());
+
+  const q = QUIZ[idx];
+
+  const submit = () => {
+    if(picked === null) return;
+    setRevealed(true);
+    if(picked === q.correct) setScore(s => s+1);
+  };
+
+  const next = () => {
+    if(idx+1 >= QUIZ.length){
+      setDone(true);
+      setPearl(randomPearl());
+    } else {
+      setIdx(idx+1);
+      setPicked(null);
+      setRevealed(false);
+    }
+  };
+
+  const retry = () => {
+    setIdx(0); setPicked(null); setRevealed(false); setScore(0); setDone(false);
+  };
+
+  if(done){
+    const pct = Math.round((score/QUIZ.length)*100);
+    return (<div className="fade-in">
+      <BackBtn onClick={onBack}/>
+      <Card style={{textAlign:"center",background:"linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",color:WHITE}}>
+        <div style={{fontSize:11,fontWeight:800,letterSpacing:2,color:GOLD,textTransform:"uppercase",marginBottom:8}}>Trace Examiner Score</div>
+        <div style={{fontSize:48,fontWeight:800,marginBottom:6,fontFamily:"'Courier New',monospace",color:"#0ABAB5",textShadow:"0 0 12px rgba(10,186,181,.55)"}}>{score}/{QUIZ.length}</div>
+        <div style={{fontSize:14,opacity:.9,marginBottom:12}}>{pct}% correct</div>
+        <div style={{fontSize:13,lineHeight:1.55,marginBottom:14,padding:"12px 14px",background:"rgba(255,255,255,.12)",borderRadius:10,textAlign:"left"}}>
+          {pct >= 87 ? "Examiner-grade. You'd pass intake at the FBI Trace Evidence Unit." :
+           pct >= 62 ? "Solid foundation. SF State Forensic Science would build on this fast." :
+           "Good first pass. Trace evidence rewards repetition - hundreds of hours under the scope before it becomes intuition."}
+        </div>
+        <div style={{padding:"12px 14px",background:"rgba(255,255,255,.12)",borderRadius:10,fontSize:12,lineHeight:1.55,textAlign:"left"}}>
+          <strong style={{color:GOLD}}>Bay Area pathways:</strong> SF State BS Forensic Science (Biology track or Chemistry track), Cal State East Bay Criminal Justice + lab science minor, UC Davis MS Forensic Science. The FBI Lab in Quantico hires from these programs.
+        </div>
+        <div style={{marginTop:14}}>
+          <Btn onClick={retry} style={{background:WHITE,color:NAVY}}>Retry Quiz</Btn>
+        </div>
+      </Card>
+      <PearlCallout pearl={pearl}/>
+    </div>);
+  }
+
+  return (<div className="fade-in">
+    <BackBtn onClick={onBack}/>
+    <Card>
+      <SectionLabel>Mode 4 - Quiz - Question {idx+1} of {QUIZ.length}</SectionLabel>
+      <div style={{display:"flex",gap:4,marginBottom:14}}>
+        {QUIZ.map((_,i)=>(
+          <div key={i} style={{flex:1,height:5,borderRadius:3,background:i<idx?TEAL_DARK:i===idx?TEAL:"#E4E9EF"}}/>
+        ))}
+      </div>
+
+      <div style={{fontSize:16,fontWeight:700,color:NAVY,lineHeight:1.5,marginBottom:14}}>{q.q}</div>
+
+      <div style={{display:"grid",gap:8,marginBottom:14}}>
+        {q.options.map((opt,i) => {
+          const isPicked = picked === i;
+          const isCorrect = i === q.correct;
+          let bg = WHITE, color = NAVY, border = "#E4E9EF";
+          if(revealed){
+            if(isCorrect){ bg = "#E8F8EE"; color = GREEN; border = GREEN; }
+            else if(isPicked){ bg = "#FDECEA"; color = RED; border = RED; }
+          } else if(isPicked){
+            bg = "#E8F5F2"; border = TEAL_DARK;
+          }
+          return (
+            <button key={i} onClick={()=>!revealed && setPicked(i)} disabled={revealed} style={{
+              padding:"12px 14px",borderRadius:10,border:`2px solid ${border}`,background:bg,color,
+              fontSize:13,fontWeight:600,textAlign:"left",cursor:revealed?"default":"pointer",
+              fontFamily:"inherit",lineHeight:1.5,transition:"all .2s"
+            }}>
+              <span style={{display:"inline-block",width:22,height:22,borderRadius:"50%",background:isPicked?TEAL_DARK:"#F0F4F8",color:isPicked?WHITE:MED,fontSize:11,fontWeight:800,textAlign:"center",lineHeight:"22px",marginRight:10}}>{String.fromCharCode(65+i)}</span>
+              {opt}
+            </button>
+          );
+        })}
+      </div>
+
+      {revealed && (
+        <div className="fade-in" style={{padding:"12px 14px",background:"#F0F6F5",borderLeft:`3px solid ${TEAL}`,borderRadius:8,fontSize:13,lineHeight:1.55,color:NAVY,marginBottom:12}}>
+          <strong style={{color:TEAL_DARK}}>Why:</strong> {q.explain}
+        </div>
+      )}
+
+      <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+        {!revealed && <Btn primary onClick={submit} disabled={picked===null}>Submit</Btn>}
+        {revealed && <Btn primary onClick={next}>{idx+1>=QUIZ.length?"See Results":"Next Question"} &rarr;</Btn>}
+        <div style={{flex:1,minWidth:80,textAlign:"right",fontSize:13,color:MED,fontWeight:700}}>
+          Score: <span style={{color:TEAL_DARK,fontWeight:800}}>{score}</span>
+        </div>
+      </div>
+    </Card>
+  </div>);
+};
+
+// ============ Welcome Screen ============
+const Welcome = ({onPick}) => (
+  <div className="slide-up">
+    <Card style={{textAlign:"center",background:"linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",color:WHITE,padding:"32px 22px"}}>
+      <div style={{fontSize:64,marginBottom:8}}>🔬</div>
+      <div style={{fontSize:26,fontWeight:800,marginBottom:8,letterSpacing:.3}}>Trace Evidence Microscope</div>
+      <div style={{fontSize:13,lineHeight:1.6,maxWidth:440,margin:"0 auto",opacity:.92}}>
+        Sit at the bench of a Forensic Trace Evidence Examiner. Identify hair, fibers, glass, and soil under the scope. Match traces to suspects. Watch Locard's Exchange Principle in action.
+      </div>
+      <div style={{fontSize:11,fontWeight:800,letterSpacing:1.5,color:GOLD,marginTop:14,textTransform:"uppercase"}}>Day 3 - Trace Evidence Analysis</div>
+    </Card>
+
+    <SectionLabel>Bay Area Pathways</SectionLabel>
+    <Card style={{padding:14}}>
+      <div style={{fontSize:12,lineHeight:1.6,color:NAVY}}>
+        <strong style={{color:TEAL_DARK}}>SF State Forensic Science</strong> - the only Bay Area undergrad program with a trace evidence track.<br/>
+        <strong style={{color:TEAL_DARK}}>Cal State East Bay</strong> - Criminal Justice major + lab science minor feeds into FBI Lab and SFPD crime lab.<br/>
+        <strong style={{color:TEAL_DARK}}>UC Davis MS Forensic Science</strong> - graduate path, often required for federal lab work.
+      </div>
+    </Card>
+
+    <SectionLabel>Choose a Mode</SectionLabel>
+    {[
+      {id:"micro", title:"1. Microscope View", desc:"Examine 12 specimens at 10x / 100x / 400x. Identify each one.", emoji:"🔬"},
+      {id:"match", title:"2. Match the Suspect", desc:"4 cases. Use trace evidence to figure out who did it.", emoji:"🕵️"},
+      {id:"locard", title:"3. Locard's Principle", desc:"See bidirectional trace transfer in handshake / hug / fight.", emoji:"🤝"},
+      {id:"quiz", title:"4. Quiz", desc:"8 questions on hair, fibers, glass, Locard, SEM vs PLM.", emoji:"📋"},
+    ].map(m => (
+      <div key={m.id} onClick={()=>onPick(m.id)} style={{
+        background:WHITE,borderRadius:R,padding:16,marginBottom:10,cursor:"pointer",
+        boxShadow:"0 2px 10px rgba(0,0,0,.06)",border:"2px solid transparent",
+        transition:"all .2s",display:"flex",alignItems:"center",gap:14
+      }} onMouseEnter={e=>{e.currentTarget.style.borderColor=TEAL;e.currentTarget.style.transform="translateY(-2px)";}}
+         onMouseLeave={e=>{e.currentTarget.style.borderColor="transparent";e.currentTarget.style.transform="translateY(0)";}}>
+        <div style={{fontSize:28,flexShrink:0}}>{m.emoji}</div>
+        <div style={{flex:1}}>
+          <div style={{fontSize:14,fontWeight:800,color:NAVY,marginBottom:3}}>{m.title}</div>
+          <div style={{fontSize:12,color:MED,lineHeight:1.5}}>{m.desc}</div>
+        </div>
+        <div style={{fontSize:18,color:TEAL,fontWeight:800}}>&rarr;</div>
+      </div>
+    ))}
+  </div>
+);
+
+// ============ App Root ============
+const App = () => {
+  const [mode, setMode] = useState(null);
+
+  const back = () => setMode(null);
+
+  return (
+    <div style={{maxWidth:720,margin:"0 auto",background:WHITE,minHeight:"100vh",boxShadow:"0 0 40px rgba(27,58,92,.06)"}}>
+      <AppHeader subtitle="Trace Evidence Microscope"/>
+      <div style={{padding:"16px 18px"}}>
+        {mode === null && <Welcome onPick={setMode}/>}
+        {mode === "micro" && <MicroscopeMode onBack={back}/>}
+        {mode === "match" && <SuspectMatchMode onBack={back}/>}
+        {mode === "locard" && <LocardMode onBack={back}/>}
+        {mode === "quiz" && <QuizMode onBack={back}/>}
+      </div>
+      <AppFooter/>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>

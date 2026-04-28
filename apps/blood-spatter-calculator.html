@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blood Spatter Angle Calculator - Chabot STEM 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2A9D8F;
+    --teal-dark: #1A6B6B;
+    --gold: #D4A843;
+    --coral: #E65C3C;
+    --maroon: #7A2D4E;
+    --white: #FFFFFF;
+    --bg: #f5f7fa;
+    --border: #E4E9EF;
+    --text: #333;
+    --text-med: #5A6A7A;
+    --green: #27AE60;
+    --red: #C0392B;
+    --blood: #8B1A1A;
+    --blood-dark: #5A0E0E;
+  }
+  html, body {
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
+  }
+  body { padding-bottom: 40px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes pop { 0% { transform: scale(0.85); opacity: 0;} 60% { transform: scale(1.06);} 100% { transform: scale(1); opacity: 1;} }
+  .fade-in { animation: fadeIn 0.35s ease-out; }
+  .slide-up { animation: slideUp 0.45s ease-out; }
+  .pop { animation: pop 0.45s ease-out; }
+
+  .app {
+    max-width: 760px;
+    margin: 0 auto;
+    background: var(--white);
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(27,58,92,0.06);
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1B3A5C 0%, #2A9D8F 100%);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-text { flex: 1; }
+  .header-title { font-size: 15px; font-weight: 800; color: white; letter-spacing: 0.3px; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; margin-top: 2px; }
+  .header-emoji { font-size: 22px; }
+
+  /* Career banner */
+  .career-banner {
+    margin: 16px 18px 0;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFF3F3 0%, #FCE8E8 100%);
+    border-left: 4px solid var(--blood);
+    border-radius: 12px;
+    animation: fadeIn 0.5s ease-out;
+  }
+  .career-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--blood-dark);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .career-text { font-size: 14px; line-height: 1.55; color: var(--navy); font-weight: 500; }
+  .career-text strong { color: var(--blood-dark); }
+
+  /* Mode tabs */
+  .mode-bar {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    margin-top: 14px;
+  }
+  .mode-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 12px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-med);
+    background: none;
+    border: none;
+    cursor: pointer;
+    position: relative;
+    transition: color 0.2s;
+    white-space: nowrap;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+  }
+  .mode-btn:hover { color: var(--teal); }
+  .mode-btn.active { color: var(--teal-dark); }
+  .mode-btn.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 10%;
+    width: 80%;
+    height: 3px;
+    background: var(--teal);
+    border-radius: 3px 3px 0 0;
+  }
+
+  .mode-panel { display: none; }
+  .mode-panel.active { display: block; animation: fadeIn 0.3s ease-out; }
+
+  .card {
+    margin: 16px 18px;
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: var(--navy);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blood);
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  /* Sliders */
+  .slider-block { margin-bottom: 14px; }
+  .slider-label {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 12px; font-weight: 700; color: var(--text-med);
+    margin-bottom: 6px; letter-spacing: 0.3px; text-transform: uppercase;
+  }
+  .slider-label .val {
+    font-size: 16px; font-weight: 800; color: var(--blood);
+    font-variant-numeric: tabular-nums;
+    text-transform: none; letter-spacing: 0;
+    font-family: 'Courier New', monospace;
+  }
+  input[type=range] {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 8px; border-radius: 4px;
+    background: #E0E8EE; outline: none; cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blood), var(--blood-dark));
+    cursor: pointer; box-shadow: 0 2px 6px rgba(139,26,26,0.4);
+    border: 2px solid white;
+  }
+  input[type=range]::-moz-range-thumb {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--blood), var(--blood-dark));
+    cursor: pointer; border: 2px solid white;
+  }
+
+  /* Visualization box */
+  .viz-wrap {
+    background: linear-gradient(180deg, #F8F4ED 0%, #EFE6D2 100%);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #D8CFB8;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .viz-wrap svg { display: block; width: 100%; height: auto; }
+  .viz-readout {
+    position: absolute;
+    top: 10px; left: 10px;
+    background: rgba(27,58,92,0.92);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .viz-readout .deg {
+    color: var(--gold);
+    font-size: 18px;
+    font-variant-numeric: tabular-nums;
+    font-family: 'Courier New', monospace;
+  }
+
+  /* Console readout (EKG style monospace) */
+  .console {
+    background: #0D1117;
+    color: #58E5DC;
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    border: 1px solid #1F2937;
+    margin-top: 8px;
+  }
+  .console .k { color: #8B96A3; font-weight: 600; }
+  .console .v { color: #FFD479; font-weight: 800; }
+  .console .final {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #2A3344;
+    color: #FF6B6B;
+    font-size: 16px;
+    font-weight: 800;
+  }
+  .console .formula {
+    color: #58E5DC;
+    font-style: italic;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  /* Preset buttons */
+  .preset-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .preset-btn {
+    padding: 8px 4px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--navy);
+    transition: all 0.18s ease;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .preset-btn .pdesc { display: block; font-size: 9px; color: var(--text-med); font-weight: 600; margin-top: 2px; }
+  .preset-btn:hover { border-color: var(--blood); color: var(--blood-dark); }
+  .preset-btn.active {
+    background: linear-gradient(135deg, var(--blood), var(--blood-dark));
+    color: white;
+    border-color: var(--blood-dark);
+    box-shadow: 0 2px 8px rgba(139,26,26,0.35);
+  }
+  .preset-btn.active .pdesc { color: rgba(255,255,255,0.85); }
+
+  /* Buttons */
+  .btn {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(42,157,143,0.25);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(42,157,143,0.3); }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-ghost {
+    background: white;
+    color: var(--navy);
+    border: 2px solid var(--border);
+    box-shadow: none;
+  }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+  .btn-blood {
+    background: linear-gradient(135deg, var(--blood), var(--blood-dark));
+    box-shadow: 0 2px 8px rgba(139,26,26,0.3);
+  }
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+  /* Crime scene presets */
+  .scene-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+    margin-bottom: 12px;
+  }
+  .scene-btn {
+    padding: 10px 8px;
+    border: 2px solid var(--border);
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.18s;
+  }
+  .scene-btn:hover { border-color: var(--blood); }
+  .scene-btn.active { border-color: var(--blood); background: #FFF3F3; }
+  .scene-btn .sname { font-size: 12px; font-weight: 800; color: var(--navy); }
+  .scene-btn .smeta { font-size: 10px; color: var(--text-med); font-weight: 600; margin-top: 2px; }
+
+  /* Convergence canvas */
+  .scene-canvas-wrap {
+    background: #2A2A2A;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #111;
+    position: relative;
+  }
+  .scene-canvas-wrap svg { display: block; width: 100%; height: auto; cursor: crosshair; }
+  .scene-status {
+    position: absolute;
+    top: 8px; left: 10px;
+    font-size: 10px;
+    color: #FF6B6B;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(255,107,107,0.6);
+    pointer-events: none;
+  }
+  .scene-status .pulse { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #FF6B6B; margin-right: 6px; box-shadow: 0 0 8px #FF6B6B; }
+
+  /* Quiz */
+  .quiz-q {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--navy);
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .quiz-meta {
+    font-size: 11px; font-weight: 700; color: var(--text-med);
+    text-transform: uppercase; letter-spacing: 1.2px;
+    margin-bottom: 8px;
+  }
+  .opt {
+    display: block; width: 100%;
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    background: white;
+    border-radius: 10px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--navy);
+    margin-bottom: 8px;
+    transition: all 0.15s;
+    line-height: 1.45;
+  }
+  .opt:hover { border-color: var(--teal); background: #F0F6F5; }
+  .opt.correct {
+    background: linear-gradient(135deg, #E8F8F0, #D4F0E0);
+    border-color: var(--green);
+    color: #1a7a42;
+    font-weight: 700;
+  }
+  .opt.wrong {
+    background: linear-gradient(135deg, #FDEAEA, #FBD5D5);
+    border-color: var(--red);
+    color: #8a2018;
+    font-weight: 700;
+  }
+  .opt:disabled { cursor: default; }
+  .explain {
+    margin-top: 10px;
+    padding: 12px 14px;
+    background: #F0F6F5;
+    border-left: 3px solid var(--teal);
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--navy);
+    animation: fadeIn 0.3s ease-out;
+  }
+  .explain strong { color: var(--teal-dark); }
+
+  .score-card {
+    margin: 16px 18px;
+    padding: 22px;
+    background: linear-gradient(135deg, #1B3A5C 0%, #2A9D8F 100%);
+    color: white;
+    border-radius: 16px;
+    text-align: center;
+    box-shadow: 0 4px 20px rgba(27,58,92,0.25);
+    animation: pop 0.5s ease-out;
+  }
+  .score-card .head { font-size: 11px; letter-spacing: 2px; color: var(--gold); font-weight: 800; text-transform: uppercase; }
+  .score-card .big { font-size: 32px; font-weight: 800; margin: 8px 0; }
+  .score-card .sub { font-size: 14px; line-height: 1.55; opacity: 0.95; margin-bottom: 12px; }
+
+  /* Pearl */
+  .pearl {
+    margin: 16px 18px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+  }
+  .pearl-head {
+    font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+    color: #8B6914; text-transform: uppercase; margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .pearl-text { font-size: 13px; line-height: 1.55; color: var(--navy); font-weight: 500; }
+  .pearl-text strong { color: var(--maroon); }
+
+  /* Trig derivation step */
+  .step-nav {
+    display: flex; gap: 6px; justify-content: center;
+    margin-top: 10px; flex-wrap: wrap;
+  }
+  .step-dot {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--border);
+    color: var(--text-med);
+    font-size: 12px;
+    font-weight: 800;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .step-dot.active {
+    background: linear-gradient(135deg, var(--blood), var(--blood-dark));
+    color: white; border-color: var(--blood-dark);
+  }
+  .step-dot.done { background: var(--green); color: white; }
+  .step-content {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: #F8FAFB;
+    border-radius: 10px;
+    border-left: 3px solid var(--teal);
+  }
+  .step-title { font-size: 14px; font-weight: 800; color: var(--navy); margin-bottom: 8px; }
+  .step-body { font-size: 13px; line-height: 1.6; color: var(--text); }
+  .step-body strong { color: var(--blood-dark); }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    padding: 16px 20px;
+    border-top: 3px solid var(--gold);
+    background: white;
+    font-size: 11px;
+    color: #999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 24px;
+  }
+
+  /* Convergence reveal */
+  .conv-result {
+    margin-top: 12px;
+    padding: 14px;
+    background: linear-gradient(135deg, #FFF3F3 0%, #FCE8E8 100%);
+    border-left: 3px solid var(--blood);
+    border-radius: 0 10px 10px 0;
+    display: none;
+  }
+  .conv-result.show { display: block; animation: slideUp 0.4s ease-out; }
+  .conv-result h4 { font-size: 13px; color: var(--blood-dark); margin-bottom: 6px; letter-spacing: 0.4px; text-transform: uppercase; }
+  .conv-result p { font-size: 13px; line-height: 1.55; color: var(--navy); }
+  .conv-result code {
+    background: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: var(--blood-dark);
+    font-weight: 700;
+  }
+
+  @media (max-width: 480px) {
+    .card { margin: 12px 12px; padding: 14px; }
+    .career-banner { margin: 12px 12px 0; padding: 12px 14px; }
+    .career-text { font-size: 13px; }
+    .preset-row { grid-template-columns: repeat(2, 1fr); }
+    .scene-grid { grid-template-columns: 1fr; }
+    .score-card { margin: 12px 12px; padding: 18px; }
+    .pearl { margin: 12px 12px; }
+    .mode-btn { font-size: 11px; padding: 10px 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <svg viewBox="0 0 40 40" width="26" height="26" style="flex-shrink:0">
+      <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity="0.85"/>
+      <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity="0.85"/>
+      <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity="0.85"/>
+      <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity="0.85"/>
+    </svg>
+    <div class="header-text">
+      <div class="header-title">Chabot STEM 2026</div>
+      <div class="header-sub">Blood Spatter Angle Calculator</div>
+    </div>
+    <span class="header-emoji">&#x1FA78;</span>
+  </div>
+
+  <!-- Career banner -->
+  <div class="career-banner">
+    <div class="career-tag">Crime Scene Reconstructionist</div>
+    <div class="career-text">You're a <strong>Bloodstain Pattern Analyst</strong> (IABPA-certified). The detectives need angle of impact, area of convergence, and the source position. The math is older than CSI: <strong>sin &theta; = width / length</strong>.</div>
+  </div>
+
+  <!-- Mode tabs -->
+  <div class="mode-bar">
+    <button class="mode-btn active" data-mode="single" onclick="switchMode('single')">Single Drop</button>
+    <button class="mode-btn" data-mode="convergence" onclick="switchMode('convergence')">Area of Convergence</button>
+    <button class="mode-btn" data-mode="derivation" onclick="switchMode('derivation')">Trig Derivation</button>
+    <button class="mode-btn" data-mode="quiz" onclick="switchMode('quiz')">Quiz</button>
+  </div>
+
+  <!-- ========== MODE 1: SINGLE DROP ========== -->
+  <div class="mode-panel active" id="mode-single">
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Single Drop Analyzer</div>
+      <div class="hint">Adjust the drop's <strong>width</strong> and <strong>length</strong> sliders. The app calculates angle of impact in real time using <code style="background:#F0F6F5;padding:2px 5px;border-radius:4px;">sin &theta; = width / length</code>. Steeper angle = more circular drop. Shallow angle = elongated drop.</div>
+
+      <div class="viz-wrap">
+        <div class="viz-readout">Angle of impact &middot; <span class="deg" id="angleReadout">--&deg;</span></div>
+        <svg id="dropSvg" viewBox="0 0 720 320" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="slider-block">
+        <div class="slider-label"><span>Drop Width (minor axis)</span><span class="val"><span id="widthVal">8</span> mm</span></div>
+        <input type="range" id="widthSlider" min="2" max="20" value="8" step="0.5">
+      </div>
+      <div class="slider-block">
+        <div class="slider-label"><span>Drop Length (major axis)</span><span class="val"><span id="lengthVal">10</span> mm</span></div>
+        <input type="range" id="lengthSlider" min="2" max="40" value="10" step="0.5">
+      </div>
+
+      <div class="console">
+        <span class="formula">// formula: sin&theta; = width / length</span>
+        <span class="k">width.........</span> <span class="v" id="cWidth">8.0</span> mm<br>
+        <span class="k">length........</span> <span class="v" id="cLength">10.0</span> mm<br>
+        <span class="k">ratio.........</span> <span class="v" id="cRatio">0.800</span><br>
+        <span class="k">sin&#8315;&sup1;(ratio)..</span> <span class="v" id="cSin">0.927</span> rad
+        <span class="final" id="cAngle">&theta; = 53.1&deg;  &middot;  classification: typical impact</span>
+      </div>
+
+      <div class="card-title" style="margin-top:18px;"><span class="card-title-dot"></span>Preset Cases</div>
+      <div class="preset-row">
+        <button class="preset-btn" data-preset="90" onclick="loadPreset(90)">90&deg; Drop<span class="pdesc">straight down, near-circle</span></button>
+        <button class="preset-btn active" data-preset="60" onclick="loadPreset(60)">60&deg; Typical<span class="pdesc">most crime scenes</span></button>
+        <button class="preset-btn" data-preset="30" onclick="loadPreset(30)">30&deg; Shallow<span class="pdesc">low-angle spatter</span></button>
+        <button class="preset-btn" data-preset="10" onclick="loadPreset(10)">10&deg; Cast-off<span class="pdesc">flung from weapon</span></button>
+      </div>
+    </div>
+
+    <div class="pearl" id="pearlSingle">
+      <div class="pearl-head">&#x1F4A7; Analyst's Pearl</div>
+      <div class="pearl-text" id="pearlSingleText"></div>
+    </div>
+
+  </div>
+
+  <!-- ========== MODE 2: CONVERGENCE ========== -->
+  <div class="mode-panel" id="mode-convergence">
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Crime Scene File</div>
+      <div class="hint">Three real-style scenes. Each has 4-6 blood drops with known angles. Click <strong>Trace lines</strong> to draw long axes back from each drop. Where the lines cross = the <strong>area of convergence</strong>. That's where the victim was when struck.</div>
+
+      <div class="scene-grid">
+        <button class="scene-btn active" data-scene="foyer" onclick="loadScene('foyer')">
+          <div class="sname">The Foyer Murder</div>
+          <div class="smeta">Oakland Hills &middot; 5 drops</div>
+        </button>
+        <button class="scene-btn" data-scene="garage" onclick="loadScene('garage')">
+          <div class="sname">Garage Workshop Case</div>
+          <div class="smeta">San Leandro &middot; 6 drops</div>
+        </button>
+        <button class="scene-btn" data-scene="stairwell" onclick="loadScene('stairwell')">
+          <div class="sname">Stairwell Reconstruction</div>
+          <div class="smeta">Castro Valley &middot; 4 drops</div>
+        </button>
+      </div>
+
+      <div class="scene-canvas-wrap">
+        <div class="scene-status"><span class="pulse"></span><span id="sceneStatus">SCENE: FOYER &middot; TOP-DOWN VIEW</span></div>
+        <svg id="sceneSvg" viewBox="0 0 720 460" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-blood" id="traceBtn" onclick="traceConvergence()">Trace lines &amp; converge</button>
+        <button class="btn btn-ghost" onclick="resetScene()">Reset</button>
+      </div>
+
+      <div class="conv-result" id="convResult">
+        <h4>Area of Convergence Located</h4>
+        <p id="convResultText"></p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>3D Source Reconstruction</div>
+      <div class="hint">Once you know the angle of impact and the convergence point, you solve the third dimension. The source of the spatter was at height: <code style="background:#F0F6F5;padding:2px 5px;border-radius:4px;">tan &theta; &times; distance = height</code>.</div>
+
+      <div class="console" id="conv3dConsole">
+        <span class="formula">// 3D reconstruction</span>
+        <span class="k">trace a scene first to compute source height</span>
+      </div>
+    </div>
+
+    <div class="pearl" id="pearlConv">
+      <div class="pearl-head">&#x1F4A7; Analyst's Pearl</div>
+      <div class="pearl-text" id="pearlConvText"></div>
+    </div>
+
+  </div>
+
+  <!-- ========== MODE 3: TRIG DERIVATION ========== -->
+  <div class="mode-panel" id="mode-derivation">
+
+    <div class="card">
+      <div class="card-title"><span class="card-title-dot"></span>Why width / length = sin &theta;?</div>
+      <div class="hint">Step through the geometry. A spherical drop projecting onto an angled surface forms an ellipse. The minor axis (width) divided by the major axis (length) is the sine of the impact angle. Here's why.</div>
+
+      <div class="viz-wrap" style="background:linear-gradient(180deg,#1B2A3F 0%,#0F1722 100%);">
+        <svg id="derivSvg" viewBox="0 0 720 360" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+
+      <div class="step-nav" id="stepNav"></div>
+      <div class="step-content">
+        <div class="step-title" id="stepTitle"></div>
+        <div class="step-body" id="stepBody"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-ghost" onclick="prevStep()">&larr; Previous</button>
+        <button class="btn" id="nextStepBtn" onclick="nextStep()">Next step &rarr;</button>
+      </div>
+    </div>
+
+    <div class="card" id="derivQuizCard">
+      <div class="card-title"><span class="card-title-dot"></span>Derive It Yourself</div>
+      <div class="hint">A drop on the surface measures 6mm wide by 10mm long. Walk the formula yourself.</div>
+      <div class="quiz-q">What is the angle of impact?</div>
+      <button class="opt" onclick="checkDeriv(this, false)">A. 30&deg; &mdash; sin&#8315;&sup1;(0.6) &asymp; 36.87&deg;... actually no, that's about 37&deg;</button>
+      <button class="opt" onclick="checkDeriv(this, true)">B. 36.87&deg; &mdash; ratio is 6/10 = 0.6, sin&#8315;&sup1;(0.6) &asymp; 36.87&deg;</button>
+      <button class="opt" onclick="checkDeriv(this, false)">C. 53.13&deg; &mdash; that would be cos&#8315;&sup1;, not sin&#8315;&sup1;</button>
+      <button class="opt" onclick="checkDeriv(this, false)">D. 60&deg; &mdash; close to a typical impact, but not the math</button>
+      <div class="explain" id="derivExplain" style="display:none;"></div>
+    </div>
+
+  </div>
+
+  <!-- ========== MODE 4: QUIZ ========== -->
+  <div class="mode-panel" id="mode-quiz">
+
+    <div class="card" id="quizCard">
+      <div class="card-title"><span class="card-title-dot"></span>Bloodstain Pattern Analyst Exam</div>
+      <div class="quiz-meta" id="quizMeta">Question 1 of 8</div>
+      <div class="quiz-q" id="quizQ"></div>
+      <div id="quizOpts"></div>
+      <div class="explain" id="quizExplain" style="display:none;"></div>
+      <div class="btn-row" id="quizNav" style="display:none;">
+        <button class="btn" id="quizNextBtn" onclick="nextQuiz()">Next question &rarr;</button>
+      </div>
+    </div>
+
+    <div class="score-card" id="scoreCard" style="display:none;">
+      <div class="head">Exam Result</div>
+      <div class="big" id="scoreBig">0 / 8</div>
+      <div class="sub" id="scoreSub"></div>
+      <button class="btn btn-blood" onclick="resetQuiz()">Retry exam</button>
+    </div>
+
+    <div class="pearl" id="pearlQuiz" style="display:none;">
+      <div class="pearl-head">&#x1F4A7; Analyst's Pearl</div>
+      <div class="pearl-text" id="pearlQuizText"></div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <div class="footer">
+    <svg viewBox="0 0 40 40" width="14" height="14" style="flex-shrink:0">
+      <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity="0.85"/>
+      <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity="0.85"/>
+      <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity="0.85"/>
+      <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity="0.85"/>
+    </svg>
+    <span>Built by <strong style="color:#1A6B6B;">Woven Learning &amp; Technology</strong></span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  // =========================================================
+  // PEARLS
+  // =========================================================
+  const PEARLS = [
+    "Blood is roughly the same density as water. So drop physics &asymp; water physics. Predictable.",
+    "A drop falling straight down (90&deg;) is nearly circular. As the angle drops to 30&deg;, it elongates roughly 2x.",
+    "Area of convergence tells you <strong>WHERE</strong> the victim was. Not exact, but within about a foot.",
+    "IABPA certification requires 80 hours minimum of coursework plus a court-admissible casework portfolio.",
+    "Bloodstain pattern analysis was famously challenged in the O.J. Simpson trial. The defense argued the experts disagreed on impact angles &mdash; and they did.",
+    "The 'tail' of an elongated drop points in the direction of travel. Tail north = drop moving north when it hit.",
+    "A 2009 National Academy of Sciences report flagged BPA as needing more rigorous validation. The field has tightened standards since.",
+    "Drops smaller than 1mm are usually <strong>impact spatter</strong> from high-velocity force. Drops larger than 4mm are usually <strong>passive</strong> dripping.",
+    "Cast-off pattern = blood flung off a swung weapon. Each drop traces an arc. Count the arcs, count the swings.",
+    "Court rule of thumb: an analyst should never claim sub-degree precision. &plusmn;5&deg; is honest. &plusmn;0.5&deg; is testimony bait.",
+    "A pool of blood doesn't tell you angle &mdash; it tells you the body stopped bleeding there. Spatter is what carries the geometry.",
+    "Stringing the lines used to mean literal red string and pushpins. Modern labs use HemoSpat and FARO 3D scanners."
+  ];
+  function randomPearl(){ return PEARLS[Math.floor(Math.random()*PEARLS.length)]; }
+  function setPearl(elId, html){
+    const el = document.getElementById(elId);
+    if(el) el.innerHTML = html || randomPearl();
+  }
+  setPearl('pearlSingleText', randomPearl());
+  setPearl('pearlConvText', randomPearl());
+
+  // =========================================================
+  // MODE SWITCHING
+  // =========================================================
+  window.switchMode = function(mode){
+    document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+    document.querySelectorAll('.mode-panel').forEach(p => p.classList.toggle('active', p.id === 'mode-' + mode));
+    if(mode === 'single') setPearl('pearlSingleText', randomPearl());
+    if(mode === 'convergence') setPearl('pearlConvText', randomPearl());
+    if(mode === 'derivation') drawDerivStep();
+  };
+
+  // =========================================================
+  // MODE 1: SINGLE DROP
+  // =========================================================
+  const widthSlider = document.getElementById('widthSlider');
+  const lengthSlider = document.getElementById('lengthSlider');
+  const dropSvg = document.getElementById('dropSvg');
+
+  function classifyAngle(deg){
+    if(deg >= 80) return 'near vertical drop';
+    if(deg >= 60) return 'typical impact';
+    if(deg >= 40) return 'medium-angle spatter';
+    if(deg >= 20) return 'low-angle spatter';
+    return 'cast-off / very shallow';
+  }
+
+  function renderDropSingle(){
+    const w = parseFloat(widthSlider.value);
+    let L = parseFloat(lengthSlider.value);
+    if(L < w) L = w; // length must be >= width physically
+    const ratio = w / L;
+    const angleRad = Math.asin(Math.min(1, ratio));
+    const angleDeg = angleRad * 180 / Math.PI;
+
+    document.getElementById('widthVal').textContent = w.toFixed(1);
+    document.getElementById('lengthVal').textContent = L.toFixed(1);
+    document.getElementById('cWidth').textContent = w.toFixed(1);
+    document.getElementById('cLength').textContent = L.toFixed(1);
+    document.getElementById('cRatio').textContent = ratio.toFixed(3);
+    document.getElementById('cSin').textContent = angleRad.toFixed(3);
+    document.getElementById('cAngle').innerHTML = '&theta; = ' + angleDeg.toFixed(1) + '&deg;  &middot;  classification: ' + classifyAngle(angleDeg);
+    document.getElementById('angleReadout').innerHTML = angleDeg.toFixed(1) + '&deg;';
+
+    drawDropVisualization(w, L, angleDeg);
+  }
+
+  function drawDropVisualization(width, length, angleDeg){
+    // 3D-ish side view: a sphere/drop falling at angleDeg, then top-down ellipse on surface.
+    // viewBox 720x320: left half = side view, right half = top-down view of the stain.
+    const sideX = 200, sideY = 110;     // anchor of side-view scene
+    const topX = 540, topY = 160;       // center of top-down stain
+
+    // Scale: 1mm = 6px on top-down, similar for side
+    const scale = 6;
+
+    const angRad = angleDeg * Math.PI / 180;
+    const cosA = Math.cos(angRad), sinA = Math.sin(angRad);
+
+    // Side view: surface at y = sideY+90, drop trajectory comes in at angle.
+    const surfaceY = sideY + 90;
+    const surfX1 = 50, surfX2 = 360;
+    // Trajectory: starts upper-right, ends at impact point
+    const impactX = sideX, impactY = surfaceY;
+    const trajLen = 130;
+    const trajStartX = impactX + trajLen * cosA;
+    const trajStartY = impactY - trajLen * sinA;
+
+    // Top-down: stain ellipse, width = minor, length = major. Tail in direction of travel.
+    const stainW = Math.max(8, width * scale);
+    const stainL = Math.max(stainW, length * scale);
+
+    let svg = '';
+
+    // Section labels
+    svg += '<text x="200" y="22" text-anchor="middle" fill="#5A6A7A" font-size="11" font-weight="800" letter-spacing="1.2" style="text-transform:uppercase;font-family:Segoe UI,sans-serif;">SIDE VIEW &middot; trajectory</text>';
+    svg += '<text x="540" y="22" text-anchor="middle" fill="#5A6A7A" font-size="11" font-weight="800" letter-spacing="1.2" style="text-transform:uppercase;font-family:Segoe UI,sans-serif;">TOP-DOWN &middot; stain shape</text>';
+
+    // Divider
+    svg += '<line x1="380" y1="40" x2="380" y2="290" stroke="#D8CFB8" stroke-width="1" stroke-dasharray="4 4"/>';
+
+    // SIDE VIEW
+    // Surface (the floor / wall)
+    svg += '<line x1="' + surfX1 + '" y1="' + surfaceY + '" x2="' + surfX2 + '" y2="' + surfaceY + '" stroke="#3A2818" stroke-width="3"/>';
+    svg += '<rect x="' + surfX1 + '" y="' + surfaceY + '" width="' + (surfX2-surfX1) + '" height="14" fill="#7B5A3F" opacity="0.5"/>';
+    // Hatching ground texture
+    for(let i = 0; i < 8; i++){
+      svg += '<line x1="' + (surfX1 + i*40) + '" y1="' + (surfaceY+2) + '" x2="' + (surfX1 + i*40 + 8) + '" y2="' + (surfaceY+12) + '" stroke="#3A2818" stroke-width="1" opacity="0.4"/>';
+    }
+    // Trajectory line (dashed)
+    svg += '<line x1="' + trajStartX + '" y1="' + trajStartY + '" x2="' + impactX + '" y2="' + impactY + '" stroke="#8B1A1A" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.7"/>';
+    // Drop falling (sphere, partway along trajectory)
+    const dropFrac = 0.55;
+    const dx = trajStartX + (impactX - trajStartX) * dropFrac;
+    const dy = trajStartY + (impactY - trajStartY) * dropFrac;
+    svg += '<defs><radialGradient id="dropGrad" cx="35%" cy="35%"><stop offset="0%" stop-color="#C0392B"/><stop offset="100%" stop-color="#5A0E0E"/></radialGradient></defs>';
+    svg += '<circle cx="' + dx + '" cy="' + dy + '" r="11" fill="url(#dropGrad)" stroke="#3A0808" stroke-width="0.8"/>';
+    svg += '<ellipse cx="' + (dx-3) + '" cy="' + (dy-4) + '" rx="3.5" ry="2" fill="rgba(255,255,255,0.4)"/>';
+
+    // Angle arc
+    const arcR = 38;
+    const arcX1 = impactX + arcR;
+    const arcY1 = impactY;
+    const arcX2 = impactX + arcR * cosA;
+    const arcY2 = impactY - arcR * sinA;
+    svg += '<path d="M ' + arcX1 + ' ' + arcY1 + ' A ' + arcR + ' ' + arcR + ' 0 0 0 ' + arcX2 + ' ' + arcY2 + '" fill="none" stroke="#D4A843" stroke-width="2"/>';
+    // Angle label
+    const labX = impactX + arcR * 0.65 * Math.cos(angRad/2);
+    const labY = impactY - arcR * 0.65 * Math.sin(angRad/2);
+    svg += '<text x="' + labX + '" y="' + (labY+4) + '" text-anchor="middle" fill="#D4A843" font-size="13" font-weight="800" font-family="Courier New,monospace">' + angleDeg.toFixed(0) + '&#176;</text>';
+
+    // Impact splash on surface
+    const splashL = stainL * 0.85;
+    svg += '<ellipse cx="' + (impactX + splashL/2 * cosA) + '" cy="' + (impactY + 1) + '" rx="' + (splashL/2) + '" ry="3" fill="#8B1A1A" opacity="0.8"/>';
+
+    // TOP-DOWN VIEW
+    // Surface texture (light wood/floor)
+    svg += '<rect x="430" y="50" width="220" height="220" fill="#EFE6D2" stroke="#C8B888" stroke-width="1" rx="6"/>';
+    // The stain ellipse, oriented with major axis horizontal (length pointing right)
+    svg += '<defs><radialGradient id="stainGrad" cx="40%" cy="50%"><stop offset="0%" stop-color="#A02020"/><stop offset="80%" stop-color="#5A0E0E"/><stop offset="100%" stop-color="#3A0808"/></radialGradient></defs>';
+    // Tail (small drips in direction of travel) for shallow angles
+    if(angleDeg < 75){
+      const tailX1 = topX + stainL/2;
+      const tailLen = (75 - angleDeg) / 75 * stainL * 0.6;
+      svg += '<ellipse cx="' + (tailX1 + tailLen*0.5) + '" cy="' + topY + '" rx="' + (tailLen*0.5) + '" ry="' + Math.max(2, stainW*0.18) + '" fill="#7A1818" opacity="0.7"/>';
+      // Satellite droplets
+      for(let i = 0; i < 3; i++){
+        const sx = tailX1 + tailLen + (i*6) + Math.random()*4;
+        const sy = topY + (Math.random()-0.5) * stainW * 0.6;
+        svg += '<circle cx="' + sx + '" cy="' + sy + '" r="' + (1.2 + Math.random()*1.4) + '" fill="#7A1818" opacity="0.7"/>';
+      }
+    }
+    svg += '<ellipse cx="' + topX + '" cy="' + topY + '" rx="' + (stainL/2) + '" ry="' + (stainW/2) + '" fill="url(#stainGrad)" stroke="#3A0808" stroke-width="0.8"/>';
+    // Highlight
+    svg += '<ellipse cx="' + (topX-stainL*0.18) + '" cy="' + (topY-stainW*0.18) + '" rx="' + (stainL*0.18) + '" ry="' + (stainW*0.13) + '" fill="rgba(255,255,255,0.18)"/>';
+
+    // Length & width measurements
+    // Length (horizontal)
+    svg += '<line x1="' + (topX-stainL/2) + '" y1="' + (topY+stainW/2+18) + '" x2="' + (topX+stainL/2) + '" y2="' + (topY+stainW/2+18) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<line x1="' + (topX-stainL/2) + '" y1="' + (topY+stainW/2+14) + '" x2="' + (topX-stainL/2) + '" y2="' + (topY+stainW/2+22) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<line x1="' + (topX+stainL/2) + '" y1="' + (topY+stainW/2+14) + '" x2="' + (topX+stainL/2) + '" y2="' + (topY+stainW/2+22) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<text x="' + topX + '" y="' + (topY+stainW/2+34) + '" text-anchor="middle" fill="#1B3A5C" font-size="11" font-weight="800" font-family="Segoe UI,sans-serif">length = ' + length.toFixed(1) + ' mm</text>';
+
+    // Width (vertical)
+    svg += '<line x1="' + (topX-stainL/2-18) + '" y1="' + (topY-stainW/2) + '" x2="' + (topX-stainL/2-18) + '" y2="' + (topY+stainW/2) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<line x1="' + (topX-stainL/2-22) + '" y1="' + (topY-stainW/2) + '" x2="' + (topX-stainL/2-14) + '" y2="' + (topY-stainW/2) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<line x1="' + (topX-stainL/2-22) + '" y1="' + (topY+stainW/2) + '" x2="' + (topX-stainL/2-14) + '" y2="' + (topY+stainW/2) + '" stroke="#1B3A5C" stroke-width="1.5"/>';
+    svg += '<text x="' + (topX-stainL/2-26) + '" y="' + (topY+4) + '" text-anchor="end" fill="#1B3A5C" font-size="11" font-weight="800" font-family="Segoe UI,sans-serif">width</text>';
+    svg += '<text x="' + (topX-stainL/2-26) + '" y="' + (topY+18) + '" text-anchor="end" fill="#1B3A5C" font-size="10" font-family="Segoe UI,sans-serif">' + width.toFixed(1) + ' mm</text>';
+
+    dropSvg.innerHTML = svg;
+  }
+
+  widthSlider.addEventListener('input', function(){
+    if(parseFloat(lengthSlider.value) < parseFloat(widthSlider.value)){
+      lengthSlider.value = widthSlider.value;
+    }
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    renderDropSingle();
+  });
+  lengthSlider.addEventListener('input', function(){
+    if(parseFloat(lengthSlider.value) < parseFloat(widthSlider.value)){
+      widthSlider.value = lengthSlider.value;
+    }
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+    renderDropSingle();
+  });
+
+  window.loadPreset = function(deg){
+    document.querySelectorAll('.preset-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.preset, 10) === deg));
+    // Pick a width and compute length: sin(deg) = w/L  =>  L = w / sin(deg)
+    const angRad = deg * Math.PI / 180;
+    const w = 8;
+    let L = w / Math.sin(angRad);
+    L = Math.min(40, Math.max(w, L));
+    widthSlider.value = w;
+    lengthSlider.value = L.toFixed(1);
+    renderDropSingle();
+    setPearl('pearlSingleText', randomPearl());
+  };
+
+  renderDropSingle();
+
+  // =========================================================
+  // MODE 2: CONVERGENCE
+  // =========================================================
+  // Each scene: list of drops with {x, y, angle (degrees), trail (degrees, direction the drop was traveling on the floor)}
+  // The "directionFromSource" is the angle pointing FROM the drop TOWARDS the source (opposite of travel direction).
+  // Convergence point is the intersection of those back-traces.
+  const SCENES = {
+    foyer: {
+      title: 'The Foyer Murder',
+      label: 'SCENE: FOYER &middot; OAKLAND HILLS',
+      width: 720, height: 460,
+      // Source location (the "victim was here") - convergence will land near this
+      source: { x: 360, y: 240 },
+      // Average source height in cm (for 3D reconstruction)
+      sourceHeight: 145,
+      drops: [
+        // Each drop: position on floor and the back-azimuth pointing toward source
+        { x: 130, y: 130 },
+        { x: 590, y: 150 },
+        { x: 145, y: 360 },
+        { x: 600, y: 360 },
+        { x: 360, y: 80 }
+      ],
+      bg: '#3A2818'
+    },
+    garage: {
+      title: 'Garage Workshop Case',
+      label: 'SCENE: GARAGE &middot; SAN LEANDRO',
+      width: 720, height: 460,
+      source: { x: 320, y: 220 },
+      sourceHeight: 92,
+      drops: [
+        { x: 100, y: 110 },
+        { x: 150, y: 380 },
+        { x: 540, y: 90 },
+        { x: 580, y: 250 },
+        { x: 530, y: 400 },
+        { x: 200, y: 250 }
+      ],
+      bg: '#2C2C2C'
+    },
+    stairwell: {
+      title: 'Stairwell Reconstruction',
+      label: 'SCENE: STAIRWELL &middot; CASTRO VALLEY',
+      width: 720, height: 460,
+      source: { x: 380, y: 200 },
+      sourceHeight: 175,
+      drops: [
+        { x: 130, y: 100 },
+        { x: 600, y: 100 },
+        { x: 640, y: 380 },
+        { x: 110, y: 380 }
+      ],
+      bg: '#1F2328'
+    }
+  };
+
+  // Each drop will have an angle (impact angle) and back-azimuth. Compute back-azimuth from drop -> source.
+  function prepScene(scene){
+    for(const d of scene.drops){
+      const dx = scene.source.x - d.x;
+      const dy = scene.source.y - d.y;
+      // Slight noise so lines don't perfectly cross at one pixel
+      d.backAzimuth = Math.atan2(dy, dx) + (Math.random() - 0.5) * 0.04;
+      // Distance from source (for impact angle estimate)
+      d.dist = Math.hypot(dx, dy);
+      // Closer drops = steeper impact, farther = shallower
+      // Impact angle: 90 minus arctan(distance / sourceHeight)
+      // Simpler approach: pick a plausible impact angle based on distance
+      const distMm = d.dist * 0.4;
+      const heightMm = scene.sourceHeight * 6; // assume cm to px-units
+      d.impactAngle = Math.atan(heightMm / distMm) * 180 / Math.PI;
+      d.impactAngle = Math.max(8, Math.min(78, d.impactAngle + (Math.random()-0.5)*8));
+    }
+    return scene;
+  }
+  Object.keys(SCENES).forEach(k => prepScene(SCENES[k]));
+
+  let currentScene = 'foyer';
+  let traced = false;
+
+  function renderScene(){
+    const scene = SCENES[currentScene];
+    const sceneSvg = document.getElementById('sceneSvg');
+    const w = scene.width, h = scene.height;
+
+    let svg = '';
+    // Background floor
+    svg += '<rect width="' + w + '" height="' + h + '" fill="' + scene.bg + '"/>';
+    // Subtle grid
+    for(let x = 0; x < w; x += 40){
+      svg += '<line x1="' + x + '" y1="0" x2="' + x + '" y2="' + h + '" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>';
+    }
+    for(let y = 0; y < h; y += 40){
+      svg += '<line x1="0" y1="' + y + '" x2="' + w + '" y2="' + y + '" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>';
+    }
+
+    // Drops
+    for(let i = 0; i < scene.drops.length; i++){
+      const d = scene.drops[i];
+      // Compute width/length from impactAngle
+      const sinT = Math.sin(d.impactAngle * Math.PI / 180);
+      const ww = 14;
+      const ll = ww / sinT;
+      // Tail direction: AWAY from source (opposite of backAzimuth), so the drop's tail points away from origin
+      const tailAng = d.backAzimuth + Math.PI;
+      const cx = d.x, cy = d.y;
+      // Rotate ellipse so its major axis is along the tail direction
+      const angDeg = (tailAng * 180 / Math.PI);
+      svg += '<g transform="translate(' + cx + ',' + cy + ') rotate(' + angDeg + ')">';
+      svg += '<defs><radialGradient id="dg' + i + '" cx="35%" cy="50%"><stop offset="0%" stop-color="#A02020"/><stop offset="80%" stop-color="#5A0E0E"/></radialGradient></defs>';
+      svg += '<ellipse cx="0" cy="0" rx="' + (ll/2) + '" ry="' + (ww/2) + '" fill="url(#dg' + i + ')" stroke="#3A0808" stroke-width="0.6"/>';
+      // small tail droplets
+      const tailLen = ll * 0.6;
+      svg += '<circle cx="' + (ll/2 + tailLen*0.4) + '" cy="0" r="2.5" fill="#7A1818" opacity="0.85"/>';
+      svg += '<circle cx="' + (ll/2 + tailLen*0.7) + '" cy="' + (Math.random()*4-2) + '" r="1.6" fill="#7A1818" opacity="0.7"/>';
+      svg += '</g>';
+
+      // Drop label
+      svg += '<text x="' + (cx + 18) + '" y="' + (cy - 14) + '" fill="#FFD479" font-size="11" font-weight="800" font-family="Courier New,monospace">D' + (i+1) + '</text>';
+      svg += '<text x="' + (cx + 18) + '" y="' + (cy - 1) + '" fill="rgba(255,255,255,0.55)" font-size="10" font-family="Courier New,monospace">' + d.impactAngle.toFixed(0) + '&#176;</text>';
+    }
+
+    // Trace lines (only if traced)
+    if(traced){
+      // Each line: from drop, along backAzimuth, far enough to cross
+      for(let i = 0; i < scene.drops.length; i++){
+        const d = scene.drops[i];
+        const x2 = d.x + Math.cos(d.backAzimuth) * 800;
+        const y2 = d.y + Math.sin(d.backAzimuth) * 800;
+        svg += '<line x1="' + d.x + '" y1="' + d.y + '" x2="' + x2 + '" y2="' + y2 + '" stroke="#FF6B6B" stroke-width="1.4" stroke-dasharray="6 4" opacity="0.85"/>';
+      }
+      // Convergence point
+      svg += '<g class="fade-in">';
+      svg += '<circle cx="' + scene.source.x + '" cy="' + scene.source.y + '" r="22" fill="rgba(255,107,107,0.18)" stroke="#FF6B6B" stroke-width="2" stroke-dasharray="3 3"/>';
+      svg += '<circle cx="' + scene.source.x + '" cy="' + scene.source.y + '" r="8" fill="#FF6B6B" stroke="#5A0E0E" stroke-width="2"/>';
+      svg += '<text x="' + (scene.source.x + 14) + '" y="' + (scene.source.y + 32) + '" fill="#FFD479" font-size="11" font-weight="800" font-family="Courier New,monospace">CONVERGENCE</text>';
+      svg += '</g>';
+    }
+
+    // Compass / scale
+    svg += '<g transform="translate(40,' + (h-50) + ')">';
+    svg += '<rect x="-8" y="-8" width="120" height="40" fill="rgba(0,0,0,0.5)" rx="4"/>';
+    svg += '<line x1="0" y1="0" x2="100" y2="0" stroke="white" stroke-width="2"/>';
+    svg += '<line x1="0" y1="-4" x2="0" y2="4" stroke="white" stroke-width="2"/>';
+    svg += '<line x1="100" y1="-4" x2="100" y2="4" stroke="white" stroke-width="2"/>';
+    svg += '<text x="50" y="20" text-anchor="middle" fill="white" font-size="10" font-family="Courier New,monospace">SCALE = 40 cm</text>';
+    svg += '</g>';
+
+    sceneSvg.innerHTML = svg;
+    document.getElementById('sceneStatus').textContent = scene.label;
+  }
+
+  window.loadScene = function(name){
+    currentScene = name;
+    traced = false;
+    document.querySelectorAll('.scene-btn').forEach(b => b.classList.toggle('active', b.dataset.scene === name));
+    document.getElementById('convResult').classList.remove('show');
+    document.getElementById('conv3dConsole').innerHTML =
+      '<span class="formula">// 3D reconstruction</span>' +
+      '<span class="k">trace a scene first to compute source height</span>';
+    renderScene();
+  };
+
+  window.resetScene = function(){
+    traced = false;
+    document.getElementById('convResult').classList.remove('show');
+    document.getElementById('conv3dConsole').innerHTML =
+      '<span class="formula">// 3D reconstruction</span>' +
+      '<span class="k">trace a scene first to compute source height</span>';
+    renderScene();
+  };
+
+  window.traceConvergence = function(){
+    traced = true;
+    renderScene();
+    const scene = SCENES[currentScene];
+    // Compute "found" convergence by averaging pairwise intersections.
+    let sx = 0, sy = 0, ct = 0;
+    const drops = scene.drops;
+    for(let i = 0; i < drops.length; i++){
+      for(let j = i+1; j < drops.length; j++){
+        const a = drops[i], b = drops[j];
+        const x1 = a.x, y1 = a.y, x2 = a.x + Math.cos(a.backAzimuth)*1000, y2 = a.y + Math.sin(a.backAzimuth)*1000;
+        const x3 = b.x, y3 = b.y, x4 = b.x + Math.cos(b.backAzimuth)*1000, y4 = b.y + Math.sin(b.backAzimuth)*1000;
+        const denom = (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4);
+        if(Math.abs(denom) < 0.0001) continue;
+        const t = ((x1-x3)*(y3-y4) - (y1-y3)*(x3-x4)) / denom;
+        const ix = x1 + t*(x2-x1);
+        const iy = y1 + t*(y2-y1);
+        sx += ix; sy += iy; ct++;
+      }
+    }
+    if(ct > 0){ sx /= ct; sy /= ct; }
+    const errorPx = Math.hypot(sx - scene.source.x, sy - scene.source.y);
+    const errorCm = errorPx * 0.4;
+
+    const text = 'Lines back-traced from <strong>' + drops.length + ' drops</strong> converge near (<code>' + Math.round(sx) + ', ' + Math.round(sy) + '</code>). Spread of intersections: about <code>&plusmn;' + errorCm.toFixed(0) + ' cm</code>. The victim was struck within that radius. Court reports cite the <em>area</em>, not a point.';
+    document.getElementById('convResultText').innerHTML = text;
+    document.getElementById('convResult').classList.add('show');
+
+    // 3D reconstruction console
+    // Pick the steepest-angled drop (closest to source, most reliable for height)
+    let steepest = drops[0];
+    for(const d of drops){ if(d.impactAngle > steepest.impactAngle) steepest = d; }
+    const distPx = Math.hypot(steepest.x - sx, steepest.y - sy);
+    const distCm = distPx * 0.4;
+    const heightCm = Math.tan(steepest.impactAngle * Math.PI / 180) * distCm;
+    document.getElementById('conv3dConsole').innerHTML =
+      '<span class="formula">// 3D reconstruction</span>' +
+      '<span class="k">steepest drop......</span> <span class="v">D' + (drops.indexOf(steepest)+1) + '</span> at &theta; = <span class="v">' + steepest.impactAngle.toFixed(1) + '&deg;</span><br>' +
+      '<span class="k">distance to conv...</span> <span class="v">' + distCm.toFixed(0) + ' cm</span><br>' +
+      '<span class="k">tan&theta; &times; distance...</span> = tan(' + steepest.impactAngle.toFixed(0) + '&deg;) &times; ' + distCm.toFixed(0) + '<br>' +
+      '<span class="final">source height &asymp; ' + heightCm.toFixed(0) + ' cm above the floor</span>' +
+      '<div style="color:#8B96A3;margin-top:6px;font-size:11px;">Real source height in case file: ' + scene.sourceHeight + ' cm. Difference: &plusmn;' + Math.abs(heightCm - scene.sourceHeight).toFixed(0) + ' cm.</div>';
+  };
+
+  loadScene('foyer');
+
+  // =========================================================
+  // MODE 3: TRIG DERIVATION
+  // =========================================================
+  const DERIV_STEPS = [
+    {
+      title: 'Step 1: a perfect spherical drop',
+      body: 'Blood drops in flight are roughly <strong>spherical</strong> &mdash; surface tension pulls them into a sphere of radius <em>r</em>. Density is close to water (~1.06 g/mL). For our purposes: a sphere falling through air.',
+      drawer: drawDerivStep1
+    },
+    {
+      title: 'Step 2: hitting a flat surface at angle &theta;',
+      body: 'When that sphere strikes a surface tilted at angle <strong>&theta;</strong> from horizontal (or equivalently, when the drop\'s trajectory makes angle &theta; with the surface), it leaves an <strong>elliptical</strong> stain &mdash; not a circle.',
+      drawer: drawDerivStep2
+    },
+    {
+      title: 'Step 3: width and length of the ellipse',
+      body: 'The <strong>width</strong> (minor axis) of the ellipse equals the original sphere diameter: <code>w = 2r</code>. The <strong>length</strong> (major axis) is stretched by the slant: <code>L = 2r / sin&theta;</code>. The shallower the angle, the longer the streak.',
+      drawer: drawDerivStep3
+    },
+    {
+      title: 'Step 4: divide one by the other',
+      body: '<code>w / L = 2r / (2r / sin&theta;) = sin&theta;</code>. The radius cancels, and the geometry distills to <strong>sin &theta; = width / length</strong>. That\'s the entire formula. Take the inverse sine to get the angle.',
+      drawer: drawDerivStep4
+    }
+  ];
+
+  let derivStep = 0;
+  function renderStepNav(){
+    const nav = document.getElementById('stepNav');
+    let html = '';
+    for(let i = 0; i < DERIV_STEPS.length; i++){
+      const cls = i === derivStep ? 'active' : (i < derivStep ? 'done' : '');
+      html += '<div class="step-dot ' + cls + '" onclick="goToStep(' + i + ')">' + (i+1) + '</div>';
+    }
+    nav.innerHTML = html;
+  }
+  function drawDerivStep(){
+    document.getElementById('stepTitle').textContent = DERIV_STEPS[derivStep].title;
+    document.getElementById('stepBody').innerHTML = DERIV_STEPS[derivStep].body;
+    DERIV_STEPS[derivStep].drawer();
+    renderStepNav();
+    document.getElementById('nextStepBtn').textContent = derivStep === DERIV_STEPS.length - 1 ? 'Restart' : 'Next step →';
+  }
+  window.nextStep = function(){
+    if(derivStep < DERIV_STEPS.length - 1) derivStep++;
+    else derivStep = 0;
+    drawDerivStep();
+  };
+  window.prevStep = function(){
+    if(derivStep > 0) derivStep--;
+    drawDerivStep();
+  };
+  window.goToStep = function(i){
+    derivStep = i;
+    drawDerivStep();
+  };
+
+  function svgFrame(inner){
+    document.getElementById('derivSvg').innerHTML = inner;
+  }
+  function drawDerivStep1(){
+    let s = '';
+    s += '<defs><radialGradient id="ds1" cx="35%" cy="35%"><stop offset="0%" stop-color="#FF6B6B"/><stop offset="60%" stop-color="#A02020"/><stop offset="100%" stop-color="#3A0808"/></radialGradient></defs>';
+    s += '<circle cx="360" cy="180" r="80" fill="url(#ds1)" stroke="#FFD479" stroke-width="2"/>';
+    s += '<ellipse cx="335" cy="155" rx="22" ry="14" fill="rgba(255,255,255,0.3)"/>';
+    // radius arrow
+    s += '<line x1="360" y1="180" x2="440" y2="180" stroke="#FFD479" stroke-width="2"/>';
+    s += '<polygon points="436,176 444,180 436,184" fill="#FFD479"/>';
+    s += '<text x="395" y="172" fill="#FFD479" font-size="20" font-weight="800" font-family="Courier New,monospace">r</text>';
+    // labels
+    s += '<text x="360" y="50" text-anchor="middle" fill="white" font-size="14" font-weight="800" font-family="Segoe UI,sans-serif">Spherical drop in flight</text>';
+    s += '<text x="360" y="290" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="12" font-family="Segoe UI,sans-serif">surface tension &rarr; sphere of radius r</text>';
+    svgFrame(s);
+  }
+  function drawDerivStep2(){
+    let s = '';
+    // Surface tilted
+    s += '<line x1="80" y1="260" x2="640" y2="120" stroke="#D4A843" stroke-width="3"/>';
+    s += '<rect x="80" y="260" width="560" height="40" fill="rgba(212,168,67,0.1)" transform="skewY(-14)" />';
+    // Drop above, projecting down
+    s += '<defs><radialGradient id="ds2" cx="35%" cy="35%"><stop offset="0%" stop-color="#FF6B6B"/><stop offset="100%" stop-color="#5A0E0E"/></radialGradient></defs>';
+    s += '<circle cx="360" cy="100" r="36" fill="url(#ds2)" stroke="#FFD479" stroke-width="1.5"/>';
+    // Trajectory dashed straight down
+    s += '<line x1="360" y1="136" x2="360" y2="190" stroke="#FF6B6B" stroke-width="1.5" stroke-dasharray="5 4"/>';
+    // Stain projection (ellipse on the slanted surface)
+    s += '<ellipse cx="360" cy="190" rx="60" ry="20" fill="#8B1A1A" stroke="#3A0808" stroke-width="1.5" transform="rotate(-14 360 190)"/>';
+    // angle arc
+    s += '<path d="M 460 213 A 50 50 0 0 0 480 188" fill="none" stroke="#58E5DC" stroke-width="2"/>';
+    s += '<text x="490" y="208" fill="#58E5DC" font-size="20" font-weight="800" font-family="Courier New,monospace">&theta;</text>';
+    // labels
+    s += '<text x="360" y="38" text-anchor="middle" fill="white" font-size="14" font-weight="800" font-family="Segoe UI,sans-serif">Sphere meets tilted surface</text>';
+    s += '<text x="360" y="335" text-anchor="middle" fill="rgba(255,255,255,0.6)" font-size="12" font-family="Segoe UI,sans-serif">stain shape: ellipse, not circle</text>';
+    svgFrame(s);
+  }
+  function drawDerivStep3(){
+    let s = '';
+    // Top-down ellipse
+    s += '<defs><radialGradient id="ds3" cx="35%" cy="50%"><stop offset="0%" stop-color="#A02020"/><stop offset="100%" stop-color="#3A0808"/></radialGradient></defs>';
+    const cx = 360, cy = 180, rx = 160, ry = 70;
+    s += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="url(#ds3)" stroke="#FFD479" stroke-width="2"/>';
+    // major axis (length)
+    s += '<line x1="' + (cx-rx) + '" y1="' + (cy+ry+30) + '" x2="' + (cx+rx) + '" y2="' + (cy+ry+30) + '" stroke="#FFD479" stroke-width="2"/>';
+    s += '<line x1="' + (cx-rx) + '" y1="' + (cy+ry+24) + '" x2="' + (cx-rx) + '" y2="' + (cy+ry+36) + '" stroke="#FFD479" stroke-width="2"/>';
+    s += '<line x1="' + (cx+rx) + '" y1="' + (cy+ry+24) + '" x2="' + (cx+rx) + '" y2="' + (cy+ry+36) + '" stroke="#FFD479" stroke-width="2"/>';
+    s += '<text x="' + cx + '" y="' + (cy+ry+52) + '" text-anchor="middle" fill="#FFD479" font-size="15" font-weight="800" font-family="Courier New,monospace">L = 2r / sin&theta;</text>';
+    // minor axis (width)
+    s += '<line x1="' + (cx-rx-30) + '" y1="' + (cy-ry) + '" x2="' + (cx-rx-30) + '" y2="' + (cy+ry) + '" stroke="#58E5DC" stroke-width="2"/>';
+    s += '<line x1="' + (cx-rx-36) + '" y1="' + (cy-ry) + '" x2="' + (cx-rx-24) + '" y2="' + (cy-ry) + '" stroke="#58E5DC" stroke-width="2"/>';
+    s += '<line x1="' + (cx-rx-36) + '" y1="' + (cy+ry) + '" x2="' + (cx-rx-24) + '" y2="' + (cy+ry) + '" stroke="#58E5DC" stroke-width="2"/>';
+    s += '<text x="' + (cx-rx-44) + '" y="' + (cy+5) + '" text-anchor="end" fill="#58E5DC" font-size="15" font-weight="800" font-family="Courier New,monospace">w = 2r</text>';
+    // title
+    s += '<text x="360" y="38" text-anchor="middle" fill="white" font-size="14" font-weight="800" font-family="Segoe UI,sans-serif">The ellipse&rsquo;s axes</text>';
+    svgFrame(s);
+  }
+  function drawDerivStep4(){
+    let s = '';
+    s += '<rect x="60" y="80" width="600" height="200" rx="16" fill="rgba(255,255,255,0.04)" stroke="rgba(212,168,67,0.4)" stroke-width="2" stroke-dasharray="6 4"/>';
+    s += '<text x="360" y="125" text-anchor="middle" fill="white" font-size="13" font-weight="800" font-family="Segoe UI,sans-serif">Substitute the axes:</text>';
+    s += '<text x="360" y="160" text-anchor="middle" fill="#FFD479" font-size="22" font-weight="800" font-family="Courier New,monospace">w / L = 2r / (2r / sin&theta;)</text>';
+    s += '<text x="360" y="200" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="13" font-family="Segoe UI,sans-serif">the 2r terms cancel...</text>';
+    s += '<text x="360" y="245" text-anchor="middle" fill="#58E5DC" font-size="28" font-weight="800" font-family="Courier New,monospace">sin &theta; = width / length</text>';
+    s += '<text x="360" y="305" text-anchor="middle" fill="rgba(255,255,255,0.7)" font-size="13" font-family="Segoe UI,sans-serif">no matter the drop size, the geometry holds</text>';
+    svgFrame(s);
+  }
+
+  window.checkDeriv = function(btn, isCorrect){
+    const opts = btn.parentElement.querySelectorAll('.opt');
+    opts.forEach(o => o.disabled = true);
+    btn.classList.add(isCorrect ? 'correct' : 'wrong');
+    if(!isCorrect){
+      // Highlight the right answer
+      opts.forEach(o => { if(o.textContent.indexOf('B.') === 0) o.classList.add('correct'); });
+    }
+    const ex = document.getElementById('derivExplain');
+    ex.innerHTML = isCorrect
+      ? '<strong>Right.</strong> 6 / 10 = 0.6, then sin<sup>&minus;1</sup>(0.6) = 36.87&deg;. That&rsquo;s a medium-shallow impact &mdash; the kind of stain you&rsquo;d see on a wall a meter or two from the source.'
+      : '<strong>Walk it again:</strong> ratio is 6 &divide; 10 = 0.6, then sin<sup>&minus;1</sup>(0.6) = 36.87&deg;. Cosine inverse of the same number gives 53.13&deg; (the complement), so it\'s easy to mix them up under exam pressure.';
+    ex.style.display = 'block';
+  };
+
+  // =========================================================
+  // MODE 4: QUIZ
+  // =========================================================
+  const QUIZ = [
+    {
+      q: 'A blood drop measures 5 mm wide and 10 mm long. What is the angle of impact?',
+      opts: [
+        { t: '15&deg;', c: false },
+        { t: '30&deg; &mdash; sin&#8315;&sup1;(0.5) = 30&deg;', c: true },
+        { t: '45&deg;', c: false },
+        { t: '60&deg;', c: false }
+      ],
+      ex: 'Width / length = 0.5. <strong>sin&#8315;&sup1;(0.5) = 30&deg;</strong>. Same as a half-angle on the unit circle. This is a low-angle drop &mdash; usually wall spatter, not floor.'
+    },
+    {
+      q: 'A drop is nearly perfectly circular (width &asymp; length). The angle of impact is closest to:',
+      opts: [
+        { t: '15&deg;', c: false },
+        { t: '45&deg;', c: false },
+        { t: '90&deg; &mdash; the drop fell straight down', c: true },
+        { t: '180&deg;', c: false }
+      ],
+      ex: 'When width = length, ratio is 1, and <strong>sin&#8315;&sup1;(1) = 90&deg;</strong>. This is a passive drip from directly above &mdash; no horizontal motion. Common for dripping wounds or weapons set down.'
+    },
+    {
+      q: 'You have 5 blood drops with elongated tails on a wall. What does back-tracing the long axes give you?',
+      opts: [
+        { t: 'The weapon used', c: false },
+        { t: 'The DNA profile', c: false },
+        { t: 'The area of convergence &mdash; where the source was', c: true },
+        { t: 'The blood type', c: false }
+      ],
+      ex: 'The lines through each drop\'s long axis, traced back, intersect near the <strong>area of convergence</strong>: a 2D region on the floor (or wall) where the spatter source was. Combined with the impact angles, you can solve the third dimension.'
+    },
+    {
+      q: 'Once you have angle of impact and convergence point, the formula for source height is:',
+      opts: [
+        { t: 'sin &theta; &times; distance', c: false },
+        { t: 'tan &theta; &times; distance &mdash; rise over run', c: true },
+        { t: 'cos &theta; / distance', c: false },
+        { t: 'distance / sin &theta;', c: false }
+      ],
+      ex: '<strong>tan &theta; = opposite / adjacent</strong>, where the opposite side is height above the floor and adjacent is horizontal distance to the convergence. Rearrange: <strong>height = tan &theta; &times; distance</strong>.'
+    },
+    {
+      q: 'In the O.J. Simpson trial, what was the famous bloodstain pattern controversy?',
+      opts: [
+        { t: 'No blood was ever found', c: false },
+        { t: 'The blood was the wrong type', c: false },
+        { t: 'Experts disagreed on impact angles and what the patterns proved', c: true },
+        { t: 'The blood was painted on with a brush', c: false }
+      ],
+      ex: 'The defense and prosecution presented <strong>conflicting expert interpretations</strong> of the same bloodstain evidence, particularly around impact angles and timing. The case became a famous example of why peer review and standardization matter in BPA &mdash; and contributed to the 2009 NAS report.'
+    },
+    {
+      q: 'Which type of pattern is created by blood flung off a swung weapon?',
+      opts: [
+        { t: 'Passive drip pattern', c: false },
+        { t: 'Cast-off pattern &mdash; arcs of low-angle drops', c: true },
+        { t: 'Pool pattern', c: false },
+        { t: 'Transfer pattern', c: false }
+      ],
+      ex: '<strong>Cast-off</strong> patterns are arcs of elongated, low-angle drops thrown from a swinging weapon. Each arc represents one swing. Counting the distinct arcs can give you a minimum number of blows.'
+    },
+    {
+      q: 'IABPA certification (International Association of Bloodstain Pattern Analysts) requires:',
+      opts: [
+        { t: 'A weekend workshop', c: false },
+        { t: 'A PhD in physics', c: false },
+        { t: '80+ hours of coursework plus a court-admissible casework portfolio', c: true },
+        { t: 'A medical license', c: false }
+      ],
+      ex: 'IABPA-certified analysts must complete <strong>at least 80 hours of formal training</strong>, document <strong>casework reviewed by peers</strong>, and pass an exam. Many also hold related certifications in crime scene reconstruction or forensic science.'
+    },
+    {
+      q: 'A drop measures 4 mm by 8 mm. Tail points east. What can you say with confidence?',
+      opts: [
+        { t: 'The source was east of this drop', c: false },
+        { t: 'The drop was traveling east when it hit. Source is to the WEST.', c: true },
+        { t: 'The angle of impact is 60&deg;', c: false },
+        { t: 'The blood is dripping passively', c: false }
+      ],
+      ex: 'The <strong>tail points in the direction of travel</strong>. So this drop was moving east, meaning it came from the west. Angle of impact = sin&#8315;&sup1;(4/8) = sin&#8315;&sup1;(0.5) = 30&deg;. Combined with direction and 4-5 other drops, you back-trace to the source.'
+    }
+  ];
+
+  let qIdx = 0, qScore = 0, qAnswered = false;
+
+  function renderQuiz(){
+    const card = document.getElementById('quizCard');
+    if(qIdx >= QUIZ.length){
+      card.style.display = 'none';
+      const sc = document.getElementById('scoreCard');
+      sc.style.display = 'block';
+      document.getElementById('scoreBig').textContent = qScore + ' / ' + QUIZ.length;
+      let sub = '';
+      if(qScore === QUIZ.length) sub = 'Perfect run. You\'d be ready for an IABPA proficiency test.';
+      else if(qScore >= 6) sub = 'Strong analysis. Real BPA work has more uncertainty &mdash; this is solid foundation.';
+      else if(qScore >= 4) sub = 'Decent. Review the trig derivation and try again. The math is the easy part.';
+      else sub = 'Walk through the Single Drop and Trig Derivation modes, then come back. The geometry takes practice.';
+      document.getElementById('scoreSub').textContent = sub;
+      const pearlBox = document.getElementById('pearlQuiz');
+      pearlBox.style.display = 'block';
+      setPearl('pearlQuizText', randomPearl());
+      return;
+    }
+    card.style.display = 'block';
+    document.getElementById('scoreCard').style.display = 'none';
+    document.getElementById('pearlQuiz').style.display = 'none';
+
+    qAnswered = false;
+    const q = QUIZ[qIdx];
+    document.getElementById('quizMeta').textContent = 'Question ' + (qIdx+1) + ' of ' + QUIZ.length + ' &middot; Score: ' + qScore;
+    document.getElementById('quizQ').innerHTML = q.q;
+    let optsHtml = '';
+    for(let i = 0; i < q.opts.length; i++){
+      optsHtml += '<button class="opt" data-i="' + i + '">' + String.fromCharCode(65+i) + '. ' + q.opts[i].t + '</button>';
+    }
+    document.getElementById('quizOpts').innerHTML = optsHtml;
+    document.getElementById('quizExplain').style.display = 'none';
+    document.getElementById('quizNav').style.display = 'none';
+
+    document.querySelectorAll('#quizOpts .opt').forEach(b => {
+      b.addEventListener('click', function(){
+        if(qAnswered) return;
+        qAnswered = true;
+        const i = parseInt(this.dataset.i, 10);
+        const correct = q.opts[i].c;
+        if(correct) qScore++;
+        document.querySelectorAll('#quizOpts .opt').forEach((bb, idx) => {
+          bb.disabled = true;
+          if(q.opts[idx].c) bb.classList.add('correct');
+          else if(idx === i) bb.classList.add('wrong');
+        });
+        document.getElementById('quizExplain').innerHTML = (correct ? '<strong>Correct.</strong> ' : '<strong>Not quite.</strong> ') + q.ex;
+        document.getElementById('quizExplain').style.display = 'block';
+        document.getElementById('quizNav').style.display = 'flex';
+        document.getElementById('quizMeta').textContent = 'Question ' + (qIdx+1) + ' of ' + QUIZ.length + ' &middot; Score: ' + qScore;
+      });
+    });
+  }
+
+  window.nextQuiz = function(){
+    qIdx++;
+    renderQuiz();
+  };
+  window.resetQuiz = function(){
+    qIdx = 0; qScore = 0;
+    renderQuiz();
+  };
+
+  renderQuiz();
+  drawDerivStep();
+
+})();
+</script>
+</body>
+</html>

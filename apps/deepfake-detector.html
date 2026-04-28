@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deepfake Detector - Chabot STEM 2026</title>
+  <script crossorigin src="https://unpkg.com/react@18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.23.9/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:#F0F4F8;min-height:100vh}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes pop{0%{transform:scale(0.85);opacity:0}60%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+    @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+    @keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(230,92,60,0.45)}50%{box-shadow:0 0 0 8px rgba(230,92,60,0)}}
+    .fade-in{animation:fadeIn .3s ease-out}
+    .slide-up{animation:slideUp .4s ease-out}
+    .pop{animation:pop .35s ease-out}
+    .shake{animation:shake .3s ease-out}
+    .flag{display:inline;cursor:pointer;padding:1px 4px;border-radius:4px;border:1px dashed transparent;transition:all .15s}
+    .flag:hover{border-color:#D4A843;background:rgba(212,168,67,0.12)}
+    .flag.found{background:rgba(39,174,96,0.18);border:1px solid #27AE60;color:#1B6E3A;font-weight:600}
+    .artifact-zone{position:absolute;cursor:pointer;border-radius:50%;transition:all .2s}
+    .artifact-zone:hover{background:rgba(212,168,67,0.18)}
+    .artifact-zone.found{background:rgba(39,174,96,0.20);border:2px solid #27AE60}
+    .artifact-zone.wrong{background:rgba(192,57,43,0.20);border:2px solid #C0392B;animation:shake .3s ease-out}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+  const {useState,useMemo} = React;
+  const NAVY="#1B3A5C",TEAL="#2A9D8F",TEAL_DARK="#1A6B6B",GOLD="#D4A843",WHITE="#FFFFFF",
+        RED="#C0392B",GREEN="#27AE60",YELLOW="#F39C12",DARK="#333",MED="#666",
+        R=14,SHADOW="0 2px 10px rgba(0,0,0,.08)";
+
+  const WovenLogo=({size=20})=>(<svg viewBox="0 0 40 40" width={size} height={size} style={{flexShrink:0}}>
+    <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity=".85"/>
+    <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity=".85"/>
+    <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity=".85"/>
+    <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity=".85"/>
+  </svg>);
+
+  const AppHeader=({subtitle})=>(<div style={{background:"linear-gradient(135deg,#1B3A5C 0%,#2A9D8F 100%)",padding:"12px 20px",display:"flex",alignItems:"center",gap:10,borderBottom:`3px solid ${GOLD}`}}>
+    <WovenLogo size={24}/>
+    <div style={{flex:1}}>
+      <div style={{fontSize:15,fontWeight:800,color:WHITE,letterSpacing:.3}}>Chabot STEM 2026</div>
+      <div style={{fontSize:11,color:"rgba(255,255,255,.75)",fontWeight:500}}>{subtitle||"Deepfake Detector"}</div>
+    </div>
+    <span style={{fontSize:20}}>🎭</span>
+  </div>);
+
+  const AppFooter=()=>(<div style={{textAlign:"center",padding:"14px 20px",borderTop:`3px solid ${GOLD}`,background:WHITE,fontSize:11,color:"#999",display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginTop:24}}>
+    <WovenLogo size={14}/>
+    <span>Built by <strong style={{color:TEAL_DARK}}>Woven Learning &amp; Technology</strong></span>
+  </div>);
+
+  const Btn=({children,onClick,primary,style={}})=>(<button onClick={onClick} style={{background:primary?`linear-gradient(135deg,${TEAL},${TEAL_DARK})`:WHITE,color:primary?WHITE:NAVY,border:primary?"none":`2px solid ${TEAL}`,borderRadius:10,padding:"11px 24px",fontSize:14,fontWeight:700,cursor:"pointer",transition:"all .2s",boxShadow:primary?"0 2px 8px rgba(42,157,143,.25)":SHADOW,fontFamily:"inherit",...style}}>{children}</button>);
+
+  const Card=({children,style={}})=>(<div style={{background:WHITE,borderRadius:R,padding:20,boxShadow:"0 4px 20px rgba(0,0,0,.08)",marginBottom:16,...style}}>{children}</div>);
+
+  const SectionLabel=({children})=>(<div style={{fontSize:10,fontWeight:700,color:MED,textTransform:"uppercase",letterSpacing:1.5,marginBottom:6}}>{children}</div>);
+
+  // ===== Pearls =====
+  const pearls = [
+    "Hands are the hardest thing for AI image generators. If hands look weird, it's almost certainly fake.",
+    "Reverse image search catches reposted fakes in seconds. Right-click any image, search Google.",
+    "AI deepfakes were 78% of disinformation in 2024 elections, up from 12% in 2020.",
+    "EXIF metadata gets stripped on social media. The original camera info is gone.",
+    "Reality Defender, Sensity, and Truepic are real tools used by Reuters, AP, Microsoft.",
+    "The first deepfake hit Reddit in 2017. By 2024, generation tools were free and one-click.",
+    "If you can find the same image with an older date elsewhere - it's a repost, not breaking news.",
+    "Voice deepfakes need only 3 seconds of source audio in 2024. Voicemail greetings are enough.",
+    "Most fake images today have AT LEAST one tell. Train your eye on hands, eyes, and ears first.",
+    "Bay Area employers (Twitter, Reddit, OpenAI, Meta) all run dedicated trust-and-safety teams looking for this stuff.",
+    "Asking 'who benefits if I believe this?' catches more fakes than any technical tool.",
+    "When in doubt, wait 24 hours. Fakes get debunked fast - real news stays true.",
+  ];
+  const randomPearl = () => pearls[Math.floor(Math.random()*pearls.length)];
+
+  // ===== Mode 1: Image cards with clickable artifact zones =====
+  // Each "image" is a styled card with an SVG silhouette + position-based clickable artifacts.
+  // Real photos = no artifacts; trap on case 8.
+
+  const IMAGES = [
+    {
+      id: 1,
+      title: "AI portrait #1: 'Woman holding coffee'",
+      caption: "Marketed as 'cozy cafe vibes' on a stock photo site.",
+      bgColor: "#3D2817",
+      artifacts: [
+        {id:"hand", x:65, y:62, label:"Six fingers on the cup hand", explain:"Count the fingers gripping the cup. There are six. Hands are the #1 deepfake tell."},
+        {id:"steam", x:55, y:30, label:"Steam shape repeats unnaturally", explain:"Steam patterns from real coffee are random. AI tends to repeat the same swirl shape."},
+      ],
+      decoys: [{x:40, y:50, why:"That's just hair. Hair is hard to fake but this one is fine."}],
+      isReal: false,
+    },
+    {
+      id: 2,
+      title: "AI portrait #2: 'Businesswoman, Q4 deck'",
+      caption: "Used as a stock photo in a corporate presentation.",
+      bgColor: "#1A3A52",
+      artifacts: [
+        {id:"earring", x:30, y:45, label:"Mismatched earrings", explain:"Left earring is a stud, right is a hoop. AI rarely renders matched pairs."},
+        {id:"text", x:58, y:80, label:"Garbled text on the lanyard", explain:"The badge text is gibberish. AI can't yet render readable text reliably."},
+      ],
+      decoys: [{x:50, y:30, why:"That's just a hairline. Looks fine."}],
+      isReal: false,
+    },
+    {
+      id: 3,
+      title: "AI portrait #3: 'Father and son at the park'",
+      caption: "Posted on a parenting blog.",
+      bgColor: "#2D4A2E",
+      artifacts: [
+        {id:"hand", x:42, y:60, label:"Father's hand has a fused finger", explain:"Two fingers melt together where you'd expect a clear gap. Classic AI failure."},
+        {id:"shadow", x:25, y:85, label:"Shadow points the wrong way", explain:"Sun is on the LEFT but shadow falls to the LEFT. Sun and shadow should be on opposite sides."},
+        {id:"eyes", x:58, y:35, label:"Son's eyes are different colors", explain:"One eye is brown, one is hazel. Heterochromia is rare; AI confuses eye colors mid-render."},
+      ],
+      decoys: [],
+      isReal: false,
+    },
+    {
+      id: 4,
+      title: "AI portrait #4: 'Construction worker on site'",
+      caption: "Used to illustrate a news article about labor shortages.",
+      bgColor: "#5C3A1F",
+      artifacts: [
+        {id:"hardhat", x:50, y:18, label:"Helmet logo melts into the helmet", explain:"Real helmets have crisp printed logos. AI smears letters and shapes."},
+        {id:"glove", x:38, y:65, label:"Glove fingertips go to a thumb that doesn't exist", explain:"There's no thumb on this hand. Look at the glove geometry carefully."},
+      ],
+      decoys: [{x:60, y:45, why:"That's just a strap. Looks fine."}],
+      isReal: false,
+    },
+    {
+      id: 5,
+      title: "AI portrait #5: 'Doctor consulting tablet'",
+      caption: "Posted on a healthcare company's homepage.",
+      bgColor: "#283845",
+      artifacts: [
+        {id:"stetho", x:30, y:55, label:"Stethoscope tubing splits in two then merges", explain:"Stethoscope tubes are one piece. AI sometimes paints them as Y-shaped."},
+        {id:"badge", x:60, y:50, label:"ID badge text is gibberish", explain:"The hospital ID badge text reads 'Dctorr Smithy MDD'. Garbled text = AI tell."},
+        {id:"finger", x:48, y:72, label:"Tablet-tapping finger has no fingernail", explain:"Look at the index finger touching the screen. No fingernail. AI artifact."},
+      ],
+      decoys: [],
+      isReal: false,
+    },
+    {
+      id: 6,
+      title: "AI portrait #6: 'Politician at podium'",
+      caption: "Shared on social media with caption 'BREAKING: surprise statement'.",
+      bgColor: "#3A2D45",
+      artifacts: [
+        {id:"flag", x:75, y:30, label:"Flag stripes don't line up at the seam", explain:"American flag has 13 stripes. The AI rendered the bottom half with a different count than the top half."},
+        {id:"mic", x:48, y:55, label:"Microphone wire goes nowhere", explain:"The mic cable curves off into thin air instead of going to the podium or audio rig."},
+        {id:"glasses", x:40, y:32, label:"Reflection in glasses doesn't match the room", explain:"The reflected scene shows daylight but the room is clearly evening. Mirror physics broken."},
+      ],
+      decoys: [{x:60, y:65, why:"That's just the suit. Looks fine."}],
+      isReal: false,
+    },
+    {
+      id: 7,
+      title: "AI portrait #7: 'Crowd at concert'",
+      caption: "Trending viral image on Twitter / X.",
+      bgColor: "#1F2D3D",
+      artifacts: [
+        {id:"face1", x:30, y:50, label:"Face in crowd has no nose", explain:"Look closely at the second face from the left. The space between mouth and eyes is just smooth skin."},
+        {id:"face2", x:55, y:48, label:"Two faces share an ear", explain:"Where the third and fourth faces meet, they share a single ear between them."},
+        {id:"hand", x:75, y:65, label:"A hand has 7 fingers", explain:"Count the fingers on the raised hand. AI deepfakes love giving you extra fingers in busy scenes."},
+      ],
+      decoys: [],
+      isReal: false,
+    },
+    {
+      id: 8,
+      title: "Real photo: 'Engineer at her desk'",
+      caption: "REAL human photograph with EXIF data intact. (TRAP - find no artifacts.)",
+      bgColor: "#3D3D3D",
+      artifacts: [],
+      decoys: [
+        {x:50, y:50, why:"Nothing wrong here. This is a real photo."},
+        {x:30, y:40, why:"Real human face, real human hand. Don't over-triage."},
+      ],
+      isReal: true,
+    },
+  ];
+
+  function ImageCard({img, onComplete}) {
+    const [foundIds, setFoundIds] = useState([]);
+    const [wrongClicks, setWrongClicks] = useState(0);
+    const [feedback, setFeedback] = useState(null);
+    const [done, setDone] = useState(false);
+
+    const totalArtifacts = img.artifacts.length;
+    const allFound = foundIds.length === totalArtifacts;
+
+    const click = (kind, item) => {
+      if (done) return;
+      if (kind === "artifact") {
+        if (!foundIds.includes(item.id)) {
+          setFoundIds([...foundIds, item.id]);
+          setFeedback({type: "good", text: item.label + ". " + item.explain});
+        }
+      } else {
+        setWrongClicks(wrongClicks + 1);
+        setFeedback({type: "bad", text: item.why || "Nothing wrong here."});
+      }
+    };
+
+    const finish = () => {
+      setDone(true);
+      const score = foundIds.length - Math.floor(wrongClicks * 0.5);
+      onComplete({total: totalArtifacts, found: foundIds.length, wrong: wrongClicks, score: Math.max(0, score), isRealCase: img.isReal});
+    };
+
+    return (
+      <div className="slide-up">
+        <Card>
+          <SectionLabel>Image {img.id} of {IMAGES.length}</SectionLabel>
+          <div style={{fontSize:15,fontWeight:800,color:NAVY,marginBottom:4}}>{img.title}</div>
+          <p style={{fontSize:12,color:MED,marginBottom:12,fontStyle:"italic"}}>{img.caption}</p>
+
+          {/* Stylized "image" canvas with clickable artifact zones */}
+          <div style={{position:"relative",width:"100%",aspectRatio:"4/3",background:img.bgColor,borderRadius:10,overflow:"hidden",border:"2px solid "+NAVY}}>
+            {/* Generic head + body silhouette via SVG */}
+            <svg viewBox="0 0 100 75" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
+              <ellipse cx="50" cy="32" rx="14" ry="17" fill="rgba(255,255,255,0.18)"/>
+              <path d="M20,75 Q20,52 50,52 Q80,52 80,75 Z" fill="rgba(255,255,255,0.12)"/>
+              <circle cx="44" cy="30" r="1.4" fill="rgba(255,255,255,0.6)"/>
+              <circle cx="56" cy="30" r="1.4" fill="rgba(255,255,255,0.6)"/>
+              <path d="M46,38 Q50,40 54,38" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" fill="none"/>
+            </svg>
+            {/* Artifact zones */}
+            {img.artifacts.map(a => (
+              <div key={a.id} className={"artifact-zone " + (foundIds.includes(a.id) ? "found" : "")}
+                onClick={() => click("artifact", a)}
+                style={{left:a.x+"%", top:a.y+"%", width:48, height:48, transform:"translate(-50%,-50%)"}}>
+              </div>
+            ))}
+            {/* Decoy zones */}
+            {img.decoys.map((d, i) => (
+              <div key={"d"+i} className="artifact-zone"
+                onClick={() => click("decoy", d)}
+                style={{left:d.x+"%", top:d.y+"%", width:48, height:48, transform:"translate(-50%,-50%)"}}>
+              </div>
+            ))}
+            {/* Found counter */}
+            <div style={{position:"absolute",top:8,right:10,background:"rgba(0,0,0,0.6)",color:"#0ABAB5",fontFamily:"Courier New, monospace",fontSize:13,fontWeight:700,padding:"4px 10px",borderRadius:6,textShadow:"0 0 6px rgba(10,186,181,0.6)"}}>
+              {img.isReal ? "REAL? CLICK 'CONFIRM REAL' BELOW" : `${foundIds.length}/${totalArtifacts} FOUND`}
+            </div>
+          </div>
+
+          {feedback && (
+            <div className="fade-in" style={{marginTop:12,padding:"10px 14px",background:feedback.type==="good"?"#E8F8F1":"#FFF5F5",borderLeft:`4px solid ${feedback.type==="good"?GREEN:RED}`,borderRadius:8,fontSize:13,color:DARK,lineHeight:1.5}}>
+              {feedback.text}
+            </div>
+          )}
+
+          <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
+            {!img.isReal && (
+              <Btn primary onClick={finish}>{allFound ? "All Found - Continue →" : `Submit (${foundIds.length}/${totalArtifacts})`}</Btn>
+            )}
+            {img.isReal && (
+              <Btn primary onClick={() => { setFeedback({type:"good",text:"Correct! This was a real photo. Trusting your eye instead of over-triaging is half the skill."}); setTimeout(finish, 600); }}>Confirm Real Photo</Btn>
+            )}
+          </div>
+          <div style={{marginTop:10,fontSize:11,color:MED}}>Wrong clicks: {wrongClicks}</div>
+        </Card>
+      </div>
+    );
+  }
+
+  function SpotMode({onBack}) {
+    const [idx, setIdx] = useState(0);
+    const [results, setResults] = useState([]);
+    const [done, setDone] = useState(false);
+
+    const handleComplete = (r) => {
+      const next = [...results, r];
+      setResults(next);
+      if (idx + 1 >= IMAGES.length) {
+        setDone(true);
+      } else {
+        setTimeout(() => setIdx(idx + 1), 800);
+      }
+    };
+
+    if (done) {
+      const totalScore = results.reduce((s,r) => s + r.score, 0);
+      const totalFound = results.reduce((s,r) => s + r.found, 0);
+      const totalArtifacts = results.reduce((s,r) => s + r.total, 0);
+      const totalWrong = results.reduce((s,r) => s + r.wrong, 0);
+      return (<div className="fade-in">
+        <Card style={{textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>🎭</div>
+          <div style={{fontSize:32,fontWeight:800,color:NAVY,lineHeight:1}}>{totalFound} / {totalArtifacts}</div>
+          <div style={{fontSize:13,color:MED,margin:"8px 0"}}>Real artifacts found</div>
+          <div style={{fontSize:13,color:MED,marginBottom:14}}>Wrong clicks (false positives): {totalWrong}</div>
+          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
+            <strong>Field Pearl:</strong> {randomPearl()}
+          </div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            <Btn primary onClick={() => { setIdx(0); setResults([]); setDone(false); }}>Try Again</Btn>
+            <Btn onClick={onBack}>Menu</Btn>
+          </div>
+        </Card>
+      </div>);
+    }
+
+    return (<div>
+      <ImageCard key={idx} img={IMAGES[idx]} onComplete={handleComplete}/>
+    </div>);
+  }
+
+  // ===== Mode 2: Voice Analyzer =====
+  const VOICE_SAMPLES = [
+    {
+      id: 1,
+      label: "Voice clip A: 'Hi, this is Sarah from accounts payable. Can you wire $4,800 to this account today?'",
+      tells: [
+        "Volume stays unnaturally consistent — no drop at sentence ends",
+        "No breathing pause between 'accounts payable' and 'Can you'",
+        "The 's' sound has a robotic edge",
+      ],
+      isAI: true,
+      explain: "This is an AI voice clone. The flat-line volume and missing breath give it away. Real people sigh, breathe, and trail off.",
+    },
+    {
+      id: 2,
+      label: "Voice clip B: 'Hey... uh, yeah. So I was wondering... mmm... if you could pick up... [pause]... pick up some milk on your way home? Thanks, love you.'",
+      tells: [
+        "Filler words ('uh', 'mmm') sound natural",
+        "Pauses are uneven and human",
+        "Voice trails off naturally at the end",
+      ],
+      isAI: false,
+      explain: "Real human voice. The 'uh' and 'mmm' fillers, the trailing 'love you' — all things AI struggles to produce.",
+    },
+    {
+      id: 3,
+      label: "Voice clip C: 'Mom, I'm in trouble. Need bail money. Send $2000 to this number right now. Please.'",
+      tells: [
+        "Pitch jumps unnaturally between sentences",
+        "Stress on 'PLEASE' is over-emphasized in a robotic way",
+        "Background sounds completely silent (real phone calls have ambient noise)",
+      ],
+      isAI: true,
+      explain: "This is an AI voice scam. 'Grandma scams' use cloned voices of relatives. 3 seconds of source audio (a voicemail greeting) is enough to clone a voice in 2024.",
+    },
+    {
+      id: 4,
+      label: "Voice clip D: '[laughter] Oh my god, you would NOT BELIEVE what happened today. So I'm at the store and—'",
+      tells: [
+        "Genuine laughter (AI struggles to produce real laughter)",
+        "Mid-sentence interruption mid-thought",
+        "Spontaneous emphasis on 'NOT BELIEVE'",
+      ],
+      isAI: false,
+      explain: "Real human. Spontaneous laughter and mid-sentence pivots are hard for AI to fake convincingly.",
+    },
+  ];
+
+  function VoiceMode({onBack}) {
+    const [idx, setIdx] = useState(0);
+    const [picks, setPicks] = useState([]);
+    const [feedback, setFeedback] = useState(null);
+
+    const pick = (guessIsAI) => {
+      const sample = VOICE_SAMPLES[idx];
+      const correct = guessIsAI === sample.isAI;
+      setFeedback({correct, sample});
+      setPicks([...picks, correct]);
+    };
+
+    const next = () => {
+      setFeedback(null);
+      if (idx + 1 < VOICE_SAMPLES.length) setIdx(idx + 1);
+      else setIdx(VOICE_SAMPLES.length); // done state
+    };
+
+    if (idx >= VOICE_SAMPLES.length) {
+      const score = picks.filter(p => p).length;
+      return (<div className="fade-in">
+        <Card style={{textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>🔊</div>
+          <div style={{fontSize:32,fontWeight:800,color:NAVY}}>{score} / {VOICE_SAMPLES.length}</div>
+          <div style={{fontSize:13,color:MED,margin:"8px 0 14px"}}>Correct voice IDs</div>
+          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
+            <strong>Field Pearl:</strong> {randomPearl()}
+          </div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            <Btn primary onClick={() => {setIdx(0); setPicks([]); setFeedback(null);}}>Try Again</Btn>
+            <Btn onClick={onBack}>Menu</Btn>
+          </div>
+        </Card>
+      </div>);
+    }
+
+    const sample = VOICE_SAMPLES[idx];
+    return (<div>
+      <Card className="slide-up">
+        <SectionLabel>Voice clip {idx+1} of {VOICE_SAMPLES.length}</SectionLabel>
+        <div style={{padding:"14px 16px",background:"#0a0a0a",borderRadius:10,marginBottom:14,position:"relative"}}>
+          {/* Stylized waveform */}
+          <svg viewBox="0 0 200 30" style={{width:"100%",height:30,marginBottom:8}}>
+            {Array.from({length:40}).map((_,i) => {
+              const h = sample.isAI ? 8 + Math.sin(i*0.4)*3 : 4 + Math.random()*16;
+              return <rect key={i} x={i*5} y={(30-h)/2} width="3" height={h} fill="#0ABAB5"/>;
+            })}
+          </svg>
+          <div style={{fontFamily:"Courier New, monospace",fontSize:12,color:"#0ABAB5",textShadow:"0 0 5px rgba(10,186,181,0.5)",lineHeight:1.6}}>
+            "{sample.label.replace(/^Voice clip [A-D]: /,'')}"
+          </div>
+        </div>
+        <div style={{fontSize:12,color:MED,marginBottom:10,fontStyle:"italic"}}>Listen to the patterns above. Pick one:</div>
+        {!feedback && (
+          <div style={{display:"flex",gap:10}}>
+            <Btn onClick={() => pick(false)} style={{flex:1}}>Real Human</Btn>
+            <Btn onClick={() => pick(true)} style={{flex:1}}>AI Generated</Btn>
+          </div>
+        )}
+        {feedback && (
+          <div className="fade-in" style={{marginTop:12}}>
+            <div style={{padding:"10px 14px",background:feedback.correct?"#E8F8F1":"#FFF5F5",borderLeft:`4px solid ${feedback.correct?GREEN:RED}`,borderRadius:8,fontSize:13,color:DARK,lineHeight:1.5,marginBottom:8}}>
+              <strong>{feedback.correct ? "✓ Correct!" : "✗ Other way around."}</strong>{" "}{feedback.sample.explain}
+            </div>
+            <div style={{padding:"10px 14px",background:"#F8F9FA",borderRadius:8,fontSize:12,color:MED,lineHeight:1.5}}>
+              <strong style={{color:NAVY}}>Tells:</strong>
+              <ul style={{marginTop:6,paddingLeft:18}}>
+                {feedback.sample.tells.map((t,i) => <li key={i}>{t}</li>)}
+              </ul>
+            </div>
+            <div style={{textAlign:"right",marginTop:10}}>
+              <Btn primary onClick={next}>{idx + 1 < VOICE_SAMPLES.length ? "Next →" : "Results"}</Btn>
+            </div>
+          </div>
+        )}
+      </Card>
+    </div>);
+  }
+
+  // ===== Mode 3: Source Verification Chain =====
+  const STAGES = [
+    {
+      stage: 1,
+      title: "Stage 1: AI Generation",
+      desc: "An AI image is generated by a free online tool. The metadata of who made it is buried in code.",
+      options: [
+        {text:"Reverse image search", correct:false, why:"Won't help yet — the image hasn't been uploaded anywhere yet, so there's nothing to search against."},
+        {text:"Inspect EXIF metadata", correct:true, why:"Yes — many AI tools embed a 'Generated by [tool]' tag in EXIF or the file's SynthID watermark. First-line defense."},
+        {text:"Run through Reality Defender", correct:true, why:"Reality Defender, Sensity, and Truepic are real tools that score images for AI-generation likelihood. Industry standard."},
+      ],
+    },
+    {
+      stage: 2,
+      title: "Stage 2: Posted on Social Media",
+      desc: "Someone uploads the AI image to TikTok or X. EXIF gets stripped automatically.",
+      options: [
+        {text:"Check EXIF metadata", correct:false, why:"EXIF is gone — social platforms strip it on upload. This trick no longer works at this stage."},
+        {text:"Reverse image search", correct:true, why:"Yes — Google Images and TinEye can find earlier copies of the same image, including the original AI source if it leaked."},
+        {text:"Look at uploader account history", correct:true, why:"Account credibility matters. New accounts, low followers, or spam-pattern posting are red flags."},
+      ],
+    },
+    {
+      stage: 3,
+      title: "Stage 3: Reposted with 'BREAKING' Headline",
+      desc: "The image now has a viral caption like 'BREAKING: [politician] caught doing [shocking thing]!'",
+      options: [
+        {text:"Check the original news source", correct:true, why:"Yes — if mainstream outlets aren't reporting it, it's likely fake. Real breaking news shows up in 3+ credible sources within an hour."},
+        {text:"Trust because lots of people are sharing", correct:false, why:"Virality is not credibility. Many fakes go viral specifically BECAUSE they're outrageous."},
+        {text:"Ask: 'Who benefits if I believe this?'", correct:true, why:"This is the strongest defense against ANY misinformation. Follow the incentive."},
+      ],
+    },
+    {
+      stage: 4,
+      title: "Stage 4: Mainstream News Picks It Up",
+      desc: "A real news outlet runs the story without verification. Now the fake is 'real news'.",
+      options: [
+        {text:"Wait 24 hours for retractions", correct:true, why:"Legitimate outlets retract within 24 hours when caught. The fact-check trail emerges fast."},
+        {text:"Assume it's true now that it's on the news", correct:false, why:"News outlets get duped too. They just have to retract publicly when caught — but the damage is done."},
+        {text:"Check fact-checking sites (Snopes, AP Fact Check)", correct:true, why:"Yes — fact-checkers move fast on viral content. Within hours of a story breaking, there's usually a verdict."},
+      ],
+    },
+  ];
+
+  function ChainMode({onBack}) {
+    const [stageIdx, setStageIdx] = useState(0);
+    const [picks, setPicks] = useState({});
+
+    const togglePick = (optIdx) => {
+      const key = stageIdx + "-" + optIdx;
+      setPicks({...picks, [key]: !picks[key]});
+    };
+
+    const stage = STAGES[stageIdx];
+    const stageDone = Object.keys(picks).filter(k => k.startsWith(stageIdx + "-") && picks[k]).length > 0;
+
+    const nextStage = () => {
+      if (stageIdx + 1 < STAGES.length) setStageIdx(stageIdx + 1);
+      else setStageIdx(STAGES.length);
+    };
+
+    if (stageIdx >= STAGES.length) {
+      let correct = 0, total = 0;
+      STAGES.forEach((s, si) => {
+        s.options.forEach((o, oi) => {
+          total++;
+          const picked = picks[si + "-" + oi];
+          if (o.correct === !!picked) correct++;
+        });
+      });
+      return (<div className="fade-in">
+        <Card style={{textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>🔍</div>
+          <div style={{fontSize:32,fontWeight:800,color:NAVY}}>{correct} / {total}</div>
+          <div style={{fontSize:13,color:MED,margin:"8px 0 14px"}}>Correct verification picks</div>
+          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
+            <strong>Field Pearl:</strong> {randomPearl()}
+          </div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            <Btn primary onClick={() => {setStageIdx(0); setPicks({});}}>Try Again</Btn>
+            <Btn onClick={onBack}>Menu</Btn>
+          </div>
+        </Card>
+      </div>);
+    }
+
+    return (<div>
+      <Card className="slide-up">
+        <SectionLabel>{stage.title}</SectionLabel>
+        <p style={{fontSize:14,color:DARK,lineHeight:1.6,marginBottom:14}}>{stage.desc}</p>
+        <div style={{fontSize:12,color:MED,fontWeight:600,marginBottom:8}}>Pick ALL verification steps that work at this stage:</div>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
+          {stage.options.map((o, oi) => {
+            const key = stageIdx + "-" + oi;
+            const isPicked = !!picks[key];
+            return (<div key={oi} onClick={() => togglePick(oi)} style={{padding:"12px 14px",border:`2px solid ${isPicked?TEAL:"#E0E8EE"}`,borderRadius:10,cursor:"pointer",background:isPicked?"#F0FBF8":WHITE,transition:"all .2s"}}>
+              <div style={{fontSize:13,fontWeight:700,color:isPicked?TEAL_DARK:DARK,marginBottom:isPicked?6:0}}>
+                <input type="checkbox" checked={isPicked} readOnly style={{marginRight:8,accentColor:TEAL}}/>{o.text}
+              </div>
+              {isPicked && (<div className="fade-in" style={{fontSize:12,color:o.correct?GREEN:RED,fontWeight:600,marginLeft:24}}>
+                {o.correct ? "✓ " : "✗ "}{o.why}
+              </div>)}
+            </div>);
+          })}
+        </div>
+        <div style={{textAlign:"right",marginTop:14}}>
+          <Btn primary onClick={nextStage}>{stageIdx + 1 < STAGES.length ? "Next Stage →" : "View Results"}</Btn>
+        </div>
+      </Card>
+    </div>);
+  }
+
+  // ===== Mode 4: Quiz =====
+  const QUIZ = [
+    {q:"The first deepfake video appeared in what year and on what platform?",opts:["1995, broadcast TV","2017, Reddit","2020, TikTok","2010, Vimeo"],ans:1,exp:"The term 'deepfake' was coined on Reddit in late 2017, originally for face-swapped videos."},
+    {q:"What's the FASTEST visual tell that an image is AI-generated?",opts:["Hair texture","Background scenery","Hands and fingers","Clothing patterns"],ans:2,exp:"Hands are notoriously hard for current image AI. Wrong finger counts, fused fingers, and missing nails are the most reliable tell."},
+    {q:"What percent of disinformation in the 2024 election cycle involved AI deepfakes?",opts:["12%","34%","56%","78%"],ans:3,exp:"Roughly 78% of disinformation in 2024 involved AI-generated content, up from 12% in 2020. The cost dropped to nearly zero."},
+    {q:"If a phishing email pretends to be your bank, what's the strongest defense?",opts:["Reply asking for verification","Click the link if it looks legit","Hover over the link to see the real URL","Forward to all your friends as a warning"],ans:2,exp:"Hovering on desktop (long-press on mobile) shows the actual destination URL. Most banks NEVER include login links in email at all."},
+    {q:"Which is a REAL deepfake-detection tool used by news organizations?",opts:["DeepShield Pro","Reality Defender","FakeBuster 2.0","TrustNet AI"],ans:1,exp:"Reality Defender is a real industry tool, used by Reuters, AP, and Microsoft. Sensity and Truepic are also real."},
+    {q:"How much source audio does a 2024 voice cloning tool need to clone someone's voice?",opts:["1 hour","30 minutes","5 minutes","3 seconds"],ans:3,exp:"Modern tools need only 3 seconds. A voicemail greeting is enough. This is why grandparent scams now use cloned voices of grandchildren."},
+    {q:"What does EXIF metadata typically include?",opts:["Just the file size","Camera info, timestamp, sometimes GPS","Color palette","Compression type only"],ans:1,exp:"EXIF includes camera make/model, lens, settings, timestamp, and sometimes GPS coordinates. Social media platforms strip this on upload, which is why originals are valuable."},
+    {q:"What career uses these skills daily in the Bay Area?",opts:["Florist","Trust & Safety Analyst at Twitter/Reddit/Meta","Truck driver","Pastry chef"],ans:1,exp:"Bay Area tech employers (Twitter/X, Reddit, Meta, OpenAI, Google) all run dedicated Trust & Safety teams that hunt for deepfakes, disinformation, and synthetic media every day. Entry roles in the Bay Area start $70-90k."},
+  ];
+
+  function QuizMode({onBack}) {
+    const [idx, setIdx] = useState(0);
+    const [sel, setSel] = useState(null);
+    const [score, setScore] = useState(0);
+    const [done, setDone] = useState(false);
+    const q = QUIZ[idx];
+
+    const pick = (i) => {
+      if (sel !== null) return;
+      setSel(i);
+      if (i === q.ans) setScore(s => s + 1);
+    };
+    const next = () => {
+      if (idx + 1 < QUIZ.length) { setIdx(idx + 1); setSel(null); }
+      else setDone(true);
+    };
+
+    if (done) {
+      const pct = Math.round(score/QUIZ.length*100);
+      return (<div className="fade-in">
+        <Card style={{textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>{pct>=80?"🏆":pct>=60?"🌟":"💪"}</div>
+          <div style={{fontSize:44,fontWeight:800,color:pct>=80?GREEN:pct>=60?GOLD:RED,lineHeight:1}}>{pct}%</div>
+          <div style={{fontSize:15,fontWeight:700,color:NAVY,margin:"8px 0"}}>{score}/{QUIZ.length} correct</div>
+          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,margin:"14px 0",fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
+            <strong>Field Pearl:</strong> {randomPearl()}
+          </div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            <Btn primary onClick={() => {setIdx(0);setSel(null);setScore(0);setDone(false);}}>Try Again</Btn>
+            <Btn onClick={onBack}>Menu</Btn>
+          </div>
+        </Card>
+      </div>);
+    }
+
+    return (<div>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <span style={{fontSize:13,fontWeight:700,color:MED}}>{idx+1}/{QUIZ.length}</span>
+        <span style={{fontSize:13,fontWeight:700,color:TEAL}}>Score: {score}</span>
+      </div>
+      <div style={{height:6,background:"#E8EDF2",borderRadius:3,marginBottom:16,overflow:"hidden"}}>
+        <div style={{height:"100%",background:`linear-gradient(90deg,${TEAL},${TEAL_DARK})`,width:`${((idx+1)/QUIZ.length)*100}%`,transition:"width .4s"}}/>
+      </div>
+      <Card>
+        <p style={{fontSize:15,fontWeight:700,color:NAVY,marginBottom:16,lineHeight:1.5}}>{q.q}</p>
+        <div style={{display:"grid",gap:8}}>
+          {q.opts.map((o,i) => {
+            let bg=WHITE, border="#E0E8EE";
+            if (sel !== null && i === q.ans) {bg="#E8F8F1"; border=GREEN;}
+            else if (sel !== null && i === sel) {bg="#FFF5F5"; border=RED;}
+            return (<button key={i} onClick={() => pick(i)} style={{padding:"12px 16px",background:bg,border:`2px solid ${border}`,borderRadius:10,fontSize:14,fontWeight:600,color:DARK,cursor:sel!==null?"default":"pointer",textAlign:"left",fontFamily:"inherit",transition:"all .2s"}}>{o}</button>);
+          })}
+        </div>
+        {sel !== null && (
+          <div className="fade-in" style={{marginTop:14,padding:"12px 16px",borderRadius:10,background:sel===q.ans?"#E8F8F1":"#FFF5F5",borderLeft:`4px solid ${sel===q.ans?GREEN:RED}`,fontSize:13,color:DARK,lineHeight:1.6}}>
+            {q.exp}
+          </div>
+        )}
+        {sel !== null && (
+          <div style={{textAlign:"right",marginTop:12}}>
+            <Btn primary onClick={next}>{idx+1<QUIZ.length?"Next →":"Results"}</Btn>
+          </div>
+        )}
+      </Card>
+    </div>);
+  }
+
+  // ===== Main App =====
+  function App() {
+    const [screen, setScreen] = useState("welcome");
+
+    if (screen === "welcome") {
+      return (<div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+        <AppHeader/>
+        <div className="fade-in" style={{maxWidth:700,margin:"0 auto",padding:"0 16px 24px",flex:1}}>
+          <div style={{textAlign:"center",padding:"28px 16px 20px"}}>
+            <div style={{fontSize:48,marginBottom:8}}>🎭</div>
+            <h1 style={{fontSize:26,fontWeight:800,color:NAVY,margin:"0 0 8px"}}>Deepfake Detector</h1>
+            <p style={{fontSize:14,color:MED,lineHeight:1.6,maxWidth:480,margin:"0 auto"}}>Train your eye to spot AI-generated images, AI voices, and engineered disinformation. Same skills that get you hired in Bay Area Trust &amp; Safety.</p>
+          </div>
+          <div style={{display:"grid",gap:12,marginBottom:20}}>
+            {[
+              {key:"spot",icon:"🎭",title:"Spot the Tells",desc:"8 AI images with hidden artifacts. Click each tell. The 8th is a real photo - try not to over-triage.",color:TEAL},
+              {key:"voice",icon:"🔊",title:"Voice Analyzer",desc:"4 voice clips with annotated waveforms. Real human or AI clone? You decide.",color:GOLD},
+              {key:"chain",icon:"🔍",title:"Source Verification Chain",desc:"How a fake spreads through 4 stages. Pick the right verification step at each stage.",color:NAVY},
+              {key:"quiz",icon:"🎯",title:"Quiz",desc:"8 questions on deepfake history, hand artifacts, EXIF, and Bay Area Trust & Safety careers.",color:RED},
+            ].map(m => (<div key={m.key} onClick={() => setScreen(m.key)} style={{background:WHITE,borderRadius:R,padding:"18px 20px",boxShadow:SHADOW,border:"2px solid #E0E8EE",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:16}} onMouseOver={e=>{e.currentTarget.style.borderColor=m.color;e.currentTarget.style.transform="translateY(-2px)"}} onMouseOut={e=>{e.currentTarget.style.borderColor="#E0E8EE";e.currentTarget.style.transform="none"}}>
+              <div style={{width:52,height:52,borderRadius:14,background:`${m.color}12`,border:`2px solid ${m.color}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{m.icon}</div>
+              <div><div style={{fontSize:16,fontWeight:800,color:NAVY,marginBottom:4}}>{m.title}</div><p style={{fontSize:12,color:MED,margin:0,lineHeight:1.5}}>{m.desc}</p></div>
+            </div>))}
+          </div>
+          <div style={{background:"#FFF9E6",border:`2px solid ${GOLD}`,borderRadius:R,padding:14,textAlign:"center"}}>
+            <div style={{fontSize:13,fontWeight:700,color:NAVY,marginBottom:4}}>💡 Bay Area Career: Trust &amp; Safety Analyst</div>
+            <p style={{fontSize:12,color:MED,margin:0,lineHeight:1.5}}>Twitter/X, Reddit, Meta, OpenAI, and Google all hire entry-level T&amp;S analysts ($70-90k Bay Area). Deepfake detection is the Day 1 skill.</p>
+          </div>
+        </div>
+        <AppFooter/>
+      </div>);
+    }
+
+    return (<div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
+      <AppHeader subtitle={screen==="spot"?"Spot the Tells":screen==="voice"?"Voice Analyzer":screen==="chain"?"Verification Chain":"Quiz"}/>
+      <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 24px",flex:1,width:"100%"}}>
+        <div style={{marginBottom:14}}>
+          <button onClick={() => setScreen("welcome")} style={{background:"none",border:`2px solid ${TEAL}`,color:TEAL,borderRadius:10,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>← Menu</button>
+        </div>
+        {screen === "spot" && <SpotMode onBack={() => setScreen("welcome")}/>}
+        {screen === "voice" && <VoiceMode onBack={() => setScreen("welcome")}/>}
+        {screen === "chain" && <ChainMode onBack={() => setScreen("welcome")}/>}
+        {screen === "quiz" && <QuizMode onBack={() => setScreen("welcome")}/>}
+      </div>
+      <AppFooter/>
+    </div>);
+  }
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+  </script>
+</body>
+</html>

@@ -1,0 +1,1202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EKG Waveform Explorer - Chabot STEM 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2A9D8F;
+    --teal-dark: #1A6B6B;
+    --gold: #D4A843;
+    --coral: #E65C3C;
+    --maroon: #7A2D4E;
+    --white: #FFFFFF;
+    --bg: #f5f7fa;
+    --border: #E4E9EF;
+    --text: #333;
+    --text-med: #5A6A7A;
+    --green: #27AE60;
+    --red: #C0392B;
+  }
+  html, body {
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
+  }
+  body { padding-bottom: 40px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes pop { 0% { transform: scale(0.85); opacity: 0;} 60% { transform: scale(1.06);} 100% { transform: scale(1); opacity: 1;} }
+  @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(230,92,60,0.45);} 50% { box-shadow: 0 0 0 10px rgba(230,92,60,0);} }
+  .fade-in { animation: fadeIn 0.35s ease-out; }
+  .slide-up { animation: slideUp 0.45s ease-out; }
+  .pop { animation: pop 0.45s ease-out; }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--white);
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(27,58,92,0.06);
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1A6B6B 0%, #2A9D8F 100%);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-text { flex: 1; }
+  .header-title { font-size: 15px; font-weight: 800; color: white; letter-spacing: 0.3px; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; margin-top: 2px; }
+
+  /* Scenario banner */
+  .scenario {
+    margin: 16px 18px 0;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    animation: fadeIn 0.5s ease-out;
+  }
+  .scenario-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #8B6914;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .scenario-text { font-size: 14px; line-height: 1.55; color: var(--navy); font-weight: 500; }
+
+  .card {
+    margin: 16px 18px;
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: var(--navy);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal);
+  }
+  .hint {
+    font-size: 12px;
+    color: var(--text-med);
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  /* Rhythm buttons */
+  .rhythm-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .rhythm-btn {
+    padding: 10px 8px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy);
+    transition: all 0.18s ease;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .rhythm-btn .bpm { display: block; font-size: 10px; color: var(--text-med); font-weight: 600; margin-top: 2px; }
+  .rhythm-btn:hover { border-color: var(--teal); color: var(--teal-dark); }
+  .rhythm-btn.active {
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    border-color: var(--teal-dark);
+    box-shadow: 0 2px 8px rgba(42,157,143,0.3);
+  }
+  .rhythm-btn.active .bpm { color: rgba(255,255,255,0.8); }
+
+  /* Canvas */
+  .canvas-wrap {
+    position: relative;
+    background: #0a0a0a;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #111;
+  }
+  canvas { display: block; width: 100%; height: auto; cursor: crosshair; }
+  .canvas-status {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 10px;
+    color: #0ABAB5;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(10,186,181,0.8);
+    pointer-events: none;
+  }
+  .canvas-bpm {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 18px;
+    color: #0ABAB5;
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    text-shadow: 0 0 8px rgba(10,186,181,0.6);
+    pointer-events: none;
+  }
+  .canvas-bpm small { font-size: 10px; opacity: 0.7; }
+
+  /* Measurement */
+  .measure-result {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: #F0F6F5;
+    border-left: 3px solid var(--teal);
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--navy);
+    font-family: 'Courier New', monospace;
+    display: none;
+  }
+  .measure-result.show { display: block; animation: fadeIn 0.3s ease-out; }
+  .measure-result strong { color: var(--teal-dark); font-weight: 800; }
+  .measure-result .final {
+    display: block;
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed #C5D8D5;
+    font-size: 15px;
+    color: var(--coral);
+    font-weight: 800;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(42,157,143,0.25);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(42,157,143,0.3); }
+  .btn-ghost {
+    background: white;
+    color: var(--navy);
+    border: 2px solid var(--border);
+    box-shadow: none;
+  }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+
+  .btn-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+
+  /* Label quiz */
+  .quiz-wrap { position: relative; }
+  .quiz-canvas-wrap {
+    position: relative;
+    background: #0a0a0a;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #111;
+    touch-action: none;
+  }
+  .quiz-canvas-wrap canvas { cursor: default; }
+  .drop-target {
+    position: absolute;
+    border: 2px dashed rgba(10,186,181,0.55);
+    border-radius: 6px;
+    background: rgba(10,186,181,0.08);
+    pointer-events: none;
+    transition: all 0.2s;
+  }
+  .drop-target.filled {
+    border-style: solid;
+    background: rgba(39,174,96,0.15);
+    border-color: rgba(39,174,96,0.7);
+  }
+  .drop-target.wrong {
+    border-color: rgba(192,57,43,0.8);
+    background: rgba(192,57,43,0.15);
+  }
+
+  .label-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .label-chip {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    box-shadow: 0 2px 6px rgba(42,157,143,0.25);
+    transition: transform 0.1s;
+  }
+  .label-chip:active { cursor: grabbing; transform: scale(0.95); }
+  .label-chip.dragging {
+    opacity: 0.5;
+  }
+  .label-chip.placed {
+    position: absolute;
+    z-index: 5;
+    font-size: 12px;
+    padding: 5px 10px;
+    background: linear-gradient(135deg, #27AE60, #1E8449);
+    box-shadow: 0 2px 6px rgba(39,174,96,0.4);
+    cursor: grab;
+  }
+  .label-chip.placed.wrong {
+    background: linear-gradient(135deg, #C0392B, #922B21);
+    box-shadow: 0 2px 6px rgba(192,57,43,0.4);
+  }
+
+  .score-row {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .score-badge {
+    font-size: 14px;
+    font-weight: 800;
+    padding: 6px 14px;
+    border-radius: 10px;
+    background: #F0F6F5;
+    color: var(--teal-dark);
+  }
+  .score-badge.perfect {
+    background: linear-gradient(135deg, var(--green), #1E8449);
+    color: white;
+  }
+
+  /* Completion */
+  .complete {
+    margin: 16px 18px;
+    padding: 22px;
+    background: linear-gradient(135deg, #1B3A5C 0%, #2A9D8F 100%);
+    color: white;
+    border-radius: 16px;
+    text-align: center;
+    animation: pop 0.6s ease-out;
+    box-shadow: 0 4px 20px rgba(27,58,92,0.25);
+    display: none;
+  }
+  .complete.show { display: block; }
+  .complete-head {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .complete-big {
+    font-size: 20px;
+    font-weight: 800;
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .complete-sub {
+    font-size: 14px;
+    line-height: 1.55;
+    opacity: 0.95;
+  }
+  .complete-cta {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+  .complete-cta strong { color: var(--gold); }
+
+  /* Progress tracker */
+  .progress-bar {
+    display: flex;
+    gap: 8px;
+    margin: 0 18px 8px;
+  }
+  .progress-step {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #EEF2F5;
+    color: var(--text-med);
+    font-size: 11px;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid var(--border);
+    letter-spacing: 0.3px;
+  }
+  .progress-step.done {
+    background: linear-gradient(135deg, var(--green), #1E8449);
+    color: white;
+    border-color: #1E8449;
+  }
+  .progress-step::before {
+    content: "";
+    display: inline-block;
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #C5D0DA;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .progress-step.done::before {
+    background: white;
+    box-shadow: inset 0 0 0 2px #1E8449;
+  }
+
+  .reset-link {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+
+  @media (max-width: 480px) {
+    .card { margin: 12px 12px; padding: 14px; }
+    .scenario { margin: 12px 12px 0; padding: 12px 14px; }
+    .scenario-text { font-size: 13px; }
+    .rhythm-row { gap: 6px; }
+    .rhythm-btn { font-size: 11px; padding: 9px 6px; }
+    .progress-bar { margin: 0 12px 6px; }
+    .progress-step { font-size: 10px; padding: 7px 6px; }
+    .complete { margin: 12px 12px; padding: 18px; }
+    .complete-big { font-size: 17px; }
+    .label-chip { font-size: 12px; padding: 7px 12px; }
+    .canvas-bpm { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <svg viewBox="0 0 40 40" width="26" height="26" style="flex-shrink:0"><polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity="0.85"/><polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity="0.85"/><polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity="0.85"/><polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity="0.85"/></svg>
+    <div class="header-text">
+      <div class="header-title">EKG Waveform Explorer</div>
+      <div class="header-sub">Chabot STEM 2026 - Day 5: Cardiac Rhythms</div>
+    </div>
+  </div>
+
+  <!-- Scenario -->
+  <div class="scenario">
+    <div class="scenario-tag">Your Shift</div>
+    <div class="scenario-text">You're a Medical Assistant at a Kaiser clinic. A patient just had a 12-lead EKG done. Your job: get the strip to the MD with a preliminary read in 30 seconds. Can you?</div>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-bar" id="progressBar" style="margin-top:14px;">
+    <div class="progress-step" id="step-measure">Measure Rate</div>
+    <div class="progress-step" id="step-label">Label Waves</div>
+  </div>
+
+  <!-- Live trace card -->
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot"></span>Live Rhythm Strip</div>
+    <div class="hint">Switch rhythms, then click two R-peaks (the tall spikes) to measure the heart rate.</div>
+    <div class="rhythm-row" id="rhythmRow">
+      <button class="rhythm-btn active" data-rhythm="normal">Normal Sinus<span class="bpm">~75 bpm</span></button>
+      <button class="rhythm-btn" data-rhythm="tachy">Tachycardia<span class="bpm">~130 bpm</span></button>
+      <button class="rhythm-btn" data-rhythm="brady">Bradycardia<span class="bpm">~45 bpm</span></button>
+      <button class="rhythm-btn" data-rhythm="afib">Atrial Fibrillation<span class="bpm">irregular</span></button>
+    </div>
+    <div class="canvas-wrap">
+      <canvas id="ekgCanvas" width="680" height="220"></canvas>
+      <div class="canvas-status" id="canvasStatus">LEAD II - LIVE</div>
+      <div class="canvas-bpm" id="canvasBpm">-- <small>BPM</small></div>
+    </div>
+    <div class="measure-result" id="measureResult"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="clearMeasureBtn">Clear clicks</button>
+    </div>
+  </div>
+
+  <!-- Label quiz -->
+  <div class="card">
+    <div class="card-title"><span class="card-title-dot"></span>Label the Waves</div>
+    <div class="hint">Drag each label onto the matching part of the trace. 4 labels, 4 spots.</div>
+    <div class="quiz-wrap">
+      <div class="quiz-canvas-wrap" id="quizWrap">
+        <canvas id="quizCanvas" width="680" height="220"></canvas>
+      </div>
+    </div>
+    <div class="label-bank" id="labelBank">
+      <div class="label-chip" draggable="true" data-label="P">P wave</div>
+      <div class="label-chip" draggable="true" data-label="QRS">QRS</div>
+      <div class="label-chip" draggable="true" data-label="T">T wave</div>
+      <div class="label-chip" draggable="true" data-label="PR">PR interval</div>
+    </div>
+    <div class="score-row">
+      <div class="score-badge" id="scoreBadge">Score: 0 / 4</div>
+      <div class="btn-row" style="margin-top:0;">
+        <button class="btn btn-ghost" id="quizResetBtn">Reset labels</button>
+        <button class="btn" id="quizCheckBtn">Check answers</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div class="complete" id="completeCard">
+    <div class="complete-head">Nice Read</div>
+    <div class="complete-big">Real MAs read these in 15 seconds. You just did it.</div>
+    <div class="complete-sub">That speed plus accuracy is what clinics pay for.</div>
+    <div class="complete-cta">
+      <strong>Next step:</strong> Kaiser MA Apprenticeship - 12 months, PAID from day 1, $48-62k Bay Area.
+    </div>
+    <button class="reset-link" id="resetAllBtn">Reset progress</button>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const STORAGE_KEY = 'ucsf-ekg-reader-progress';
+
+  // ===== State =====
+  const saved = loadState();
+  const state = {
+    rhythm: 'normal',
+    viewed: new Set(saved.viewed || ['normal']),
+    quizScore: saved.quizScore || 0,
+    measureDone: !!saved.measureDone,
+    quizDone: !!saved.quizDone,
+    clicks: [],
+    placed: {}, // { label -> {x,y} relative to canvas }
+    checked: false,
+  };
+
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return {};
+      return JSON.parse(raw) || {};
+    } catch(e){ return {}; }
+  }
+  function saveState(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        viewed: Array.from(state.viewed),
+        quizScore: state.quizScore,
+        measureDone: state.measureDone,
+        quizDone: state.quizDone,
+      }));
+    } catch(e){}
+  }
+
+  // ===== Live EKG canvas =====
+  const canvas = document.getElementById('ekgCanvas');
+  const ctx = canvas.getContext('2d');
+  const bpmEl = document.getElementById('canvasBpm');
+
+  // Grid is 5px small boxes, dark every 5 boxes (25px = 0.2s at 25mm/s assuming 5px = 1mm).
+  const SMALL_BOX = 5;          // px per 0.04s
+  const BIG_BOX = SMALL_BOX * 5; // 25px per 0.2s
+  const PX_PER_SEC = 25 * SMALL_BOX; // 125 px/sec (matches 25 mm/s feel)
+
+  // Buffer of samples (y values in px, 0 = baseline). We keep W samples at pxPerSample spacing.
+  let buffer = [];
+  let bufferLen = canvas.width;
+  let lastTime = 0;
+  let phase = 0; // seconds into current beat cycle
+  let afibBeatInterval = 0.8;
+  let afibTimeSinceBeat = 0;
+  let lastRMeasuredBpm = 0;
+
+  function resizeBuffer(){
+    bufferLen = canvas.width;
+    buffer = new Array(bufferLen).fill(0);
+  }
+  resizeBuffer();
+
+  // Responsive canvas sizing. We keep internal resolution fixed so grid px are consistent.
+  function fitCanvasWidth(){
+    // Internal size stays 680x220, CSS scales it. No change needed.
+  }
+
+  function drawGrid(c, w, h){
+    c.fillStyle = '#E8F5E8'; // light green background
+    c.fillRect(0, 0, w, h);
+    // small grid lines
+    c.strokeStyle = '#BEDCBE';
+    c.lineWidth = 1;
+    c.beginPath();
+    for(let x = 0; x <= w; x += SMALL_BOX){
+      c.moveTo(x + 0.5, 0);
+      c.lineTo(x + 0.5, h);
+    }
+    for(let y = 0; y <= h; y += SMALL_BOX){
+      c.moveTo(0, y + 0.5);
+      c.lineTo(w, y + 0.5);
+    }
+    c.stroke();
+    // big grid lines
+    c.strokeStyle = '#7FB37F';
+    c.lineWidth = 1.1;
+    c.beginPath();
+    for(let x = 0; x <= w; x += BIG_BOX){
+      c.moveTo(x + 0.5, 0);
+      c.lineTo(x + 0.5, h);
+    }
+    for(let y = 0; y <= h; y += BIG_BOX){
+      c.moveTo(0, y + 0.5);
+      c.lineTo(w, y + 0.5);
+    }
+    c.stroke();
+  }
+
+  // Returns y offset from baseline in px (positive = up on screen? We'll draw inverted below)
+  function sampleWaveform(rhythm, t){
+    // t is time in seconds (continuous). We build one beat cycle based on rhythm bpm.
+    // Normal P-QRS-T morphology in one cycle of length T_cycle.
+    let bpm;
+    if(rhythm === 'normal') bpm = 75;
+    else if(rhythm === 'tachy') bpm = 130;
+    else if(rhythm === 'brady') bpm = 45;
+    else bpm = 0; // afib handled separately
+
+    if(rhythm === 'afib'){
+      return sampleAfib(t);
+    }
+
+    const period = 60 / bpm;
+    const cyclePhase = (t % period);
+    return waveformMorph(cyclePhase, period, rhythm);
+  }
+
+  // Single beat morphology. Returns signed amplitude in px (baseline 0, positive = upstroke).
+  function waveformMorph(phase, period, rhythm){
+    // Define feature times as fractions of cycle, but QRS is short in absolute time.
+    // We'll anchor by absolute seconds from the start of the beat.
+    const p_start = 0.00 * period + 0.00;
+    const p_center = 0.08;     // P wave center 80ms after start of beat
+    const p_width = 0.08;      // 80ms
+    const pr_end = 0.18;       // end of PR segment
+    const q_center = 0.20;
+    const r_center = 0.22;
+    const s_center = 0.24;
+    const t_center = 0.42;
+    const t_width = 0.16;
+
+    let y = 0;
+    // P wave (small bump)
+    y += 14 * gauss(phase, p_center, p_width/2);
+    // Q (small downward)
+    y -= 8 * gauss(phase, q_center, 0.012);
+    // R (big upward)
+    y += 58 * gauss(phase, r_center, 0.014);
+    // S (downward)
+    y -= 20 * gauss(phase, s_center, 0.015);
+    // T wave
+    y += 22 * gauss(phase, t_center, t_width/2);
+
+    // Slight baseline wander for realism
+    y += 0.6 * Math.sin(phase * 3);
+
+    return y;
+  }
+  function gauss(x, mu, sigma){
+    const d = (x - mu) / sigma;
+    return Math.exp(-0.5 * d * d);
+  }
+
+  // Afib: irregular R-R, no real P waves, jittery baseline fibrillatory waves
+  let afibQueue = []; // array of { t (absolute), amplitude }
+  let afibNextBeat = 0.7;
+  let afibStartTime = 0;
+  function resetAfib(){
+    afibQueue = [];
+    afibNextBeat = 0.4 + Math.random() * 0.6;
+    afibStartTime = 0;
+  }
+  function sampleAfib(t){
+    // lazy: schedule beats as time passes
+    while(afibStartTime + afibNextBeat < t){
+      const beatTime = afibStartTime + afibNextBeat;
+      afibQueue.push({ t: beatTime, amp: 0.85 + Math.random() * 0.3 });
+      afibStartTime = beatTime;
+      // irregular: range from 0.35s (171 bpm) to 1.1s (55 bpm), average ~0.65s (~92 bpm)
+      afibNextBeat = 0.35 + Math.random() * 0.75;
+    }
+    // Drop old beats beyond screen time window
+    while(afibQueue.length > 30) afibQueue.shift();
+
+    let y = 0;
+    // fibrillatory baseline waves (chaotic low amplitude)
+    y += 4 * Math.sin(t * 27 + Math.sin(t*11)*2);
+    y += 3 * Math.sin(t * 41 + Math.cos(t*7)*1.5);
+    y += 2.5 * Math.sin(t * 63);
+    // QRS complexes at scheduled beat times (no P wave before)
+    for(const beat of afibQueue){
+      const dt = t - beat.t;
+      if(Math.abs(dt) > 0.25) continue;
+      // Q
+      y -= 8 * beat.amp * gauss(dt, -0.01, 0.012);
+      // R
+      y += 58 * beat.amp * gauss(dt, 0.0, 0.013);
+      // S
+      y -= 16 * beat.amp * gauss(dt, 0.015, 0.014);
+      // T (smaller, after)
+      y += 18 * beat.amp * gauss(dt, 0.12, 0.05);
+    }
+    return y;
+  }
+
+  // Running clock in seconds
+  let runT = 0;
+
+  function stepAnimation(dt){
+    const samplesToAdvance = Math.max(1, Math.round(dt * PX_PER_SEC));
+    for(let i = 0; i < samplesToAdvance; i++){
+      runT += 1 / PX_PER_SEC;
+      const y = sampleWaveform(state.rhythm, runT);
+      buffer.push(y);
+    }
+    while(buffer.length > bufferLen) buffer.shift();
+  }
+
+  function renderLive(){
+    const w = canvas.width, h = canvas.height;
+    drawGrid(ctx, w, h);
+
+    // Trace
+    ctx.strokeStyle = '#0B6B2E'; // dark green
+    ctx.lineWidth = 1.8;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    const baseline = Math.round(h * 0.58);
+    for(let i = 0; i < buffer.length; i++){
+      const x = i;
+      const y = baseline - buffer[i];
+      if(i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    }
+    ctx.stroke();
+
+    // Click markers
+    if(state.clicks.length){
+      ctx.fillStyle = 'rgba(230,92,60,0.9)';
+      ctx.strokeStyle = '#E65C3C';
+      ctx.lineWidth = 2;
+      for(const c of state.clicks){
+        ctx.beginPath();
+        ctx.arc(c.x, c.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      if(state.clicks.length === 2){
+        const [a,b] = state.clicks;
+        ctx.strokeStyle = 'rgba(230,92,60,0.9)';
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(a.x, baseline - 70);
+        ctx.lineTo(a.x, baseline + 70);
+        ctx.moveTo(b.x, baseline - 70);
+        ctx.lineTo(b.x, baseline + 70);
+        ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+
+  // Canvas pointer coords -> internal coords
+  function canvasCoords(evt){
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const cx = (evt.clientX - rect.left) * scaleX;
+    const cy = (evt.clientY - rect.top) * scaleY;
+    return { x: cx, y: cy };
+  }
+
+  canvas.addEventListener('click', function(e){
+    const { x, y } = canvasCoords(e);
+    if(state.clicks.length >= 2) state.clicks = [];
+    state.clicks.push({ x, y });
+    if(state.clicks.length === 2){
+      computeMeasurement();
+    } else {
+      const mr = document.getElementById('measureResult');
+      mr.classList.remove('show');
+    }
+  });
+
+  function computeMeasurement(){
+    const [a, b] = state.clicks;
+    const dxRaw = Math.abs(b.x - a.x);
+    if(dxRaw < SMALL_BOX){
+      document.getElementById('measureResult').innerHTML =
+        'Those two points are too close. Click two different R-peaks.';
+      document.getElementById('measureResult').classList.add('show');
+      return;
+    }
+    const boxes = dxRaw / SMALL_BOX;
+    const seconds = boxes * 0.04;
+    const bpm = 60 / seconds;
+    const mr = document.getElementById('measureResult');
+    mr.innerHTML =
+      'Distance = <strong>' + boxes.toFixed(1) + ' small boxes</strong><br>' +
+      'Time = ' + boxes.toFixed(1) + ' &times; 0.04s = <strong>' + seconds.toFixed(2) + ' sec</strong><br>' +
+      '<span class="final">bpm = 60 / ' + seconds.toFixed(2) + ' = ' + Math.round(bpm) + ' bpm</span>';
+    mr.classList.add('show');
+    // Mark measure as done (any reasonable plausible measurement)
+    if(bpm > 20 && bpm < 300){
+      state.measureDone = true;
+      updateProgress();
+      saveState();
+      checkComplete();
+    }
+  }
+
+  document.getElementById('clearMeasureBtn').addEventListener('click', function(){
+    state.clicks = [];
+    document.getElementById('measureResult').classList.remove('show');
+  });
+
+  // Rhythm buttons
+  document.getElementById('rhythmRow').addEventListener('click', function(e){
+    const btn = e.target.closest('.rhythm-btn');
+    if(!btn) return;
+    document.querySelectorAll('.rhythm-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    state.rhythm = btn.dataset.rhythm;
+    state.viewed.add(state.rhythm);
+    state.clicks = [];
+    document.getElementById('measureResult').classList.remove('show');
+    if(state.rhythm === 'afib') resetAfib();
+    saveState();
+    updateStatusLabel();
+  });
+
+  function updateStatusLabel(){
+    const s = document.getElementById('canvasStatus');
+    const map = {
+      normal: 'LEAD II - NORMAL SINUS',
+      tachy:  'LEAD II - TACHYCARDIA',
+      brady:  'LEAD II - BRADYCARDIA',
+      afib:   'LEAD II - ATRIAL FIB'
+    };
+    s.textContent = map[state.rhythm] || 'LEAD II - LIVE';
+    // Show bpm tag (approximate target rate for simple rhythms, "--" for afib)
+    const bpmMap = { normal: 75, tachy: 130, brady: 45 };
+    if(state.rhythm === 'afib') bpmEl.innerHTML = 'IRR <small>BPM</small>';
+    else bpmEl.innerHTML = bpmMap[state.rhythm] + ' <small>BPM</small>';
+  }
+
+  // Animation loop
+  function loop(ts){
+    if(!lastTime) lastTime = ts;
+    let dt = (ts - lastTime) / 1000;
+    if(dt > 0.1) dt = 0.1;
+    lastTime = ts;
+    stepAnimation(dt);
+    renderLive();
+    requestAnimationFrame(loop);
+  }
+  updateStatusLabel();
+  requestAnimationFrame(loop);
+
+  // ===== Label Quiz =====
+  const quizCanvas = document.getElementById('quizCanvas');
+  const qctx = quizCanvas.getContext('2d');
+  const quizWrap = document.getElementById('quizWrap');
+
+  // Draw a static beat on the quiz canvas and return feature pixel positions.
+  let quizFeatures = null;
+  function drawQuizStill(){
+    const w = quizCanvas.width, h = quizCanvas.height;
+    drawGrid(qctx, w, h);
+    const baseline = Math.round(h * 0.62);
+
+    // Draw one-and-a-bit beats clearly centered. We'll place a beat centered at about 0.55 of width.
+    // Generate samples over time span Tspan seconds; PX_PER_SEC = 125 px/s, so w=680 -> 5.44 sec.
+    // We want a single beat visible cleanly. Simpler: draw procedural y values by x.
+    const samples = [];
+    const period = 0.8; // 75 bpm
+    const beatStartX = w * 0.22; // where beat begins
+    const pxPerSec = PX_PER_SEC;
+    for(let x = 0; x < w; x++){
+      const t = (x - beatStartX) / pxPerSec;
+      if(t < 0 || t > period * 1.2){
+        samples.push(0.5 * Math.sin(x * 0.03));
+      } else {
+        samples.push(waveformMorph(t, period, 'normal'));
+      }
+    }
+    qctx.strokeStyle = '#0B6B2E';
+    qctx.lineWidth = 2.2;
+    qctx.lineJoin = 'round';
+    qctx.beginPath();
+    for(let x = 0; x < w; x++){
+      const y = baseline - samples[x];
+      if(x === 0) qctx.moveTo(x, y);
+      else qctx.lineTo(x, y);
+    }
+    qctx.stroke();
+
+    // Compute feature pixel positions for the first beat (relative to canvas):
+    // phase anchors:
+    const p_center_t = 0.08;
+    const pr_mid_t = 0.13; // between p end and q
+    const qrs_center_t = 0.22;
+    const t_center_t = 0.42;
+
+    function xAt(tInBeat){ return Math.round(beatStartX + tInBeat * pxPerSec); }
+    quizFeatures = {
+      P:   { x: xAt(p_center_t),  y: baseline - 12, w: 48, h: 46 },
+      PR:  { x: xAt(pr_mid_t),    y: baseline - 8,  w: 46, h: 30 },
+      QRS: { x: xAt(qrs_center_t), y: baseline - 30, w: 58, h: 90 },
+      T:   { x: xAt(t_center_t),  y: baseline - 14, w: 60, h: 52 },
+    };
+
+    // Draw faint drop target rectangles
+    renderDropTargets();
+  }
+
+  // Drop targets rendered as absolutely positioned divs in quizWrap (scaled to CSS size).
+  const dropEls = {};
+  function renderDropTargets(){
+    // Clear existing
+    Object.values(dropEls).forEach(el => el.remove && el.remove());
+    Object.keys(dropEls).forEach(k => delete dropEls[k]);
+    if(!quizFeatures) return;
+    const rect = quizCanvas.getBoundingClientRect();
+    const sx = rect.width / quizCanvas.width;
+    const sy = rect.height / quizCanvas.height;
+    const keys = ['P','PR','QRS','T'];
+    for(const k of keys){
+      const f = quizFeatures[k];
+      const el = document.createElement('div');
+      el.className = 'drop-target';
+      el.dataset.target = k;
+      el.style.left = ((f.x - f.w/2) * sx) + 'px';
+      el.style.top = ((f.y - f.h/2) * sy) + 'px';
+      el.style.width = (f.w * sx) + 'px';
+      el.style.height = (f.h * sy) + 'px';
+      quizWrap.appendChild(el);
+      dropEls[k] = el;
+    }
+    // Re-render placed labels
+    renderPlacedLabels();
+  }
+
+  window.addEventListener('resize', renderDropTargets);
+
+  drawQuizStill();
+
+  // ===== Drag and drop (mouse + touch) =====
+  const labelBank = document.getElementById('labelBank');
+  let draggingChip = null;
+  let dragOffset = { x: 0, y: 0 };
+  let floatingChip = null;
+
+  function chipFromEvent(e){
+    return e.target.closest('.label-chip');
+  }
+
+  function getPoint(e){
+    if(e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if(e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  function startDrag(e){
+    const chip = chipFromEvent(e);
+    if(!chip) return;
+    e.preventDefault();
+    draggingChip = chip;
+    const pt = getPoint(e);
+    const rect = chip.getBoundingClientRect();
+    dragOffset.x = pt.x - rect.left;
+    dragOffset.y = pt.y - rect.top;
+    // Create floating clone
+    floatingChip = chip.cloneNode(true);
+    floatingChip.classList.add('placed');
+    floatingChip.style.position = 'fixed';
+    floatingChip.style.pointerEvents = 'none';
+    floatingChip.style.zIndex = 9999;
+    floatingChip.style.left = rect.left + 'px';
+    floatingChip.style.top = rect.top + 'px';
+    document.body.appendChild(floatingChip);
+    chip.classList.add('dragging');
+  }
+
+  function moveDrag(e){
+    if(!draggingChip) return;
+    e.preventDefault();
+    const pt = getPoint(e);
+    floatingChip.style.left = (pt.x - dragOffset.x) + 'px';
+    floatingChip.style.top = (pt.y - dragOffset.y) + 'px';
+  }
+
+  function endDrag(e){
+    if(!draggingChip) return;
+    e.preventDefault();
+    const pt = getPoint(e);
+    const label = draggingChip.dataset.label;
+    const wrapRect = quizWrap.getBoundingClientRect();
+    // Convert pt to wrap-local coords
+    const localX = pt.x - wrapRect.left;
+    const localY = pt.y - wrapRect.top;
+
+    // Only accept drop if inside quiz wrap area
+    if(localX >= 0 && localX <= wrapRect.width && localY >= 0 && localY <= wrapRect.height){
+      // Store as canvas-internal coords
+      const sx = quizCanvas.width / wrapRect.width;
+      const sy = quizCanvas.height / wrapRect.height;
+      const cx = localX * sx;
+      const cy = localY * sy;
+      state.placed[label] = { x: cx, y: cy };
+      state.checked = false; // any new placement invalidates previous check
+    }
+    cleanupDrag();
+    renderPlacedLabels();
+    updateScoreUI(false);
+  }
+
+  function cleanupDrag(){
+    if(floatingChip){ floatingChip.remove(); floatingChip = null; }
+    if(draggingChip){ draggingChip.classList.remove('dragging'); draggingChip = null; }
+  }
+
+  function cancelDrag(){
+    cleanupDrag();
+  }
+
+  labelBank.addEventListener('mousedown', startDrag);
+  labelBank.addEventListener('touchstart', startDrag, { passive:false });
+  document.addEventListener('mousemove', moveDrag);
+  document.addEventListener('touchmove', moveDrag, { passive:false });
+  document.addEventListener('mouseup', endDrag);
+  document.addEventListener('touchend', endDrag);
+  document.addEventListener('touchcancel', cancelDrag);
+
+  // Prevent native drag image
+  labelBank.querySelectorAll('.label-chip').forEach(c => {
+    c.addEventListener('dragstart', e => e.preventDefault());
+  });
+
+  // Rendering of placed labels
+  const placedEls = {};
+  function renderPlacedLabels(){
+    Object.values(placedEls).forEach(el => el.remove());
+    Object.keys(placedEls).forEach(k => delete placedEls[k]);
+
+    const wrapRect = quizWrap.getBoundingClientRect();
+    const sx = wrapRect.width / quizCanvas.width;
+    const sy = wrapRect.height / quizCanvas.height;
+
+    // Hide chips in the bank that are placed
+    labelBank.querySelectorAll('.label-chip').forEach(c => {
+      if(state.placed[c.dataset.label]) c.style.display = 'none';
+      else c.style.display = '';
+    });
+
+    // Reset drop target states
+    Object.values(dropEls).forEach(el => el.classList.remove('filled','wrong'));
+
+    for(const key of Object.keys(state.placed)){
+      const pos = state.placed[key];
+      const el = document.createElement('div');
+      el.className = 'label-chip placed';
+      el.dataset.label = key;
+      el.textContent = labelText(key);
+      el.style.left = (pos.x * sx) + 'px';
+      el.style.top = (pos.y * sy) + 'px';
+      el.style.transform = 'translate(-50%, -50%)';
+      el.addEventListener('mousedown', startDragPlaced);
+      el.addEventListener('touchstart', startDragPlaced, { passive:false });
+
+      if(state.checked){
+        const correct = isCorrectPlacement(key, pos);
+        if(correct){
+          el.classList.remove('wrong');
+        } else {
+          el.classList.add('wrong');
+        }
+        // Highlight target square if wrong
+        const target = dropEls[key];
+        if(target){
+          if(correct) target.classList.add('filled');
+          else target.classList.add('wrong');
+        }
+      } else {
+        // Just show filled target
+        const target = dropEls[key];
+        if(target) target.classList.add('filled');
+      }
+
+      quizWrap.appendChild(el);
+      placedEls[key] = el;
+    }
+  }
+
+  function startDragPlaced(e){
+    const chip = e.target.closest('.label-chip');
+    if(!chip) return;
+    e.preventDefault();
+    // Remove from placed, then start drag as if from bank
+    delete state.placed[chip.dataset.label];
+    state.checked = false;
+    renderPlacedLabels();
+    // Synthesize drag from the bank chip
+    const bankChip = labelBank.querySelector('[data-label="'+chip.dataset.label+'"]');
+    if(!bankChip) return;
+    bankChip.style.display = '';
+    draggingChip = bankChip;
+    const pt = getPoint(e);
+    dragOffset.x = 30; dragOffset.y = 14;
+    floatingChip = bankChip.cloneNode(true);
+    floatingChip.style.position = 'fixed';
+    floatingChip.style.pointerEvents = 'none';
+    floatingChip.style.zIndex = 9999;
+    floatingChip.style.left = (pt.x - dragOffset.x) + 'px';
+    floatingChip.style.top = (pt.y - dragOffset.y) + 'px';
+    document.body.appendChild(floatingChip);
+    bankChip.classList.add('dragging');
+  }
+
+  function labelText(key){
+    return { P:'P wave', QRS:'QRS', T:'T wave', PR:'PR interval' }[key] || key;
+  }
+
+  function isCorrectPlacement(key, pos){
+    const f = quizFeatures[key];
+    if(!f) return false;
+    return (Math.abs(pos.x - f.x) <= f.w/2 + 6) && (Math.abs(pos.y - f.y) <= f.h/2 + 10);
+  }
+
+  function updateScoreUI(showFeedback){
+    const badge = document.getElementById('scoreBadge');
+    const keys = ['P','QRS','T','PR'];
+    let correct = 0;
+    if(showFeedback){
+      for(const k of keys){
+        if(state.placed[k] && isCorrectPlacement(k, state.placed[k])) correct++;
+      }
+      badge.textContent = 'Score: ' + correct + ' / 4';
+      if(correct === 4){
+        badge.classList.add('perfect');
+      } else {
+        badge.classList.remove('perfect');
+      }
+      state.quizScore = correct;
+      if(correct >= 3){
+        state.quizDone = true;
+      }
+      saveState();
+      checkComplete();
+    } else {
+      // Show count placed, not score
+      const placedCount = Object.keys(state.placed).length;
+      badge.textContent = 'Placed: ' + placedCount + ' / 4';
+      badge.classList.remove('perfect');
+    }
+  }
+
+  document.getElementById('quizCheckBtn').addEventListener('click', function(){
+    state.checked = true;
+    renderPlacedLabels();
+    updateScoreUI(true);
+  });
+  document.getElementById('quizResetBtn').addEventListener('click', function(){
+    state.placed = {};
+    state.checked = false;
+    renderPlacedLabels();
+    updateScoreUI(false);
+  });
+
+  // ===== Progress / completion =====
+  function updateProgress(){
+    const sM = document.getElementById('step-measure');
+    const sL = document.getElementById('step-label');
+    if(state.measureDone) sM.classList.add('done'); else sM.classList.remove('done');
+    if(state.quizDone) sL.classList.add('done'); else sL.classList.remove('done');
+  }
+
+  function checkComplete(){
+    updateProgress();
+    const c = document.getElementById('completeCard');
+    if(state.measureDone && state.quizDone){
+      c.classList.add('show');
+    } else {
+      c.classList.remove('show');
+    }
+  }
+
+  document.getElementById('resetAllBtn').addEventListener('click', function(){
+    state.measureDone = false;
+    state.quizDone = false;
+    state.quizScore = 0;
+    state.placed = {};
+    state.checked = false;
+    state.clicks = [];
+    state.viewed = new Set(['normal']);
+    saveState();
+    document.getElementById('completeCard').classList.remove('show');
+    document.getElementById('measureResult').classList.remove('show');
+    renderPlacedLabels();
+    updateScoreUI(false);
+    updateProgress();
+  });
+
+  // Initial UI state from saved progress
+  updateProgress();
+  updateScoreUI(false);
+  checkComplete();
+
+})();
+</script>
+</body>
+</html>
