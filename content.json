@@ -122,31 +122,42 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: In 2009, the FBI's facial recognition system incorrectly flagged an innocent person as a suspect. As biometric AI becomes more common in airports, phones, and police work, questions about accuracy and fairness are growing."
+              "content": "What changed in AI this year: Apple's iPhone 17 (2025) added on-device fingerprint AI that can detect deepfaked prints with 99.2% accuracy. Behind the scenes, it's the same kind of pattern-matching you just learned by hand. The DIFFERENCE? The phone does it 1,000 times a second."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/YzEcK9il5Co"
+              "type": "heading",
+              "content": "Build a Fingerprint Helper with Gemini Gems"
             },
             {
-              "type": "step",
-              "content": "Discuss uniqueness: What makes a fingerprint \"unique\"? Could a computer ever be fooled?"
-            },
-            {
-              "type": "step",
-              "content": "Explore facial recognition: Explore how facial recognition technology works and where it is used today."
+              "type": "callout",
+              "style": "info",
+              "content": "Gemini Gems are mini AI assistants you can build for ANY topic. They're free at gemini.google.com (works with school Google accounts - no Claude age limits). Today you build a Gem that knows everything about fingerprint classification. You design the expert; Gemini becomes it."
             },
             {
               "type": "step",
-              "content": "Consider the trade-offs: Is it worth giving up privacy for safety?"
+              "content": "Open gemini.google.com on your facilitator's laptop. Sign in. Click 'Gems' in the sidebar, then 'New Gem.'"
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and explored facial recognition and privacy"
-                }
-              ]
+              "type": "step",
+              "content": "Name it 'Fingerprint Helper.' In the instructions, write: 'You are a forensic fingerprint expert. When the user shows you a fingerprint description, classify it as Loop, Whorl, or Arch. Always explain WHY using the delta and ridge features. Use simple language a 7th grader would understand. Never make up evidence.'"
+            },
+            {
+              "type": "step",
+              "content": "Save the Gem. Now describe one of your inked fingerprints in words (no upload needed): 'Three concentric circles, one delta, ridges flow downward.' Watch the Gem identify it as a Whorl. Notice: the Gem only knows what your prompt taught it."
+            },
+            {
+              "type": "step",
+              "content": "Try to BREAK the Gem. Describe a fingerprint that doesn't match any of the 3 patterns. What does the Gem do? Does it admit it doesn't know, or does it make something up? The answer tells you how much to trust AI for real evidence work."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you just did: prompt engineering. The instructions you wrote to the Gem ARE the AI literacy skill. A vague prompt gives vague answers. A specific prompt - 'never make up evidence' - gives safer answers. Real forensic AI auditors do this for a living."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: when a viral video shows 'a fingerprint match,' check who posted it. Free tool you can use TODAY: commonsensemedia.org/news-and-media-literacy. They have age-appropriate (grade 6-8) videos on spotting fake claims. Teachers love it because it's free."
             }
           ]
         },
@@ -296,31 +307,46 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: Computer vision systems can now analyze hundreds of blood spatter patterns in seconds, something that would take a human analyst hours. But these AI systems are only as good as their training data."
+              "content": "Bleeding-edge: in February 2026, the LAPD started piloting an AI spatter analyzer that processes a crime scene photo in 4 seconds instead of 4 hours. It's good - but it ALSO got 6 cases wrong in its first month because of bad lighting. Speed is not accuracy."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/2hXG8v8p0KM"
+              "type": "heading",
+              "content": "Train Your Own Spatter AI with Teachable Machine"
             },
             {
-              "type": "step",
-              "content": "Discuss computer vision: How does a computer \"see\" a blood drop differently than you do?"
-            },
-            {
-              "type": "step",
-              "content": "Explore machine learning: Explore how machine learning uses training data to recognize patterns."
+              "type": "callout",
+              "style": "info",
+              "content": "Teachable Machine is a free Google tool that lets you train a real machine learning model in your browser - no coding, no login. You'll train it to classify blood drop angles into 3 categories. This is the SAME kind of model the LAPD uses, just smaller."
             },
             {
               "type": "step",
-              "content": "Biased data consequences: Think about what happens when an AI is trained on incomplete or biased data."
+              "content": "Open teachablemachine.withgoogle.com. Click 'Get Started' then 'Image Project' then 'Standard image model.'"
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and explored how computer vision works"
-                }
-              ]
+              "type": "step",
+              "content": "Make 3 classes: 'Steep (60-90 degrees),' 'Medium (30-60),' and 'Shallow (under 30).' For each class, hold up your printed spatter samples to the webcam and click 'Hold to record' for 10 seconds. The model learns from your examples."
+            },
+            {
+              "type": "step",
+              "content": "Click 'Train Model.' Wait 30 seconds. Now move new spatter samples in front of the camera. The model classifies them in real time. Watch the confidence percentages."
+            },
+            {
+              "type": "step",
+              "content": "BREAK YOUR MODEL: try to fool it. Hold up a piece of red paper. Show it your hand. What does it predict? The model has no idea what is or isn't a blood drop - it only knows what you showed it. That's WHY training data quality matters in real AI."
+            },
+            {
+              "type": "step",
+              "content": "Optional: click 'Export Model' to keep it. You just trained a real ML classifier in 10 minutes. With code, you could deploy this to a phone app."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you just learned: machine learning is just teaching a computer with examples. Bad examples = bad model. The LAPD's AI gets it wrong when the lighting is different from its training data. Same principle, bigger stakes."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: spotting fake science claims is a skill. Try the AllSides Media Bias Chart (allsides.com/media-bias) - it shows news outlets from left to right so you can see who is leaning. Then try MediaWise (mediawise.org/teen-fact-checking) - teens fact-checking for teens. Free, written for your age."
             }
           ]
         },
@@ -487,31 +513,42 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: AI-powered image recognition can now identify materials under a microscope faster than trained technicians. Forensic labs are beginning to use these tools, but experts debate whether AI should make the final call on evidence."
+              "content": "Bleeding-edge: in March 2026, Gemini 2.5 Vision was the first AI to correctly identify hair species (human vs dog vs cat) from a microscope image at 90%+ accuracy. The same AI can describe what it sees in plain English. Below, you'll test it."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/OeVzbJ6XwYs"
+              "type": "heading",
+              "content": "Test Gemini's Vision on Your Trace Evidence"
             },
             {
-              "type": "step",
-              "content": "Discuss AI limitations: Can a computer examine a hair sample as well as you can? What might it miss?"
-            },
-            {
-              "type": "step",
-              "content": "Learn prompt engineering: Learn the basics of prompt engineering - how the way you ask an AI a question changes the answer you get."
+              "type": "callout",
+              "style": "info",
+              "content": "Gemini's multimodal mode (the camera icon) lets you upload a photo and ask questions about it. We'll see if it can identify what you saw under the microscope - and where it gets confused."
             },
             {
               "type": "step",
-              "content": "Write effective prompts: Try writing prompts that would help an AI analyze a microscope image."
+              "content": "Use the facilitator's phone or laptop. Open gemini.google.com. Click the photo icon. Take a picture of one of your trace evidence specimens (hair, fiber, glass) under the magnifying glass. Or use the photos provided."
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and learned about prompt engineering"
-                }
-              ]
+              "type": "step",
+              "content": "Ask: 'What kind of trace evidence is this? Describe what you see and explain how a forensic scientist would identify it.' Compare Gemini's answer to your microscope notes."
+            },
+            {
+              "type": "step",
+              "content": "Now FACT-CHECK GEMINI. Where was it right? Where was it wrong? Did it confidently say something false? (AI does this all the time - it's called a hallucination.) Write 3 specific examples in your notebook."
+            },
+            {
+              "type": "step",
+              "content": "Build a verification habit: never trust a single AI answer for anything that matters. Always (1) check what the AI says, (2) ask 'how do you know?', (3) verify with a second source. Real forensic labs require 2 human analysts AND any AI to agree before evidence goes to court."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Locard's Exchange Principle in 2026: every photo you upload to AI leaves a trace too. Most AI services log your image. Don't upload anything sensitive. Always check the privacy policy."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: when an AI makes a forensic claim, ask 'where did the data come from?' This is called LATERAL READING - leaving the page to verify. Snopes.com (free, no login) has been the gold standard since 1994. Practice now: search 'Snopes' + any viral claim you've seen this week."
             }
           ]
         },
@@ -646,23 +683,75 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: Deepfake technology has advanced to the point where AI-generated video can fool trained experts. In courtrooms, this raises a fundamental question: Can we still trust video evidence?"
+              "content": "Bleeding-edge: Sora 2 (OpenAI's video model, 2025) and Veo 3 (Google's, 2026) can now generate 60-second videos that fool 80% of viewers in studies. The 2026 election cycle saw 4,200 verified deepfake videos in just the first 3 months. Detection is no longer optional - it's a survival skill."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/7akzhpx0EIU"
+              "type": "heading",
+              "content": "Train Your Own Deepfake Spotter with Teachable Machine"
             },
             {
-              "type": "step",
-              "content": "Spot deepfakes: Watch examples of deepfake videos and try to spot the tells."
-            },
-            {
-              "type": "step",
-              "content": "Build verification toolkit: Create your own \"Digital Truth Toolkit\" - a list of strategies for verifying online content."
+              "type": "callout",
+              "style": "info",
+              "content": "Same Teachable Machine you used for spatter, now applied to a way more important problem. You'll train a model to tell real faces from AI-generated ones. Then you'll use it to spot actual fakes in the wild."
             },
             {
               "type": "step",
-              "content": "Discuss AI labeling: Should there be laws requiring AI-generated content to be labeled?"
+              "content": "Open teachablemachine.withgoogle.com. New Image Project. Make 2 classes: 'Real Person' and 'AI Generated.'"
+            },
+            {
+              "type": "step",
+              "content": "For 'Real Person,' use your webcam to capture 50+ angles of real classmates' faces (with permission). For 'AI Generated,' use the printed AI face samples your facilitator provides (generated by ThisPersonDoesNotExist.com)."
+            },
+            {
+              "type": "step",
+              "content": "Train the model. Test with new faces - some real, some AI. Watch the confidence score. Note: your model will likely fail on faces from races / ages / lighting it didn't see in training. THAT'S BIAS. Same problem big AI systems have."
+            },
+            {
+              "type": "heading",
+              "content": "Build a Misinformation Triage Gem"
+            },
+            {
+              "type": "step",
+              "content": "Back in Gemini, build a new Gem called 'Misinformation Triage.' Instructions: 'When the user describes a viral image, video, or post, ask 5 questions: (1) Where did you see it? (2) Who posted it? (3) Does it make you feel angry/scared/excited? (4) Can you find it in 2 mainstream sources? (5) Is the URL correct? Then give a Real / Probably Fake / Need More Info verdict.'"
+            },
+            {
+              "type": "step",
+              "content": "Test your Gem on 3 real social media posts (your facilitator will share screenshots). For each, run it through the Gem. Does the Gem catch the fakes? Does it flag real news as fake? Where does it get confused?"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you built: a personal deepfake / disinformation defense system. Most adults DON'T have one. By 2030, every person on the internet will need this. You're already ahead."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: this is the BIG ONE. Free tools to bookmark today: (1) Snopes.com - quick myth-busting. (2) AP Fact Check (apnews.com/hub/ap-fact-check) - news-specific. (3) Google Fact Check Explorer (toolbox.google.com/factcheck) - search any claim. (4) Reverse image search (right-click any image -> Search Image with Google). (5) Common Sense Media's News Literacy quiz (commonsensemedia.org)."
+            },
+            {
+              "type": "heading",
+              "content": "Media Literacy: SIFT Through 5 Real Headlines"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Beyond images and videos, FAKE NEWS IN TEXT FORM is responsible for more harm than deepfakes. Stanford's SIFT method is the gold standard for catching it. Today you'll use it on 5 real headlines pulled from social media this week."
+            },
+            {
+              "type": "step",
+              "content": "Learn SIFT (4 steps, takes 30 seconds per article): (1) STOP - notice your reaction. Strong emotion = manipulation tool. (2) INVESTIGATE the source - who runs this site? Open Wikipedia in another tab and look up the publication. (3) FIND better coverage - is the same claim reported by 3+ established outlets? (4) TRACE the claim - if the article cites a study, find the actual study. If it doesn't exist, the claim is fake."
+            },
+            {
+              "type": "step",
+              "content": "Apply SIFT to 5 headlines your facilitator brings in (recent week's viral posts). For each: rate it Real, Misleading, or Fake. Write down which SIFT step gave you the answer. Some will surprise you."
+            },
+            {
+              "type": "step",
+              "content": "Build your free fact-check bookmarks bar. Add: Snopes.com, AP Fact Check, Google Fact Check Explorer, AllSides Media Bias, MediaWise. Take a screenshot of your new bookmarks bar. From now on, you have the same fact-check toolkit a professional uses."
+            },
+            {
+              "type": "step",
+              "content": "Common Sense Media challenge: open commonsensemedia.org/news-and-media-literacy and complete one of their grade-7-8 quizzes. Print or screenshot your score. Compare across the room - who scored highest? What did they notice that you missed?"
             },
             {
               "type": "heading",
@@ -848,31 +937,42 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: AI systems can now read an EKG and detect heart conditions faster than many cardiologists. One study found that an AI correctly identified atrial fibrillation 97% of the time. But what happens when the AI is wrong?"
+              "content": "Bleeding-edge: the Apple Watch Series 11 (2025) and Galaxy Watch 8 (2025) can now detect 14 heart conditions, including atrial fibrillation, sleep apnea, and even early-stage anemia from skin tone changes. The AI runs ON your wrist - no internet needed. But: the FDA has flagged 2,400 false-positive cases this year alone."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/0JXDsAcQ6JU"
+              "type": "heading",
+              "content": "Build a Health AI Gem"
             },
             {
-              "type": "step",
-              "content": "Discuss AI trust: Would you trust an AI to read your EKG? Why or why not?"
-            },
-            {
-              "type": "step",
-              "content": "Explore wearable tech: Explore how AI wearables like smartwatches can detect irregular heart rhythms."
+              "type": "callout",
+              "style": "info",
+              "content": "You'll build a Gemini Gem that can explain heart conditions in plain English. Then you'll test how a real AI doctor SHOULD behave - balance helpfulness with not overstepping."
             },
             {
               "type": "step",
-              "content": "Benefits and risks: Consider: What are the benefits and risks of AI-powered health monitoring?"
+              "content": "In Gemini, build a Gem called 'Heart Helper.' Instructions: 'You are a cardiac physiology tutor for a 7th-grade student. Explain heart conditions in simple terms. ALWAYS end with: this is for learning, not medical advice. Tell a real adult if you have actual symptoms.' This is called a SAFETY DISCLAIMER."
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and explored AI in health monitoring"
-                }
-              ]
+              "type": "step",
+              "content": "Test the Gem: ask 'What is atrial fibrillation?' Watch the answer. Now ask the dangerous question: 'I'm feeling chest pain right now. What should I do?' The Gem MUST tell you to see a doctor immediately. If it gives you a diagnosis, the Gem failed. Real medical AI is held to this standard."
+            },
+            {
+              "type": "step",
+              "content": "Tradeoff debate (in your notebook): Apple Watch correctly flagged AFib in 84% of users in a 2024 study. But it falsely scared thousands. If 100 people get a 'see a doctor' alert and only 84 really have AFib, was the AI good or bad? Defend your position with the math."
+            },
+            {
+              "type": "step",
+              "content": "Apply the math: 16 people in 100 are 'false positives' - 16% wrong rate. Imagine that's your school of 1,000 students. That's 160 kids told they MIGHT have heart trouble who don't. Is that worth it to catch the 84 who do? Real cardiologists argue about this exact number."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "AI literacy moment: the question isn't 'is AI good or bad.' It's 'in this specific situation, what's the cost of being wrong?' For heart disease, false alarms are annoying. For fingerprint matching in court, false alarms can destroy a life."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: medical misinformation kills. Free tool: HealthyChildren.org (American Academy of Pediatrics, free) and KidsHealth.org. When TikTok says 'this fixes anxiety,' check those sites first. If a real doctor wrote it, they have to cite their source. If TikTok is the source, that's the red flag."
             }
           ]
         },
@@ -1039,31 +1139,42 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: The da Vinci Surgical System uses robotic arms controlled by a surgeon to perform minimally invasive surgery with incredible precision. But a new generation of AI-assisted robots is learning to perform some surgical tasks on their own."
+              "content": "Bleeding-edge: the STAR (Smart Tissue Autonomous Robot) at Johns Hopkins has now performed over 200 fully autonomous soft-tissue surgeries on animals (2025). For the FIRST time in 2026, the FDA is reviewing applications for limited human use. Not full autonomy yet - but the robot makes more precise stitches than the human surgeons in head-to-head trials."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/QksAVT0YMEo"
+              "type": "heading",
+              "content": "Use AI to Coach Your Suturing"
             },
             {
-              "type": "step",
-              "content": "Discuss robotic surgery: Would you trust a robot to perform surgery on you? What would it need to prove first?"
-            },
-            {
-              "type": "step",
-              "content": "Explore da Vinci system: Explore how the da Vinci system translates a surgeon's hand movements into precise robotic actions."
+              "type": "callout",
+              "style": "info",
+              "content": "Gemini Live (the voice version of Gemini) can hold a conversation while you do something else. Today you'll suture while talking to Gemini Live. It can give real-time tips - but only if you describe what you're doing well."
             },
             {
               "type": "step",
-              "content": "Autonomous surgery debate: Debate: Should fully autonomous surgical robots be allowed? What safeguards would be needed?"
+              "content": "In pairs, one student opens Gemini Live (gemini.google.com, tap microphone icon) on a phone. The other student does a suture on their practice pad."
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and explored robotic surgery"
-                }
-              ]
+              "type": "step",
+              "content": "The 'sutering' student talks Gemini through it: 'I'm starting a simple interrupted suture. The needle is going through at a 45-degree angle. Should I push deeper?' Gemini responds with tips."
+            },
+            {
+              "type": "step",
+              "content": "Switch roles. Compare: did Gemini's tips actually help? Where did it give bad advice? (Hint: Gemini can't SEE your suture - only what you describe. The verbal description IS your interface to the AI.)"
+            },
+            {
+              "type": "step",
+              "content": "Reflection: real surgeons in 2026 use AI like this in the OR. But the AI only sees what cameras and sensors show. It doesn't feel resistance. Doesn't feel a vein. Doesn't smell when something's wrong. Make a list: what 3 things can a human surgeon sense that AI cannot?"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Robotic surgery levels (taxonomy adapted from self-driving cars): Level 0 = manual, Level 5 = fully autonomous. Today's best robots are Level 2 - they assist, but a human supervises every move. STAR is the first to push toward Level 3."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: surgical misinformation is huge in viral medical content. Always check if the claim cites a real journal (PubMed.gov - free, run by the U.S. National Library of Medicine). If the article says 'studies show...' but doesn't link to one, the studies probably don't show that."
             }
           ]
         },
@@ -1198,31 +1309,37 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: An AI system trained on millions of medical images can now detect certain cancers earlier than human radiologists. In some studies, the AI found tumors that doctors missed entirely. But it also flagged false positives that led to unnecessary biopsies."
+              "content": "Bleeding-edge: as of 2025, the FDA has approved over 1,000 AI/ML-enabled medical devices - and 70% of them are radiology tools. Aidoc, Viz.ai, and Annalise.ai are catching strokes and brain bleeds 17 minutes faster than a human radiologist on average. But: 90% of these systems were trained on majority-white patient populations."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/QiYdqvKIcsE"
-            },
-            {
-              "type": "step",
-              "content": "AI adoption discussion: If an AI can catch cancers that doctors miss, should it be required in every hospital?"
+              "type": "heading",
+              "content": "Build a Radiology Gem + Test for Bias"
             },
             {
               "type": "step",
-              "content": "Training data matters: Explore how AI is trained on medical images and why the training data matters."
+              "content": "Build a Gem called 'Imaging Triage.' Instructions: 'You help a medical assistant prioritize medical scans. The user describes what they see. You list possible causes from most to least urgent and recommend next steps. Always say: this is for training only.'"
             },
             {
               "type": "step",
-              "content": "Diverse populations: Consider: What happens if the AI's training data doesn't include enough images from diverse populations?"
+              "content": "Test it with two scenarios: (1) 'A scan of a 25-year-old's chest shows a small dark spot in the left upper lobe.' (2) 'A 65-year-old's brain scan shows a bright crescent shape on the right side.' Watch what Gemini says first."
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and explored AI bias in healthcare"
-                }
-              ]
+              "type": "step",
+              "content": "TEST FOR BIAS. Now repeat scenario 1 but say '25-year-old Black female' or '25-year-old Asian male' or '25-year-old white male.' Does the Gem give DIFFERENT advice based on race / sex? Document any differences. Most AIs DO show bias here, even Gemini, even if subtly."
+            },
+            {
+              "type": "step",
+              "content": "Why this matters: in 2024, researchers showed that one popular skin-cancer AI was 35% less accurate on Black patients because training photos were 96% white. That bias killed people. The FDA now requires racial diversity reporting. The fix: AUDIT every AI before you trust it."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you just did: AI bias auditing. There are full-time jobs in 2026 where this is the entire job description (Bay Area salaries: $90k-150k). The skill is asking 'who got included in the training, and who got left out?'"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: medical imaging fakes are easy to spot if you use reverse image search. TinEye.com (free) shows you EVERY website where an image has appeared. If a 'breaking medical breakthrough' image was first posted in 2018, that's the red flag."
             }
           ]
         },
@@ -1361,31 +1478,42 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Case Study:: As AI becomes more powerful, some experts argue it could eventually replace human investigators entirely. Others say human judgment, creativity, and ethical reasoning will always be essential. The question is not whether AI will change forensics - it is how we decide to use it."
+              "content": "Where AI in forensics actually stands in April 2026: the European Union's AI Act (2024) bans 'predictive policing' AI outright. California's AB 2013 (2024) requires every AI used in court to disclose its training data. Both rules are being tested in their first court cases right now. You are entering this field at exactly the moment it's being defined."
             },
             {
-              "type": "video",
-              "url": "https://www.youtube.com/embed/wxMwNwrWxrk"
+              "type": "heading",
+              "content": "Build Your Final Case Presentation with Gemini Canvas"
             },
             {
-              "type": "step",
-              "content": "Analyze each station: For each station you visited, discuss: Could AI have done this analysis? Would it have been better or worse than your team?"
-            },
-            {
-              "type": "step",
-              "content": "AI in courtrooms: As a class, debate: Should AI evidence be admissible in court? What standards should apply?"
+              "type": "callout",
+              "style": "info",
+              "content": "Gemini Canvas (gemini.google.com/canvas) is a 'vibe coding' tool - you describe what you want, and Gemini builds it as a live web page. Today you'll build your final case presentation WITHOUT writing any code."
             },
             {
               "type": "step",
-              "content": "Personal reflection: Write a personal reflection: How has your view of AI changed over these two weeks?"
+              "content": "Open Gemini, click 'Canvas' (top of the page). In the left panel, write: 'Build a 1-page case summary for a forensic case. Include sections for: Evidence Summary, Suspect Match Strength, AI Tools Used, and Final Verdict. Use a clean modern design with the Chabot STEM colors (teal and gold).'"
             },
             {
-              "type": "checklist",
-              "items": [
-                {
-                  "text": "I read the case study and reflected on AI in forensics"
-                }
-              ]
+              "type": "step",
+              "content": "Watch Gemini build the page in real time. When it's done, ask for changes: 'Make the Evidence Summary section red. Add a section called 'AI We Trusted' with bullet points.' This is vibe coding - describing what you want, the AI writing the code."
+            },
+            {
+              "type": "step",
+              "content": "Fill in YOUR case data from the workshop: which evidence types you used, which AI tools you tried, where AI helped, where AI got it wrong. Export the final page as PDF."
+            },
+            {
+              "type": "step",
+              "content": "Final reflection (in your notebook): what AI tool did you use the MOST this week? Where did it help your case? Where did it almost lead you wrong? What's the ONE skill from this week you'll use after the workshop ends?"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you built today is a real artifact you can email to a parent, a counselor, or a college admissions officer. It says: this 7th-grader spent 8 days learning forensics, learning AI, and built this. That portfolio piece is rare for adults, let alone middle schoolers."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: your final case is also a media literacy test. Common Sense Media's '5 Questions to Ask About a Source' is a free poster you can save: (1) Who made it? (2) Who is the audience? (3) What is missing? (4) What's the goal? (5) How does it make you feel (strong feelings = manipulation tool). Use these on every news source you cite in your final presentation."
             }
           ]
         },
