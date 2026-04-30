@@ -126,33 +126,54 @@
             },
             {
               "type": "heading",
-              "content": "Build a Fingerprint Helper with Gemini Gems"
+              "content": "Train Your Own Fingerprint Classifier with Teachable Machine"
             },
             {
               "type": "callout",
               "style": "info",
-              "content": "Gemini Gems are mini AI assistants you can build for ANY topic. They're free at gemini.google.com (works with school Google accounts - no Claude age limits). Today you build a Gem that knows everything about fingerprint classification. You design the expert; Gemini becomes it."
-            },
-            {
-              "type": "step",
-              "content": "Open gemini.google.com on your facilitator's laptop. Sign in. Click 'Gems' in the sidebar, then 'New Gem.'"
-            },
-            {
-              "type": "step",
-              "content": "Name it 'Fingerprint Helper.' In the instructions, write: 'You are a forensic fingerprint expert. When the user shows you a fingerprint description, classify it as Loop, Whorl, or Arch. Always explain WHY using the delta and ridge features. Use simple language a 7th grader would understand. Never make up evidence.'"
-            },
-            {
-              "type": "step",
-              "content": "Save the Gem. Now describe one of your inked fingerprints in words (no upload needed): 'Three concentric circles, one delta, ridges flow downward.' Watch the Gem identify it as a Whorl. Notice: the Gem only knows what your prompt taught it."
-            },
-            {
-              "type": "step",
-              "content": "Try to BREAK the Gem. Describe a fingerprint that doesn't match any of the 3 patterns. What does the Gem do? Does it admit it doesn't know, or does it make something up? The answer tells you how much to trust AI for real evidence work."
+              "content": "Apple's iPhone uses pattern-matching AI to identify your fingerprint. Today you build a smaller version of the same kind of model with Teachable Machine, a free Google tool that trains real machine learning models in your browser. No coding, no login. You will see exactly how AI learns from examples."
             },
             {
               "type": "callout",
               "style": "tip",
-              "content": "What you just did: prompt engineering. The instructions you wrote to the Gem ARE the AI literacy skill. A vague prompt gives vague answers. A specific prompt - 'never make up evidence' - gives safer answers. Real forensic AI auditors do this for a living."
+              "content": "Watch these 3 short videos first. They walk you through Teachable Machine so you can spend lab time training the model, not figuring out the buttons."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/DFBbSTvtpy4"
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/CO67EQ0ZWgA"
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/n-zeeRLBgd0"
+            },
+            {
+              "type": "step",
+              "content": "Open teachablemachine.withgoogle.com. Click 'Get Started' then 'Image Project' then 'Standard image model.' Create 3 classes named Loop, Whorl, Arch."
+            },
+            {
+              "type": "step",
+              "content": "Hold each of your inked prints up to your laptop's webcam. For each class, click 'Hold to Record' for 10 seconds. The model learns from the examples you show it."
+            },
+            {
+              "type": "step",
+              "content": "Click 'Train Model.' Wait 30 seconds. Now hold up a NEW inked print the model didn't see during training. Watch the prediction and the confidence percentage. Did it get it right?"
+            },
+            {
+              "type": "step",
+              "content": "BREAK YOUR MODEL: hold up your hand, a piece of paper, or a sticker. The model will still confidently classify it as Loop, Whorl, or Arch, because it only knows what you showed it. That is WHY training data quality matters in real AI."
+            },
+            {
+              "type": "step",
+              "content": "Optional: click 'Export Model' to save it. You just trained a real ML classifier in 10 minutes. The same kind of math runs on every phone's fingerprint sensor, just trained on millions of examples instead of a handful."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "What you just did: trained a real machine learning model. The CHOICES you made (which images, how many, what variety) ARE the AI literacy skill. Bad examples = bad model. Real ML engineers do this for a living, just at much bigger scale."
             },
             {
               "type": "callout",
@@ -317,6 +338,11 @@
               "type": "callout",
               "style": "info",
               "content": "Teachable Machine is a free Google tool that lets you train a real machine learning model in your browser - no coding, no login. You'll train it to classify blood drop angles into 3 categories. This is the SAME kind of model the LAPD uses, just smaller."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Refresher: same Teachable Machine you used on Day 1. If you need a reminder of the buttons, the 3 tutorial videos are in your Day 1 notebook. Setup is the same, just different classes."
             },
             {
               "type": "step",
@@ -693,6 +719,11 @@
               "type": "callout",
               "style": "info",
               "content": "Same Teachable Machine you used for spatter, now applied to a way more important problem. You'll train a model to tell real faces from AI-generated ones. Then you'll use it to spot actual fakes in the wild."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Refresher: same Teachable Machine you used on Day 1. If you need a reminder of the buttons, the 3 tutorial videos are in your Day 1 notebook. Setup is the same, just different classes."
             },
             {
               "type": "step",
