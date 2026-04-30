@@ -1266,6 +1266,25 @@
               "content": "Materials Needed: Printed X-rays, Printed CT scans, Reference images, Light boxes, Case scenario cards, Diagnostic checklists, Lab notebooks"
             },
             {
+              "type": "text",
+              "content": "Before you touch the printed X-rays, warm up your eye with six digital cases. The Radiology Detective puts you in a real radiologist's chair: a patient briefing rolls in, an X-ray opens on screen, and you have to spot the abnormality, name the diagnosis, and pick the treatment. Six patients. Get them all right and you earn the Attending Radiologist badge."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Interactive App: Launch Radiology Detective. Use the Launch button below to open the app inline. Drag the magnifier across each X-ray and tap on whatever shouldn't be there. Work all six cases in your notebook before moving on."
+            },
+            {
+              "type": "app",
+              "title": "Radiology Detective",
+              "url": "apps/radiology-detective.html",
+              "embed": true
+            },
+            {
+              "type": "text",
+              "content": "Now your eye is trained. Move to the printed X-rays at your station and use the same systematic approach: scan the bones, scan the soft tissue, scan the air spaces, then compare to a normal reference."
+            },
+            {
               "type": "step",
               "content": "Examine first X-ray: Examine your first X-ray image. Use the systematic approach: check orientation, then scan bones, soft tissue, and air spaces."
             },
@@ -1289,7 +1308,10 @@
               "type": "checklist",
               "items": [
                 {
-                  "text": "I completed the medical imaging analysis and diagnostic reasoning"
+                  "text": "I worked all 6 cases in Radiology Detective"
+                },
+                {
+                  "text": "I completed the printed X-ray analysis at my station"
                 }
               ]
             }

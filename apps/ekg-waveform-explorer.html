@@ -401,6 +401,127 @@
     font-family: inherit;
   }
 
+  /* Physiology overlay */
+  .phys-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%);
+    border-left: 3px solid var(--gold);
+    border-radius: 8px;
+    flex-wrap: wrap;
+  }
+  .phys-toggle-row .phys-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: #8B6914;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  .phys-toggle-row .phys-hint {
+    font-size: 11px;
+    color: var(--text-med);
+    flex: 1;
+    min-width: 140px;
+  }
+  .toggle-switch {
+    position: relative;
+    width: 46px;
+    height: 24px;
+    background: #C5D0DA;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border: none;
+    flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle-switch.on { background: var(--teal); }
+  .toggle-switch.on::after { transform: translateX(22px); }
+
+  .phys-card { display: none; }
+  .phys-card.show { display: block; animation: fadeIn 0.35s ease-out; }
+  .phys-stage {
+    background: linear-gradient(180deg, #FFFBF0 0%, #FFF5E0 100%);
+    border-radius: 12px;
+    padding: 14px 12px 10px;
+    border: 1px solid #F0E2C0;
+  }
+  .phys-svg-wrap { display: flex; justify-content: center; }
+  .phys-svg { width: 100%; max-width: 320px; height: auto; }
+  .phys-region {
+    fill: #F4E4C1;
+    stroke: #B89968;
+    stroke-width: 1.4;
+    transition: fill 0.25s ease, stroke 0.25s ease, filter 0.25s ease;
+  }
+  .phys-region.lit-atria { fill: #FFD66B; stroke: var(--gold); filter: drop-shadow(0 0 6px rgba(212,168,67,0.8)); }
+  .phys-region.lit-ventricles { fill: #F39C7C; stroke: var(--coral); filter: drop-shadow(0 0 8px rgba(230,92,60,0.8)); }
+  .phys-region.lit-fade { fill: #F8C9B7; stroke: #C97757; filter: drop-shadow(0 0 4px rgba(230,92,60,0.4)); }
+  .phys-node {
+    fill: #C5D0DA;
+    stroke: #5A6A7A;
+    stroke-width: 1.2;
+    transition: fill 0.2s ease, filter 0.2s ease;
+  }
+  .phys-node.lit { fill: #FFD66B; filter: drop-shadow(0 0 6px rgba(245,183,49,0.95)); }
+  .phys-node.lit-av { fill: #F39C7C; filter: drop-shadow(0 0 6px rgba(230,92,60,0.95)); }
+  .phys-conduction {
+    fill: none;
+    stroke: #B89968;
+    stroke-width: 1.6;
+    stroke-dasharray: 4 3;
+    transition: stroke 0.25s ease, filter 0.25s ease;
+  }
+  .phys-conduction.lit { stroke: var(--coral); filter: drop-shadow(0 0 5px rgba(230,92,60,0.7)); }
+  .phys-label-text {
+    font-size: 9px;
+    font-weight: 700;
+    fill: var(--navy);
+    font-family: 'Segoe UI', sans-serif;
+    text-anchor: middle;
+    pointer-events: none;
+  }
+  .phys-anat-label { font-size: 10px; fill: #5A6A7A; font-weight: 600; }
+  .phys-callout {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: white;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--teal);
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: var(--navy);
+    min-height: 40px;
+  }
+  .phys-callout strong { color: var(--coral); font-weight: 800; }
+  .phys-phase-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: white;
+    background: var(--teal);
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-right: 8px;
+  }
+
   @media (max-width: 480px) {
     .card { margin: 12px 12px; padding: 14px; }
     .scenario { margin: 12px 12px 0; padding: 12px 14px; }
@@ -413,6 +534,7 @@
     .complete-big { font-size: 17px; }
     .label-chip { font-size: 12px; padding: 7px 12px; }
     .canvas-bpm { font-size: 15px; }
+    .phys-svg { max-width: 260px; }
   }
 </style>
 </head>
@@ -458,6 +580,52 @@
     <div class="measure-result" id="measureResult"></div>
     <div class="btn-row">
       <button class="btn btn-ghost" id="clearMeasureBtn">Clear clicks</button>
+    </div>
+    <div class="phys-toggle-row">
+      <span class="phys-label">Physiology</span>
+      <span class="phys-hint">Light up the heart anatomy in sync with each waveform phase.</span>
+      <button class="toggle-switch" id="physToggle" aria-label="Toggle physiology overlay" aria-pressed="false"></button>
+    </div>
+  </div>
+
+  <!-- Physiology overlay (HS) -->
+  <div class="card phys-card" id="physCard">
+    <div class="card-title"><span class="card-title-dot" style="background:var(--coral);"></span>Conduction System (Live)</div>
+    <div class="hint">SA node fires (P), AV node delays the signal (PR), bundle branches deliver it to the ventricles (QRS), ventricles relax and reset (T). Watch the anatomy track the trace above.</div>
+    <div class="phys-stage">
+      <div class="phys-svg-wrap">
+        <svg class="phys-svg" viewBox="0 0 320 280" xmlns="http://www.w3.org/2000/svg" aria-label="Heart anatomy schematic">
+          <!-- Right Atrium (RA) -->
+          <path id="region-ra" class="phys-region" d="M 140 70 Q 95 55 75 90 Q 70 115 95 130 Q 125 138 145 125 Z"></path>
+          <!-- Left Atrium (LA) -->
+          <path id="region-la" class="phys-region" d="M 175 70 Q 230 55 250 95 Q 250 120 220 132 Q 195 140 175 125 Z"></path>
+          <!-- Right Ventricle (RV) -->
+          <path id="region-rv" class="phys-region" d="M 95 130 Q 80 175 110 235 Q 140 250 158 240 L 158 145 Q 130 145 95 130 Z"></path>
+          <!-- Left Ventricle (LV) -->
+          <path id="region-lv" class="phys-region" d="M 220 132 Q 245 175 220 235 Q 188 252 162 240 L 162 145 Q 195 142 220 132 Z"></path>
+          <!-- Septum line -->
+          <line x1="160" y1="130" x2="160" y2="240" stroke="#B89968" stroke-width="1" stroke-dasharray="2 3"></line>
+          <!-- Conduction pathway: SA -> AV -> Bundle -> branches -->
+          <path id="cond-sa-av" class="phys-conduction" d="M 105 95 Q 130 110 152 138"></path>
+          <path id="cond-bundle-r" class="phys-conduction" d="M 152 142 Q 130 175 115 215"></path>
+          <path id="cond-bundle-l" class="phys-conduction" d="M 168 142 Q 195 180 210 215"></path>
+          <!-- SA node -->
+          <circle id="node-sa" class="phys-node" cx="105" cy="92" r="6"></circle>
+          <text x="105" y="78" class="phys-anat-label" text-anchor="middle">SA</text>
+          <!-- AV node -->
+          <circle id="node-av" class="phys-node" cx="160" cy="138" r="5.5"></circle>
+          <text x="160" y="160" class="phys-anat-label" text-anchor="middle">AV</text>
+          <!-- Region labels -->
+          <text x="100" y="100" class="phys-label-text">RA</text>
+          <text x="220" y="100" class="phys-label-text">LA</text>
+          <text x="120" y="200" class="phys-label-text">RV</text>
+          <text x="200" y="200" class="phys-label-text">LV</text>
+        </svg>
+      </div>
+      <div class="phys-callout" id="physCallout">
+        <span class="phys-phase-tag" id="physPhaseTag">Idle</span>
+        <span id="physCalloutText">Pick a rhythm above and the anatomy will trace the heartbeat with the EKG.</span>
+      </div>
     </div>
   </div>
 
@@ -834,6 +1002,118 @@
     else bpmEl.innerHTML = bpmMap[state.rhythm] + ' <small>BPM</small>';
   }
 
+  // ===== Physiology overlay =====
+  const physToggle = document.getElementById('physToggle');
+  const physCard = document.getElementById('physCard');
+  const physPhaseTag = document.getElementById('physPhaseTag');
+  const physCalloutText = document.getElementById('physCalloutText');
+  const PHYS_REGION_IDS = ['region-ra','region-la','region-rv','region-lv'];
+  const PHYS_NODE_IDS = ['node-sa','node-av'];
+  const PHYS_COND_IDS = ['cond-sa-av','cond-bundle-r','cond-bundle-l'];
+  const physRegions = {};
+  const physNodes = {};
+  const physConds = {};
+  PHYS_REGION_IDS.forEach(id => physRegions[id] = document.getElementById(id));
+  PHYS_NODE_IDS.forEach(id => physNodes[id] = document.getElementById(id));
+  PHYS_COND_IDS.forEach(id => physConds[id] = document.getElementById(id));
+
+  let physOn = false;
+  physToggle.addEventListener('click', function(){
+    physOn = !physOn;
+    physToggle.classList.toggle('on', physOn);
+    physToggle.setAttribute('aria-pressed', physOn ? 'true' : 'false');
+    physCard.classList.toggle('show', physOn);
+    if(!physOn) clearPhysHighlights();
+  });
+
+  function clearPhysHighlights(){
+    Object.values(physRegions).forEach(el => el && el.classList.remove('lit-atria','lit-ventricles','lit-fade'));
+    Object.values(physNodes).forEach(el => el && el.classList.remove('lit','lit-av'));
+    Object.values(physConds).forEach(el => el && el.classList.remove('lit'));
+  }
+
+  // Determine current phase based on rhythm clock and last R-time
+  // For non-afib rhythms we use phase within the period, with the same anchors
+  // used in waveformMorph. For afib we show "Chaotic atria, irregular QRS".
+  const PHASE_COPY = {
+    P:    { tag:'P',   text:'<strong>P wave</strong>: SA node fires, atria depolarize and contract.' },
+    PR:   { tag:'PR',  text:'<strong>PR interval</strong>: AV node holds the signal so the ventricles fill before contracting.' },
+    QRS:  { tag:'QRS', text:'<strong>QRS</strong>: bundle branches and Purkinje fibers light up, ventricles depolarize and pump.' },
+    T:    { tag:'T',   text:'<strong>T wave</strong>: ventricles repolarize, electrical reset before the next beat.' },
+    REST: { tag:'TP',  text:'Electrical rest. Heart waits for the next SA fire.' },
+    AFIB: { tag:'AFIB',text:'<strong>Atrial fibrillation</strong>: chaotic atrial signals, no clean P. AV node fires QRS irregularly.' }
+  };
+  let lastPhaseKey = null;
+
+  function physPhaseForTime(t){
+    if(state.rhythm === 'afib') return 'AFIB';
+    let bpm = 75;
+    if(state.rhythm === 'tachy') bpm = 130;
+    else if(state.rhythm === 'brady') bpm = 45;
+    const period = 60 / bpm;
+    const phase = t % period;
+    // Anchors match waveformMorph
+    if(phase < 0.04) return 'P';
+    if(phase < 0.12) return 'P';
+    if(phase < 0.18) return 'PR';
+    if(phase < 0.26) return 'QRS';
+    if(phase < 0.34) return 'REST';
+    if(phase < 0.50) return 'T';
+    return 'REST';
+  }
+
+  function applyPhysPhase(key){
+    clearPhysHighlights();
+    if(key === 'P'){
+      physRegions['region-ra'].classList.add('lit-atria');
+      physRegions['region-la'].classList.add('lit-atria');
+      physNodes['node-sa'].classList.add('lit');
+    } else if(key === 'PR'){
+      physRegions['region-ra'].classList.add('lit-fade');
+      physRegions['region-la'].classList.add('lit-fade');
+      physNodes['node-sa'].classList.add('lit');
+      physNodes['node-av'].classList.add('lit-av');
+      physConds['cond-sa-av'].classList.add('lit');
+    } else if(key === 'QRS'){
+      physRegions['region-rv'].classList.add('lit-ventricles');
+      physRegions['region-lv'].classList.add('lit-ventricles');
+      physNodes['node-av'].classList.add('lit-av');
+      physConds['cond-bundle-r'].classList.add('lit');
+      physConds['cond-bundle-l'].classList.add('lit');
+    } else if(key === 'T'){
+      physRegions['region-rv'].classList.add('lit-fade');
+      physRegions['region-lv'].classList.add('lit-fade');
+    } else if(key === 'AFIB'){
+      // Flicker atria randomly to suggest chaos
+      if(Math.random() < 0.6) physRegions['region-ra'].classList.add('lit-fade');
+      if(Math.random() < 0.6) physRegions['region-la'].classList.add('lit-fade');
+      // QRS visible only at scheduled afib beats
+      if(afibQueue && afibQueue.length){
+        const last = afibQueue[afibQueue.length - 1];
+        const dt = runT - last.t;
+        if(dt >= 0 && dt < 0.18){
+          physRegions['region-rv'].classList.add('lit-ventricles');
+          physRegions['region-lv'].classList.add('lit-ventricles');
+          physNodes['node-av'].classList.add('lit-av');
+          physConds['cond-bundle-r'].classList.add('lit');
+          physConds['cond-bundle-l'].classList.add('lit');
+        }
+      }
+    }
+    physPhaseTag.textContent = PHASE_COPY[key]?.tag || key;
+    physCalloutText.innerHTML = PHASE_COPY[key]?.text || '';
+  }
+
+  function updatePhys(){
+    if(!physOn) return;
+    const key = physPhaseForTime(runT);
+    // For afib we re-render every frame to capture chaos; for others only on phase change
+    if(key === 'AFIB' || key !== lastPhaseKey){
+      applyPhysPhase(key);
+      lastPhaseKey = key;
+    }
+  }
+
   // Animation loop
   function loop(ts){
     if(!lastTime) lastTime = ts;
@@ -842,6 +1122,7 @@
     lastTime = ts;
     stepAnimation(dt);
     renderLive();
+    updatePhys();
     requestAnimationFrame(loop);
   }
   updateStatusLabel();

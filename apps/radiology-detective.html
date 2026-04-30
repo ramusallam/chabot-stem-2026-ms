@@ -1,0 +1,1677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Radiology Detective - Chabot STEM 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --navy: #1B3A5C;
+    --teal: #2A9D8F;
+    --teal-dark: #1A6B6B;
+    --gold: #D4A843;
+    --coral: #E65C3C;
+    --maroon: #7A2D4E;
+    --white: #FFFFFF;
+    --bg: #f5f7fa;
+    --border: #E4E9EF;
+    --text: #333;
+    --text-med: #5A6A7A;
+    --green: #27AE60;
+    --red: #C0392B;
+    --xray-bg: #08111c;
+    --xray-bone: #f4ecdc;
+  }
+  html, body {
+    background: var(--bg);
+    min-height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: var(--text);
+  }
+  body { padding-bottom: 40px; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(16px);} to { opacity: 1; transform: translateY(0);} }
+  @keyframes pop { 0% { transform: scale(0.85); opacity: 0;} 60% { transform: scale(1.08);} 100% { transform: scale(1); opacity: 1;} }
+  @keyframes shake { 0%,100% { transform: translateX(0);} 25% { transform: translateX(-6px);} 75% { transform: translateX(6px);} }
+  @keyframes correctPulse { 0% { box-shadow: 0 0 0 0 rgba(39,174,96,0.6);} 100% { box-shadow: 0 0 0 26px rgba(39,174,96,0);} }
+  @keyframes wrongPulse { 0% { box-shadow: 0 0 0 0 rgba(192,57,43,0.55);} 100% { box-shadow: 0 0 0 22px rgba(192,57,43,0);} }
+  @keyframes hintBlink { 0%,100% { opacity: 0.85;} 50% { opacity: 0.25;} }
+  @keyframes scanLine { 0% { transform: translateY(-100%);} 100% { transform: translateY(380px);} }
+
+  .fade-in { animation: fadeIn 0.4s ease-out; }
+  .slide-up { animation: slideUp 0.45s ease-out; }
+  .pop { animation: pop 0.5s ease-out; }
+  .shake { animation: shake 0.4s ease; }
+
+  .app {
+    max-width: 720px;
+    margin: 0 auto;
+    background: var(--white);
+    min-height: 100vh;
+    box-shadow: 0 0 40px rgba(27,58,92,0.06);
+  }
+
+  .header {
+    background: linear-gradient(135deg, #1A6B6B 0%, #2A9D8F 100%);
+    padding: 14px 22px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 3px solid var(--gold);
+  }
+  .header-text { flex: 1; }
+  .header-title { font-size: 15px; font-weight: 800; color: white; letter-spacing: 0.3px; }
+  .header-sub { font-size: 11px; color: rgba(255,255,255,0.8); font-weight: 500; margin-top: 2px; }
+  .header-icon { font-size: 22px; flex-shrink: 0; }
+
+  .scenario {
+    margin: 16px 18px 0;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #FFF8E1 0%, #FEF3D1 100%);
+    border-left: 4px solid var(--gold);
+    border-radius: 12px;
+    animation: fadeIn 0.5s ease-out;
+  }
+  .scenario-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: #8B6914;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .scenario-text { font-size: 14px; line-height: 1.55; color: var(--navy); font-weight: 500; }
+
+  .progress-bar {
+    display: flex;
+    gap: 6px;
+    margin: 14px 18px 0;
+  }
+  .progress-cell {
+    flex: 1;
+    padding: 8px 4px;
+    border-radius: 8px;
+    background: #EEF2F5;
+    color: var(--text-med);
+    font-size: 10px;
+    font-weight: 700;
+    text-align: center;
+    border: 1px solid var(--border);
+    letter-spacing: 0.3px;
+    transition: all 0.25s;
+  }
+  .progress-cell.active {
+    background: linear-gradient(135deg, var(--gold), #B8902F);
+    color: white;
+    border-color: #B8902F;
+    box-shadow: 0 2px 6px rgba(212,168,67,0.35);
+  }
+  .progress-cell.done {
+    background: linear-gradient(135deg, var(--green), #1E8449);
+    color: white;
+    border-color: #1E8449;
+  }
+  .progress-cell.done::after { content: " ✓"; }
+
+  .card {
+    margin: 16px 18px;
+    background: white;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    border: 1px solid var(--border);
+    animation: fadeIn 0.35s ease-out;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.4px;
+    color: var(--navy);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal);
+  }
+
+  /* Patient briefing */
+  .patient-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed var(--border);
+  }
+  .patient-avatar {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .patient-info { flex: 1; }
+  .patient-name { font-size: 16px; font-weight: 800; color: var(--navy); }
+  .patient-meta { font-size: 12px; color: var(--text-med); margin-top: 2px; }
+  .vitals-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .vital {
+    padding: 7px 6px;
+    background: #F4F8FA;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    text-align: center;
+  }
+  .vital-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-med);
+    text-transform: uppercase;
+  }
+  .vital-value {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--navy);
+    margin-top: 1px;
+    font-family: 'Courier New', monospace;
+  }
+  .vital.warn { background: #FFF4E5; border-color: #F5C97A; }
+  .vital.warn .vital-value { color: var(--coral); }
+
+  .complaint {
+    padding: 12px 14px;
+    background: linear-gradient(135deg, #FDECE7 0%, #FCE0D8 100%);
+    border-left: 4px solid var(--coral);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .complaint-tag {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--coral);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .complaint-quote { font-style: italic; font-weight: 500; }
+  .complaint-story { font-size: 12px; color: var(--text-med); margin-top: 6px; line-height: 1.5; font-style: normal; }
+
+  /* X-ray viewer */
+  .xray-stage {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: var(--xray-bg);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 2px solid #050b14;
+    box-shadow: inset 0 0 60px rgba(10,186,181,0.06);
+    cursor: crosshair;
+    touch-action: none;
+    user-select: none;
+  }
+  .xray-stage svg.xray-base {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+  .xray-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .xray-status {
+    position: absolute;
+    top: 8px;
+    left: 10px;
+    font-size: 10px;
+    color: #0ABAB5;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px rgba(10,186,181,0.7);
+    pointer-events: none;
+  }
+  .xray-id {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 10px;
+    color: rgba(10,186,181,0.7);
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    pointer-events: none;
+    text-align: right;
+  }
+  .scan-line {
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(10,186,181,0.6), transparent);
+    pointer-events: none;
+    animation: scanLine 2.5s ease-in-out infinite;
+    opacity: 0.55;
+  }
+
+  /* Magnifier lens */
+  .lens {
+    position: absolute;
+    width: 110px; height: 110px;
+    border-radius: 50%;
+    border: 2px solid rgba(10,186,181,0.85);
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.5), 0 6px 20px rgba(0,0,0,0.55), inset 0 0 22px rgba(10,186,181,0.15);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    overflow: hidden;
+    background: var(--xray-bg);
+    display: none;
+  }
+  .lens.show { display: block; }
+  .lens-svg {
+    position: absolute;
+    transform-origin: top left;
+    pointer-events: none;
+  }
+  .lens-cross {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .lens-cross::before, .lens-cross::after {
+    content: "";
+    position: absolute;
+    background: rgba(10,186,181,0.55);
+  }
+  .lens-cross::before { top: 50%; left: 8px; right: 8px; height: 1px; }
+  .lens-cross::after { left: 50%; top: 8px; bottom: 8px; width: 1px; }
+
+  /* Tap markers */
+  .tap-marker {
+    position: absolute;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  .tap-marker.correct {
+    border: 3px solid #27AE60;
+    background: rgba(39,174,96,0.2);
+    animation: correctPulse 0.85s ease-out;
+  }
+  .tap-marker.wrong {
+    border: 3px solid #C0392B;
+    background: rgba(192,57,43,0.18);
+    animation: wrongPulse 0.7s ease-out;
+  }
+
+  /* Hint arrow */
+  .hint-arrow {
+    position: absolute;
+    color: #FFD24A;
+    font-size: 36px;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    text-shadow: 0 0 8px rgba(255,210,74,0.8);
+    animation: hintBlink 0.9s ease-in-out infinite;
+  }
+
+  /* Instruction strip */
+  .xray-instruction {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #F4F8FA;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--navy);
+    line-height: 1.5;
+    text-align: center;
+  }
+  .xray-instruction strong { color: var(--teal-dark); }
+  .xray-instruction.success {
+    background: linear-gradient(135deg, #E8F7EE, #D5F0DF);
+    border-color: #6EC78F;
+    color: #1E6B40;
+  }
+  .xray-instruction.success strong { color: #1E6B40; }
+  .xray-instruction.error {
+    background: linear-gradient(135deg, #FDECEA, #FBDED9);
+    border-color: #E08074;
+    color: #8B2018;
+  }
+
+  .stat-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #EEF4F3;
+    color: var(--teal-dark);
+    letter-spacing: 0.3px;
+  }
+  .stat-chip.warn { background: #FFF4E5; color: #B8702A; }
+
+  /* Multiple choice */
+  .mc-question {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 12px;
+    line-height: 1.45;
+  }
+  .mc-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .mc-btn {
+    padding: 13px 14px;
+    background: white;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--navy);
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.18s;
+    line-height: 1.4;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .mc-btn:hover { border-color: var(--teal); background: #F4FBF9; }
+  .mc-btn .letter {
+    flex-shrink: 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #EEF4F3;
+    color: var(--teal-dark);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+  }
+  .mc-btn.correct {
+    border-color: #27AE60;
+    background: linear-gradient(135deg, #E8F7EE, #D5F0DF);
+    color: #1E6B40;
+  }
+  .mc-btn.correct .letter { background: #27AE60; color: white; }
+  .mc-btn.wrong {
+    border-color: #C0392B;
+    background: linear-gradient(135deg, #FDECEA, #FBDED9);
+    color: #8B2018;
+  }
+  .mc-btn.wrong .letter { background: #C0392B; color: white; }
+  .mc-btn.disabled { cursor: default; opacity: 0.55; }
+  .mc-btn.disabled:hover { border-color: var(--border); background: white; }
+
+  .feedback-strip {
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    border-left: 4px solid;
+    animation: fadeIn 0.3s ease-out;
+  }
+  .feedback-strip.success {
+    background: linear-gradient(135deg, #E8F7EE, #D5F0DF);
+    border-left-color: var(--green);
+    color: #1E6B40;
+  }
+  .feedback-strip.error {
+    background: linear-gradient(135deg, #FDECEA, #FBDED9);
+    border-left-color: var(--red);
+    color: #8B2018;
+  }
+  .feedback-strip strong { font-weight: 800; }
+
+  /* Doctor's note */
+  .doc-note {
+    margin-top: 12px;
+    padding: 14px 16px;
+    background: linear-gradient(135deg, #EEF4FA 0%, #DCE7F2 100%);
+    border-left: 4px solid var(--navy);
+    border-radius: 12px;
+  }
+  .doc-note-tag {
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    color: var(--navy);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .doc-note-text { font-size: 13px; line-height: 1.55; color: var(--navy); font-weight: 500; }
+
+  .btn {
+    padding: 11px 18px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-dark));
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s, box-shadow 0.15s;
+    box-shadow: 0 2px 8px rgba(42,157,143,0.25);
+  }
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(42,157,143,0.3); }
+  .btn-ghost {
+    background: white;
+    color: var(--navy);
+    border: 2px solid var(--border);
+    box-shadow: none;
+  }
+  .btn-ghost:hover { border-color: var(--teal); color: var(--teal); }
+  .btn-row { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; justify-content: flex-end; }
+  .btn-row.left { justify-content: flex-start; }
+
+  /* Completion */
+  .complete {
+    margin: 16px 18px;
+    padding: 24px 22px;
+    background: linear-gradient(135deg, #1B3A5C 0%, #2A9D8F 100%);
+    color: white;
+    border-radius: 16px;
+    text-align: center;
+    animation: pop 0.6s ease-out;
+    box-shadow: 0 4px 20px rgba(27,58,92,0.25);
+  }
+  .complete-head {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--gold);
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .complete-big {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.3;
+    margin-bottom: 12px;
+  }
+  .complete-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .complete-stat {
+    padding: 10px 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .complete-stat-num {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--gold);
+    font-family: 'Courier New', monospace;
+  }
+  .complete-stat-label {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.75);
+    margin-top: 2px;
+  }
+  .complete-cta {
+    margin-top: 14px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.55;
+    border: 1px solid rgba(255,255,255,0.18);
+    text-align: left;
+  }
+  .complete-cta strong { color: var(--gold); }
+  .reset-link {
+    display: inline-block;
+    margin-top: 14px;
+    font-size: 12px;
+    color: rgba(255,255,255,0.8);
+    text-decoration: underline;
+    cursor: pointer;
+    background: none;
+    border: none;
+    font-family: inherit;
+  }
+
+  /* Footer */
+  .app-footer {
+    text-align: center;
+    padding: 14px 20px;
+    border-top: 3px solid var(--gold);
+    background: var(--white);
+    font-size: 11px;
+    color: #999;
+    margin-top: 18px;
+  }
+  .app-footer strong { color: var(--teal-dark); }
+
+  @media (max-width: 480px) {
+    .card { margin: 12px 12px; padding: 14px; }
+    .scenario { margin: 12px 12px 0; padding: 12px 14px; }
+    .scenario-text { font-size: 13px; }
+    .progress-bar { margin: 12px 12px 0; }
+    .progress-cell { font-size: 9px; padding: 6px 2px; }
+    .complete { margin: 12px 12px; padding: 18px; }
+    .complete-big { font-size: 18px; }
+    .complete-stat-num { font-size: 18px; }
+    .lens { width: 90px; height: 90px; }
+    .patient-avatar { width: 48px; height: 48px; font-size: 22px; }
+    .patient-name { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <svg viewBox="0 0 40 40" width="26" height="26" style="flex-shrink:0">
+      <polygon points="13,2 24,13 13,24 2,13" fill="#0ABAB5" opacity="0.85"/>
+      <polygon points="27,2 38,13 27,24 16,13" fill="#F5B731" opacity="0.85"/>
+      <polygon points="13,16 24,27 13,38 2,27" fill="#E65C3C" opacity="0.85"/>
+      <polygon points="27,16 38,27 27,38 16,27" fill="#7A2D4E" opacity="0.85"/>
+    </svg>
+    <div class="header-text">
+      <div class="header-title">Radiology Detective</div>
+      <div class="header-sub">Chabot STEM 2026 - Day 7: Diagnostic Imaging</div>
+    </div>
+    <span class="header-icon">🩻</span>
+  </div>
+
+  <div class="scenario">
+    <div class="scenario-tag">Your Shift</div>
+    <div class="scenario-text">You're shadowing a radiologist at UCSF Benioff Children's Hospital Oakland. Six new cases just rolled in from the ER. The doc needs your eyes on every X-ray before she signs off. Ready to read?</div>
+  </div>
+
+  <div class="progress-bar" id="progressBar"></div>
+
+  <div id="caseStage"></div>
+
+  <div class="app-footer">
+    Built by <strong>Woven Learning &amp; Technology</strong>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  const STORAGE_KEY = 'woven-radiology-detective-v1';
+
+  // ============================================================
+  // CASE DATA
+  // ============================================================
+  // Each case has:
+  //   id, label, patient (name, age, avatar, vitals, complaint, story),
+  //   xray (id, status, render(svg) function returning SVG markup string,
+  //         hotspot {cx, cy, r} in 0-400 coords),
+  //   prompt: text shown above the X-ray,
+  //   diagnosis: { question, options:[{text, correct, why}] },
+  //   treatment: { question, options:[{text, correct, why}] },
+  //   docNote: string (Real medical fact)
+
+  const CASES = [
+    {
+      id: "tommy",
+      label: "Case 1",
+      patient: {
+        name: "Tommy K.",
+        age: 12,
+        avatar: "🛹",
+        meta: "12yo M | Ortho | Triage 3",
+        vitals: [
+          {label:"HR",  value:"95",  warn:false},
+          {label:"BP",  value:"110/70", warn:false},
+          {label:"Pain",value:"8/10", warn:true},
+        ],
+        quote: "Dude, my arm is BUSTED. I can't even lift it.",
+        story: "Tommy was attempting a kickflip down a 5-stair at the skate park. He landed on his outstretched left arm. ER referred him to radiology with possible fracture.",
+      },
+      xray: { id:"FOREARM-AP-L", status:"X-RAY: LEFT FOREARM - AP VIEW", view:"forearm", hotspot:{cx:180, cy:215, r:48} },
+      prompt: "Use the magnifier. Find the <strong>fracture line</strong> on Tommy's forearm and tap it.",
+      hint: "Hint: scan the long bones in the middle of the forearm.",
+      diagnosis: {
+        question: "What's your read?",
+        options: [
+          { text: "Wrist sprain", correct:false, why:"Sprains don't show on X-ray - they're soft tissue. The bone here clearly has a break line." },
+          { text: "Mid-shaft radius fracture", correct:true, why:"Yes! That clean break line across the radius (the thumb-side bone) is a textbook transverse fracture." },
+          { text: "Elbow dislocation", correct:false, why:"Elbow dislocations show joints out of place. Here the joints look normal - the break is in the middle of the bone." },
+        ],
+      },
+      treatment: {
+        question: "What does Tommy need?",
+        options: [
+          { text: "Ice pack and ibuprofen, send home", correct:false, why:"Not enough. A real fracture needs immobilization or it heals crooked." },
+          { text: "Cast for 6 weeks", correct:true, why:"Correct. Pediatric forearm fractures heal beautifully in a cast - kids' bones remodel fast." },
+          { text: "Emergency surgery now", correct:false, why:"Surgery is for displaced or open fractures. This one's clean - cast will do it." },
+        ],
+      },
+      docNote: "Forearm fractures are the #1 X-ray finding in pediatric ERs. Skateboards, scooters, and trampolines are responsible for most of them. Kids' bones bend before they break - sometimes you'll see a 'greenstick' fracture where only one side cracks.",
+    },
+
+    {
+      id: "maya",
+      label: "Case 2",
+      patient: {
+        name: "Maya R.",
+        age: 6,
+        avatar: "🪙",
+        meta: "6yo F | ENT | Triage 2",
+        vitals: [
+          {label:"HR",  value:"100", warn:false},
+          {label:"O2",  value:"98%", warn:false},
+          {label:"RR",  value:"22",  warn:false},
+        ],
+        quote: "It feels weird in my throat... it won't go down.",
+        story: "Mom looked away for 'literally two seconds.' When she looked back, Maya's piggy bank was open and Maya looked guilty. Now Maya says her throat feels stuck.",
+      },
+      xray: { id:"CHEST-AP-PED", status:"X-RAY: CHEST - AP PEDIATRIC", view:"chestCoin", hotspot:{cx:200, cy:115, r:32} },
+      prompt: "Find what shouldn't be inside Maya's chest. Tap it.",
+      hint: "Hint: metal looks <strong>bright white</strong> on X-rays. Look near the upper midline.",
+      diagnosis: {
+        question: "What is it?",
+        options: [
+          { text: "Pneumonia patch", correct:false, why:"Pneumonia looks hazy and cloudy - this object has crisp round edges." },
+          { text: "Coin lodged in esophagus", correct:true, why:"Yes! Round, dense, face-on orientation = coin in the esophagus. Classic pediatric finding." },
+          { text: "Enlarged heart shadow", correct:false, why:"The heart sits lower-left and is much bigger and softer-edged than this object." },
+        ],
+      },
+      treatment: {
+        question: "What's the plan?",
+        options: [
+          { text: "Wait, it'll pass on its own", correct:false, why:"Risky. Esophageal coins can erode the wall within 24 hours." },
+          { text: "Endoscopic removal", correct:true, why:"Right call. ENT or GI uses a scope to retrieve it - quick procedure, full recovery same day." },
+          { text: "Heimlich maneuver", correct:false, why:"Heimlich is for choking on something blocking the airway. The coin is in the food tube, not the windpipe." },
+        ],
+      },
+      docNote: "Real diagnostic trick: coins in the esophagus appear FACE-ON in a front-view chest X-ray (they slide flat into the food tube). Coins in the windpipe appear EDGE-ON (they slide between the vocal cords vertically). Radiologists use that orientation to tell which tube the coin is stuck in.",
+    },
+
+    {
+      id: "diego",
+      label: "Case 3",
+      patient: {
+        name: "Diego A.",
+        age: 8,
+        avatar: "🤧",
+        meta: "8yo M | Pulm | Triage 2",
+        vitals: [
+          {label:"Temp", value:"102°F", warn:true},
+          {label:"O2",   value:"94%",   warn:true},
+          {label:"RR",   value:"28",    warn:true},
+        ],
+        quote: "I keep coughing and my chest hurts when I breathe in deep.",
+        story: "Started as a regular cold four days ago. Got worse instead of better. Fever spiked to 102.5 last night. Today he's tired, breathing fast, and his oxygen is dropping.",
+      },
+      xray: { id:"CHEST-PA-PED", status:"X-RAY: CHEST - PA VIEW", view:"chestPneumonia", hotspot:{cx:140, cy:240, r:55} },
+      prompt: "Healthy lungs look dark (full of air). Find the area that doesn't.",
+      hint: "Hint: look for a <strong>cloudy white patch</strong> in one of the lungs.",
+      diagnosis: {
+        question: "What's going on?",
+        options: [
+          { text: "Asthma flare", correct:false, why:"Asthma usually shows lungs that are TOO inflated, not cloudy patches." },
+          { text: "Pneumonia (right lower lobe)", correct:true, why:"Yes! That hazy white opacity is fluid filling air sacs in his right lung." },
+          { text: "Collapsed lung (pneumothorax)", correct:false, why:"A collapsed lung shows a thin line and a darker area beyond it - this is the opposite, denser not less dense." },
+        ],
+      },
+      treatment: {
+        question: "How do you treat Diego?",
+        options: [
+          { text: "Inhaler only", correct:false, why:"Inhalers help asthma, not bacterial pneumonia." },
+          { text: "Antibiotics, fluids, rest", correct:true, why:"Right. Most pediatric pneumonia is bacterial - antibiotics knock it out, fluids and rest do the healing." },
+          { text: "Wait it out at home", correct:false, why:"With O2 already at 94% and high fever, untreated pneumonia could send him to the ICU." },
+        ],
+      },
+      docNote: "Pro tip: on a chest X-ray, the patient's RIGHT lung appears on YOUR LEFT. That's because radiologists view the image as if standing face-to-face with the patient. So a 'right lower lobe' finding is on the bottom-left of the picture you're looking at.",
+    },
+
+    {
+      id: "sasha",
+      label: "Case 4",
+      patient: {
+        name: "Sasha P.",
+        age: 13,
+        avatar: "⚽",
+        meta: "13yo F | Ortho | Triage 3",
+        vitals: [
+          {label:"HR",  value:"88",  warn:false},
+          {label:"BP",  value:"118/72", warn:false},
+          {label:"Pain",value:"7/10", warn:true},
+        ],
+        quote: "I felt a pop when I landed. I can't put any weight on it.",
+        story: "Sasha is a club soccer goalie. She dove sideways for a save, caught the ball, and rolled onto her right ankle. Felt a 'pop.' Couldn't walk off the field.",
+      },
+      xray: { id:"ANKLE-COMP-R", status:"X-RAY: ANKLE - COMPARISON VIEW", view:"ankleCompare", hotspot:{cx:322, cy:224, r:34} },
+      prompt: "<strong>Left side = healthy reference. Right side = Sasha's ankle.</strong> Tap the injury.",
+      hint: "Hint: look for a fine break line near the bottom of the outer leg bone (fibula).",
+      diagnosis: {
+        question: "What's the injury?",
+        options: [
+          { text: "Sprained ankle (no fracture)", correct:false, why:"A pure sprain wouldn't show on X-ray - but you can clearly see a break line here." },
+          { text: "Lateral malleolus fracture", correct:true, why:"Correct. The 'lateral malleolus' is the knob at the bottom of the fibula - very common ankle break." },
+          { text: "Achilles tendon rupture", correct:false, why:"Tendons are soft tissue and don't appear on X-ray. The visible bone crack is the diagnosis." },
+        ],
+      },
+      treatment: {
+        question: "Treatment?",
+        options: [
+          { text: "Walk it off, RICE only", correct:false, why:"RICE is for sprains. A real fracture needs the ankle held still while it heals." },
+          { text: "Walking boot + crutches, 6 weeks", correct:true, why:"Correct. A non-displaced lateral malleolus fracture heals great in a boot. Sasha will be back on the field in 8-10 weeks." },
+          { text: "Surgical reconstruction", correct:false, why:"Surgery is for displaced or unstable fractures. This one is non-displaced - it'll heal on its own." },
+        ],
+      },
+      docNote: "Real ER tool: the 'Ottawa Ankle Rules' tell doctors when to order an X-ray vs. send you home with ice. If you can't take 4 steps AND have bone pain in specific spots, you get the X-ray. The rules cut unnecessary X-rays by 30-40% worldwide - one of the most successful clinical decision tools ever invented.",
+    },
+
+    {
+      id: "liam",
+      label: "Case 5",
+      patient: {
+        name: "Liam B.",
+        age: 7,
+        avatar: "🧲",
+        meta: "7yo M | GI | Triage 1 - URGENT",
+        vitals: [
+          {label:"HR",  value:"110", warn:true},
+          {label:"BP",  value:"108/68", warn:false},
+          {label:"Belly", value:"Soft", warn:false},
+        ],
+        quote: "She told me to do it! She said she'd give me five dollars!",
+        story: "Liam's older sister bet him $5 he wouldn't swallow two of the strong magnets from her science kit. He took the bet. Forty-five minutes ago. Mom is FREAKING out.",
+      },
+      xray: { id:"ABDO-AP-PED", status:"X-RAY: ABDOMEN - AP PEDIATRIC", view:"abdomenMagnets", hotspot:{cx:215, cy:235, r:30} },
+      prompt: "Find the swallowed objects. Tap them.",
+      hint: "Hint: two bright dots in the lower belly area, stuck right next to each other.",
+      diagnosis: {
+        question: "What did the X-ray reveal?",
+        options: [
+          { text: "Two coins, will pass naturally", correct:false, why:"They're stuck TOGETHER in different bowel loops. Coins wouldn't do that - magnets do." },
+          { text: "Two rare-earth magnets - SURGICAL EMERGENCY", correct:true, why:"Yes! Two magnets attracting each other across bowel walls is a true emergency - they pinch tissue between them." },
+          { text: "Bezoar (hairball)", correct:false, why:"Bezoars are soft and dark on X-ray. These are sharp, dense, bright = metal." },
+        ],
+      },
+      treatment: {
+        question: "What now?",
+        options: [
+          { text: "Watch and wait, recheck tomorrow", correct:false, why:"Tomorrow could be too late. Magnets erode bowel walls in hours." },
+          { text: "Emergency endoscopy or surgery", correct:true, why:"Correct. This is one of the few times pediatric GI calls a true emergency. The magnets must come out NOW." },
+          { text: "Antacids and stool softener", correct:false, why:"This wouldn't touch the danger - the magnets keep pinching tissue regardless of stomach acid." },
+        ],
+      },
+      docNote: "Two or more rare-earth magnets in the GI tract is a TRUE pediatric emergency. They attract each other through bowel walls, pinch the tissue between them, and can perforate the intestine in hours. After several deaths in the 2010s, the U.S. tightened regulations on small high-powered magnet sets sold as toys.",
+    },
+
+    {
+      id: "zara",
+      label: "Case 6",
+      patient: {
+        name: "Zara M.",
+        age: 5,
+        avatar: "🧸",
+        meta: "5yo F | ENT | Triage 4",
+        vitals: [
+          {label:"HR",  value:"96",  warn:false},
+          {label:"O2",  value:"99%", warn:false},
+          {label:"Mood",value:"😢",  warn:false},
+        ],
+        quote: "I put a SHINY one up there. I'm sorry, mommy.",
+        story: "Craft time at school. Zara confessed at pickup that she stuck a 'pretty bead' up her left nostril. She's breathing fine but only through her mouth and her left nostril is whistling.",
+      },
+      xray: { id:"FACE-LAT-PED", status:"X-RAY: SINUS - LATERAL VIEW", view:"sinusBead", hotspot:{cx:138, cy:225, r:30} },
+      prompt: "Find what's stuck in Zara's nasal passage. Tap it.",
+      hint: "Hint: look just inside the nose, in front of the sinus cavity.",
+      diagnosis: {
+        question: "Diagnosis?",
+        options: [
+          { text: "Sinus infection", correct:false, why:"Sinus infections show fluid in the sinus cavities, not a sharp round object." },
+          { text: "Foreign body in nasal passage", correct:true, why:"Yes! That bright bead is exactly where Zara said she put it." },
+          { text: "Deviated septum", correct:false, why:"A deviated septum is a curved-bone finding, not a foreign object." },
+        ],
+      },
+      treatment: {
+        question: "Best plan?",
+        options: [
+          { text: "Saline rinse and time", correct:false, why:"Could push the bead deeper or into the airway. Don't risk it." },
+          { text: "ENT specialist removes it", correct:true, why:"Correct. ENT has the right tools and angle to grab it safely without pushing it back." },
+          { text: "Antibiotics, recheck in a week", correct:false, why:"Antibiotics won't move a bead. It needs to come out." },
+        ],
+      },
+      docNote: "ER trick called 'parent's kiss': the parent blocks the open nostril with a finger, makes a seal over the kid's mouth, and gives one quick puff. The air pressure pops the foreign body out the blocked side. Works about 60% of the time - way safer than sticking tweezers up there.",
+    },
+  ];
+
+  // ============================================================
+  // X-RAY SVG RENDERERS
+  // Each function returns SVG inner markup (children of <svg viewBox="0 0 400 400">).
+  // ============================================================
+
+  const xrayDefs = `
+    <defs>
+      <radialGradient id="boneGrad" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#fff7e6" stop-opacity="1"/>
+        <stop offset="65%" stop-color="#f4ecdc" stop-opacity="0.92"/>
+        <stop offset="100%" stop-color="#cfc4a8" stop-opacity="0.55"/>
+      </radialGradient>
+      <radialGradient id="softTissue" cx="50%" cy="50%" r="60%">
+        <stop offset="0%" stop-color="#3a4a5e" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#1a2533" stop-opacity="0.0"/>
+      </radialGradient>
+      <radialGradient id="metalGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#ffffff"/>
+        <stop offset="60%" stop-color="#f8f1de"/>
+        <stop offset="100%" stop-color="#c9bf9a"/>
+      </radialGradient>
+      <radialGradient id="opacityGrad" cx="50%" cy="50%" r="55%">
+        <stop offset="0%" stop-color="#dfe7d8" stop-opacity="0.85"/>
+        <stop offset="50%" stop-color="#b8c2a8" stop-opacity="0.55"/>
+        <stop offset="100%" stop-color="#5a6650" stop-opacity="0.0"/>
+      </radialGradient>
+      <filter id="boneBlur"><feGaussianBlur stdDeviation="0.6"/></filter>
+      <filter id="softBlur"><feGaussianBlur stdDeviation="2.5"/></filter>
+    </defs>
+  `;
+
+  const RENDERERS = {
+    // ===== Forearm with mid-shaft radius fracture =====
+    forearm: () => `
+      ${xrayDefs}
+      <rect width="400" height="400" fill="#08111c"/>
+      <ellipse cx="200" cy="200" rx="170" ry="190" fill="url(#softTissue)"/>
+      <!-- Humerus stub (top) -->
+      <path d="M170 30 L195 30 L210 90 L165 90 Z" fill="url(#boneGrad)" filter="url(#boneBlur)"/>
+      <ellipse cx="187" cy="100" rx="35" ry="14" fill="url(#boneGrad)"/>
+      <!-- Olecranon (elbow back) -->
+      <path d="M225 75 L245 105 L210 110 Z" fill="url(#boneGrad)" opacity="0.9"/>
+      <!-- Radius (thumb side, runs down a bit angled) -->
+      <path d="M165 105 L175 105 L185 320 L168 322 Z" fill="url(#boneGrad)" filter="url(#boneBlur)"/>
+      <!-- THE FRACTURE LINE on radius -->
+      <path d="M167 210 L186 222" stroke="#0a1018" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+      <path d="M167 210 L186 222" stroke="#08111c" stroke-width="1.2" stroke-dasharray="2 2" fill="none" opacity="0.9"/>
+      <!-- subtle shadow gap -->
+      <path d="M168 213 L185 224 L184 226 L168 215 Z" fill="#08111c" opacity="0.85"/>
+      <!-- Ulna (pinky side, thinner) -->
+      <path d="M210 110 L218 110 L224 320 L210 320 Z" fill="url(#boneGrad)" filter="url(#boneBlur)"/>
+      <!-- Wrist - carpal bones -->
+      <g transform="translate(170,322)">
+        <ellipse cx="8" cy="6" rx="11" ry="8" fill="url(#boneGrad)"/>
+        <ellipse cx="28" cy="3" rx="10" ry="7" fill="url(#boneGrad)"/>
+        <ellipse cx="48" cy="6" rx="10" ry="7" fill="url(#boneGrad)"/>
+        <ellipse cx="18" cy="22" rx="11" ry="8" fill="url(#boneGrad)"/>
+        <ellipse cx="40" cy="22" rx="11" ry="8" fill="url(#boneGrad)"/>
+      </g>
+      <!-- Hand metacarpals -->
+      <g stroke="url(#boneGrad)" stroke-width="9" stroke-linecap="round">
+        <line x1="170" y1="355" x2="158" y2="392"/>
+        <line x1="190" y1="355" x2="188" y2="395"/>
+        <line x1="210" y1="355" x2="218" y2="395"/>
+        <line x1="225" y1="350" x2="245" y2="392"/>
+      </g>
+      <!-- Skin shadow -->
+      <path d="M120 30 Q90 200 130 380" stroke="#3a4a5e" stroke-width="1.5" fill="none" opacity="0.4"/>
+      <path d="M270 30 Q300 200 260 380" stroke="#3a4a5e" stroke-width="1.5" fill="none" opacity="0.4"/>
+    `,
+
+    // ===== Chest with coin in esophagus =====
+    chestCoin: () => {
+      let ribs = "";
+      // Left side ribs (image-left = patient's right)
+      for (let i = 0; i < 7; i++) {
+        const y = 120 + i*30;
+        ribs += `<path d="M85 ${y} Q200 ${y-18} 195 ${y+8}" stroke="url(#boneGrad)" stroke-width="5" fill="none" opacity="0.85"/>`;
+        ribs += `<path d="M315 ${y} Q200 ${y-18} 205 ${y+8}" stroke="url(#boneGrad)" stroke-width="5" fill="none" opacity="0.85"/>`;
+      }
+      return `
+      ${xrayDefs}
+      <rect width="400" height="400" fill="#08111c"/>
+      <ellipse cx="200" cy="220" rx="190" ry="180" fill="url(#softTissue)"/>
+      <!-- Lungs (dark) -->
+      <ellipse cx="135" cy="220" rx="60" ry="100" fill="#0a1828" opacity="0.7"/>
+      <ellipse cx="265" cy="220" rx="60" ry="100" fill="#0a1828" opacity="0.7"/>
+      <!-- Spine -->
+      <g>
+        ${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="190" y="${75+i*30}" width="20" height="22" rx="3" fill="url(#boneGrad)" opacity="0.85"/>`).join("")}
+      </g>
+      <!-- Clavicles -->
+      <path d="M85 95 Q150 75 195 95" stroke="url(#boneGrad)" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M315 95 Q250 75 205 95" stroke="url(#boneGrad)" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <!-- Scapulae -->
+      <path d="M70 110 L110 200 L75 195 Z" fill="url(#boneGrad)" opacity="0.55"/>
+      <path d="M330 110 L290 200 L325 195 Z" fill="url(#boneGrad)" opacity="0.55"/>
+      <!-- Ribs -->
+      ${ribs}
+      <!-- Trachea -->
+      <rect x="195" y="65" width="10" height="60" fill="#0a1828" opacity="0.65" rx="2"/>
+      <!-- Heart shadow (lower-left of image - patient's left) -->
+      <path d="M210 200 Q280 220 270 290 Q220 320 195 280 Z" fill="#1a2839" opacity="0.65"/>
+      <!-- Diaphragm curves -->
+      <path d="M75 320 Q140 295 195 320" stroke="#5a6678" stroke-width="2" fill="none" opacity="0.6"/>
+      <path d="M205 320 Q260 295 325 320" stroke="#5a6678" stroke-width="2" fill="none" opacity="0.6"/>
+      <!-- THE COIN - bright white circle, face-on, in upper esophagus -->
+      <circle cx="200" cy="115" r="18" fill="url(#metalGrad)" stroke="#fffbe7" stroke-width="1.5"/>
+      <circle cx="200" cy="115" r="13" fill="none" stroke="#cfc098" stroke-width="0.8" opacity="0.6"/>
+      <text x="200" y="120" font-family="serif" font-size="10" font-weight="700" fill="#7a6f4a" text-anchor="middle" opacity="0.55">25¢</text>
+    `;
+    },
+
+    // ===== Chest with pneumonia opacity =====
+    chestPneumonia: () => {
+      let ribs = "";
+      for (let i = 0; i < 7; i++) {
+        const y = 120 + i*30;
+        ribs += `<path d="M85 ${y} Q200 ${y-18} 195 ${y+8}" stroke="url(#boneGrad)" stroke-width="5" fill="none" opacity="0.85"/>`;
+        ribs += `<path d="M315 ${y} Q200 ${y-18} 205 ${y+8}" stroke="url(#boneGrad)" stroke-width="5" fill="none" opacity="0.85"/>`;
+      }
+      return `
+      ${xrayDefs}
+      <rect width="400" height="400" fill="#08111c"/>
+      <ellipse cx="200" cy="220" rx="190" ry="180" fill="url(#softTissue)"/>
+      <ellipse cx="135" cy="220" rx="60" ry="100" fill="#0a1828" opacity="0.7"/>
+      <ellipse cx="265" cy="220" rx="60" ry="100" fill="#0a1828" opacity="0.7"/>
+      <!-- THE PNEUMONIA - hazy opacity in patient's right lower lobe (image left) -->
+      <g filter="url(#softBlur)">
+        <ellipse cx="135" cy="245" rx="55" ry="42" fill="url(#opacityGrad)"/>
+        <ellipse cx="125" cy="260" rx="32" ry="26" fill="#b8c4a5" opacity="0.45"/>
+        <ellipse cx="148" cy="232" rx="22" ry="18" fill="#cfd8b8" opacity="0.4"/>
+      </g>
+      <!-- Spine -->
+      <g>
+        ${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="190" y="${75+i*30}" width="20" height="22" rx="3" fill="url(#boneGrad)" opacity="0.85"/>`).join("")}
+      </g>
+      <path d="M85 95 Q150 75 195 95" stroke="url(#boneGrad)" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M315 95 Q250 75 205 95" stroke="url(#boneGrad)" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <path d="M70 110 L110 200 L75 195 Z" fill="url(#boneGrad)" opacity="0.55"/>
+      <path d="M330 110 L290 200 L325 195 Z" fill="url(#boneGrad)" opacity="0.55"/>
+      ${ribs}
+      <rect x="195" y="65" width="10" height="60" fill="#0a1828" opacity="0.65" rx="2"/>
+      <path d="M210 200 Q280 220 270 290 Q220 320 195 280 Z" fill="#1a2839" opacity="0.65"/>
+      <path d="M75 320 Q140 295 195 320" stroke="#5a6678" stroke-width="2" fill="none" opacity="0.6"/>
+      <path d="M205 320 Q260 295 325 320" stroke="#5a6678" stroke-width="2" fill="none" opacity="0.6"/>
+    `;
+    },
+
+    // ===== Two ankles, one with fibula fracture =====
+    ankleCompare: () => {
+      const drawAnkle = (cx, withFracture) => {
+        // tibia (medial, thicker), fibula (lateral, thinner)
+        let s = "";
+        // Tibia
+        s += `<path d="M${cx-22} 60 L${cx-8} 60 L${cx-2} 230 L${cx-30} 232 Z" fill="url(#boneGrad)" filter="url(#boneBlur)"/>`;
+        // Fibula
+        s += `<path d="M${cx+15} 70 L${cx+24} 70 L${cx+30} 230 L${cx+10} 232 Z" fill="url(#boneGrad)" filter="url(#boneBlur)"/>`;
+        // Lateral malleolus knob (bottom of fibula)
+        s += `<ellipse cx="${cx+22}" cy="232" rx="14" ry="11" fill="url(#boneGrad)"/>`;
+        // Medial malleolus knob (bottom of tibia)
+        s += `<ellipse cx="${cx-18}" cy="232" rx="14" ry="11" fill="url(#boneGrad)"/>`;
+        // Talus
+        s += `<path d="M${cx-25} 240 Q${cx} 260 ${cx+30} 240 Q${cx+30} 270 ${cx} 280 Q${cx-30} 270 ${cx-25} 240 Z" fill="url(#boneGrad)"/>`;
+        // Calcaneus (heel)
+        s += `<path d="M${cx-30} 280 Q${cx-10} 295 ${cx+10} 295 Q${cx+45} 295 ${cx+50} 320 Q${cx+30} 340 ${cx-15} 335 Z" fill="url(#boneGrad)" opacity="0.9"/>`;
+        // Mid-foot
+        s += `<g stroke="url(#boneGrad)" stroke-width="6" stroke-linecap="round">
+                <line x1="${cx+5}" y1="298" x2="${cx+38}" y2="295"/>
+                <line x1="${cx+10}" y1="305" x2="${cx+45}" y2="302"/>
+              </g>`;
+        // Skin shadow
+        s += `<path d="M${cx-50} 60 Q${cx-60} 200 ${cx-45} 340" stroke="#3a4a5e" stroke-width="1.2" fill="none" opacity="0.4"/>`;
+        s += `<path d="M${cx+50} 60 Q${cx+60} 200 ${cx+55} 340" stroke="#3a4a5e" stroke-width="1.2" fill="none" opacity="0.4"/>`;
+        // FRACTURE on the fibula at lateral malleolus
+        if (withFracture) {
+          s += `<path d="M${cx+10} 220 L${cx+34} 226" stroke="#08111c" stroke-width="2.2" stroke-linecap="round" fill="none"/>`;
+          s += `<path d="M${cx+11} 222 L${cx+33} 228 L${cx+33} 230 L${cx+11} 224 Z" fill="#08111c" opacity="0.85"/>`;
+        }
+        return s;
+      };
+      return `
+        ${xrayDefs}
+        <rect width="400" height="400" fill="#08111c"/>
+        <line x1="200" y1="20" x2="200" y2="380" stroke="#1a2638" stroke-width="1" stroke-dasharray="4 4"/>
+        <text x="100" y="35" fill="#0ABAB5" font-family="Courier New" font-size="11" font-weight="700" text-anchor="middle" opacity="0.85">NORMAL REF</text>
+        <text x="300" y="35" fill="#FFD24A" font-family="Courier New" font-size="11" font-weight="700" text-anchor="middle" opacity="0.95">PATIENT</text>
+        <ellipse cx="100" cy="200" rx="80" ry="180" fill="url(#softTissue)"/>
+        <ellipse cx="300" cy="200" rx="80" ry="180" fill="url(#softTissue)"/>
+        ${drawAnkle(100, false)}
+        ${drawAnkle(300, true)}
+      `;
+    },
+
+    // ===== Abdomen with two magnets =====
+    abdomenMagnets: () => {
+      let ribs = "";
+      for (let i = 0; i < 3; i++) {
+        const y = 70 + i*22;
+        ribs += `<path d="M90 ${y} Q200 ${y-12} 195 ${y+6}" stroke="url(#boneGrad)" stroke-width="4.5" fill="none" opacity="0.75"/>`;
+        ribs += `<path d="M310 ${y} Q200 ${y-12} 205 ${y+6}" stroke="url(#boneGrad)" stroke-width="4.5" fill="none" opacity="0.75"/>`;
+      }
+      return `
+      ${xrayDefs}
+      <rect width="400" height="400" fill="#08111c"/>
+      <ellipse cx="200" cy="220" rx="190" ry="180" fill="url(#softTissue)"/>
+      <!-- Lower ribs at top -->
+      ${ribs}
+      <!-- Spine -->
+      ${[0,1,2,3,4,5,6,7,8].map(i=>`<rect x="190" y="${50+i*32}" width="20" height="24" rx="3" fill="url(#boneGrad)" opacity="0.85"/>`).join("")}
+      <!-- Pelvis -->
+      <path d="M70 290 Q120 270 195 290 Q200 360 130 360 Q80 350 70 290 Z" fill="url(#boneGrad)" opacity="0.85"/>
+      <path d="M330 290 Q280 270 205 290 Q200 360 270 360 Q320 350 330 290 Z" fill="url(#boneGrad)" opacity="0.85"/>
+      <!-- Hip joints -->
+      <circle cx="125" cy="320" r="22" fill="#0a1828" opacity="0.5"/>
+      <circle cx="275" cy="320" r="22" fill="#0a1828" opacity="0.5"/>
+      <!-- Bowel gas suggestions -->
+      <ellipse cx="130" cy="180" rx="40" ry="22" fill="#0a1828" opacity="0.45"/>
+      <ellipse cx="270" cy="180" rx="40" ry="22" fill="#0a1828" opacity="0.45"/>
+      <ellipse cx="200" cy="220" rx="60" ry="20" fill="#0a1828" opacity="0.35"/>
+      <!-- THE TWO MAGNETS - stuck together in lower abdomen -->
+      <g>
+        <rect x="200" y="225" width="14" height="14" fill="url(#metalGrad)" stroke="#fff" stroke-width="0.8" rx="1"/>
+        <rect x="216" y="225" width="14" height="14" fill="url(#metalGrad)" stroke="#fff" stroke-width="0.8" rx="1"/>
+        <line x1="214" y1="232" x2="216" y2="232" stroke="#7a6f4a" stroke-width="0.6"/>
+      </g>
+    `;
+    },
+
+    // ===== Sinus / lateral skull with bead in nose =====
+    sinusBead: () => `
+      ${xrayDefs}
+      <rect width="400" height="400" fill="#08111c"/>
+      <ellipse cx="220" cy="200" rx="160" ry="180" fill="url(#softTissue)"/>
+      <!-- Skull outline (lateral, facing left) -->
+      <path d="M310 80 Q360 130 360 220 Q350 310 280 340 L240 340 L235 285 Q220 280 215 268 L155 268 L120 245 L100 200 L120 130 Q170 70 250 70 Z"
+            fill="url(#boneGrad)" opacity="0.55" filter="url(#boneBlur)"/>
+      <!-- Outer skull stroke -->
+      <path d="M310 80 Q360 130 360 220 Q350 310 280 340 L240 340 L235 285 Q220 280 215 268 L155 268 L120 245 L100 200 L120 130 Q170 70 250 70 Z"
+            fill="none" stroke="#f4ecdc" stroke-width="3" opacity="0.85"/>
+      <!-- Brain cavity (darker inside) -->
+      <path d="M295 95 Q345 140 340 215 Q335 285 270 320 L255 320 L245 270 Q230 265 225 255 L170 255 L130 230 L115 195 L132 138 Q175 90 245 85 Z"
+            fill="#0a1828" opacity="0.7"/>
+      <!-- Frontal sinus (above nose) -->
+      <ellipse cx="190" cy="170" rx="22" ry="14" fill="#0a1828" stroke="#f4ecdc" stroke-width="1.2" opacity="0.85"/>
+      <!-- Maxillary sinus (cheek) -->
+      <ellipse cx="210" cy="220" rx="28" ry="22" fill="#0a1828" stroke="#f4ecdc" stroke-width="1.2" opacity="0.85"/>
+      <!-- Nasal passage -->
+      <path d="M170 200 L110 215 L100 240 L155 245 Z" fill="#0a1828" stroke="#f4ecdc" stroke-width="1.5" opacity="0.85"/>
+      <!-- Nose tip (cartilage hint) -->
+      <path d="M110 215 Q95 220 100 240" stroke="#5a6678" stroke-width="1.5" fill="none" opacity="0.7"/>
+      <!-- Mandible (jaw) -->
+      <path d="M155 280 Q145 320 200 335 Q260 340 280 320 L280 290 Q230 295 200 290 Q175 285 165 280 Z"
+            fill="url(#boneGrad)" opacity="0.85"/>
+      <!-- Teeth -->
+      <g fill="url(#boneGrad)">
+        ${[0,1,2,3,4,5,6].map(i=>`<rect x="${165+i*16}" y="280" width="10" height="12" rx="1.5"/>`).join("")}
+      </g>
+      <!-- Cervical spine top -->
+      ${[0,1,2].map(i=>`<rect x="280" y="${300+i*22}" width="22" height="18" rx="3" fill="url(#boneGrad)" opacity="0.85"/>`).join("")}
+      <!-- THE BEAD - bright white in nasal passage -->
+      <circle cx="135" cy="225" r="9" fill="url(#metalGrad)" stroke="#fff" stroke-width="0.8"/>
+      <circle cx="135" cy="225" r="3" fill="#0a1828" opacity="0.5"/>
+    `,
+  };
+
+  // ============================================================
+  // STATE
+  // ============================================================
+  const saved = loadState();
+  const state = {
+    caseIndex: clamp(saved.caseIndex || 0, 0, CASES.length-1),
+    phase: saved.phase || "briefing", // briefing -> hunt -> diagnosis -> diagnosed -> treatment -> treated -> done -> all-done
+    cases: saved.cases || CASES.map(()=>({locatedTaps:0, dxAttempts:0, txAttempts:0, completed:false})),
+    started: saved.started || false,
+  };
+
+  function loadState(){
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    } catch(e){ return {}; }
+  }
+  function saveState(){
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({
+        caseIndex: state.caseIndex,
+        phase: state.phase,
+        cases: state.cases,
+        started: state.started,
+      }));
+    } catch(e){}
+  }
+  function clamp(n, lo, hi){ return Math.max(lo, Math.min(hi, n)); }
+
+  // ============================================================
+  // PROGRESS BAR
+  // ============================================================
+  function renderProgress(){
+    const bar = document.getElementById("progressBar");
+    bar.innerHTML = "";
+    CASES.forEach((c, i) => {
+      const cell = document.createElement("div");
+      cell.className = "progress-cell" + (state.cases[i].completed ? " done" : (i === state.caseIndex ? " active" : ""));
+      cell.textContent = c.label;
+      bar.appendChild(cell);
+    });
+  }
+
+  // ============================================================
+  // CASE STAGE RENDER
+  // ============================================================
+  const stage = document.getElementById("caseStage");
+
+  function renderCase(){
+    renderProgress();
+    if (state.phase === "all-done"){
+      renderComplete();
+      return;
+    }
+    const c = CASES[state.caseIndex];
+    stage.innerHTML = "";
+    const root = document.createElement("div");
+    root.className = "fade-in";
+
+    // Always show patient briefing card on top during this case
+    root.appendChild(renderPatientCard(c));
+
+    // Then phase-specific content
+    if (state.phase === "briefing"){
+      root.appendChild(renderBriefingActions(c));
+    } else if (state.phase === "hunt"){
+      root.appendChild(renderHunt(c));
+    } else if (state.phase === "diagnosis"){
+      root.appendChild(renderHunt(c, /*locked*/ true));
+      root.appendChild(renderDiagnosis(c));
+    } else if (state.phase === "treatment"){
+      root.appendChild(renderHunt(c, /*locked*/ true));
+      root.appendChild(renderTreatment(c));
+    } else if (state.phase === "done"){
+      root.appendChild(renderHunt(c, /*locked*/ true));
+      root.appendChild(renderDocNote(c));
+    }
+
+    stage.appendChild(root);
+    window.scrollTo({top: 0, behavior: "smooth"});
+  }
+
+  // ----- Patient briefing card -----
+  function renderPatientCard(c){
+    const card = el("div","card");
+    card.appendChild(el("div","card-title", `<span class="card-title-dot"></span>Patient: ${c.label}`));
+
+    const row = el("div","patient-row");
+    row.appendChild(el("div","patient-avatar", c.patient.avatar));
+    const info = el("div","patient-info");
+    info.appendChild(el("div","patient-name", `${c.patient.name}, age ${c.patient.age}`));
+    info.appendChild(el("div","patient-meta", c.patient.meta));
+    row.appendChild(info);
+    card.appendChild(row);
+
+    const vitals = el("div","vitals-row");
+    c.patient.vitals.forEach(v => {
+      const v1 = el("div", "vital" + (v.warn ? " warn" : ""));
+      v1.appendChild(el("div","vital-label", v.label));
+      v1.appendChild(el("div","vital-value", v.value));
+      vitals.appendChild(v1);
+    });
+    card.appendChild(vitals);
+
+    const cmpt = el("div","complaint");
+    cmpt.appendChild(el("div","complaint-tag", "Chief Complaint"));
+    cmpt.appendChild(el("div","complaint-quote", `"${c.patient.quote}"`));
+    cmpt.appendChild(el("div","complaint-story", c.patient.story));
+    card.appendChild(cmpt);
+
+    return card;
+  }
+
+  function renderBriefingActions(c){
+    const wrap = el("div","card");
+    wrap.appendChild(el("div","card-title", `<span class="card-title-dot"></span>Step 1: Read the X-Ray`));
+    const note = el("div","xray-instruction");
+    note.innerHTML = `Drag the magnifier across the image to inspect ${c.patient.name}'s X-ray. <strong>Tap on whatever looks abnormal.</strong>`;
+    wrap.appendChild(note);
+    const btnRow = el("div","btn-row");
+    const start = el("button","btn", "Open X-Ray Viewer →");
+    start.addEventListener("click", () => {
+      state.phase = "hunt";
+      saveState();
+      renderCase();
+    });
+    btnRow.appendChild(start);
+    wrap.appendChild(btnRow);
+    return wrap;
+  }
+
+  // ----- The X-Ray hunt card -----
+  function renderHunt(c, locked){
+    const card = el("div","card");
+    card.appendChild(el("div","card-title", `<span class="card-title-dot"></span>${locked ? "X-Ray (Located)" : "Step 1: Read the X-Ray"}`));
+
+    const promptStrip = el("div","xray-instruction");
+    promptStrip.innerHTML = locked ? "<strong>Located.</strong> Now make your call." : c.prompt;
+    card.appendChild(promptStrip);
+
+    const stage = el("div","xray-stage");
+    stage.id = "xrayStage";
+
+    // Base SVG
+    const baseSvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    baseSvg.setAttribute("class", "xray-base");
+    baseSvg.setAttribute("viewBox", "0 0 400 400");
+    baseSvg.innerHTML = RENDERERS[c.xray.view]();
+    stage.appendChild(baseSvg);
+
+    // Status overlays
+    const status = el("div","xray-status", c.xray.status);
+    stage.appendChild(status);
+    const xid = el("div","xray-id", c.xray.id);
+    stage.appendChild(xid);
+
+    // Scan line decoration
+    const scanLine = el("div","scan-line");
+    stage.appendChild(scanLine);
+
+    // Marker overlay (for tap markers + hint arrow)
+    const overlay = el("div","xray-overlay");
+    overlay.id = "xrayOverlay";
+    stage.appendChild(overlay);
+
+    // Magnifier lens
+    const lens = el("div","lens");
+    lens.id = "xrayLens";
+    const lensSvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+    lensSvg.setAttribute("class","lens-svg");
+    lensSvg.setAttribute("viewBox", "0 0 400 400");
+    lensSvg.style.width = "800px";
+    lensSvg.style.height = "800px";
+    lensSvg.innerHTML = RENDERERS[c.xray.view]();
+    lens.appendChild(lensSvg);
+    const cross = el("div","lens-cross");
+    lens.appendChild(cross);
+    stage.appendChild(lens);
+
+    // If the case has been located already, mark the spot persistently
+    if (locked){
+      const m = el("div","tap-marker correct");
+      const r = c.xray.hotspot;
+      m.style.left = (r.cx/400*100)+"%";
+      m.style.top = (r.cy/400*100)+"%";
+      overlay.appendChild(m);
+    }
+
+    card.appendChild(stage);
+
+    // Stat chips
+    const chips = el("div","stat-row");
+    const taps = state.cases[state.caseIndex].locatedTaps;
+    if (taps > 0){
+      const chip = el("div","stat-chip" + (taps > 2 ? " warn":""), `Taps: ${taps}`);
+      chips.appendChild(chip);
+    }
+    card.appendChild(chips);
+
+    // Footer area for inline hints / errors
+    const fb = el("div","feedback-strip");
+    fb.id = "huntFeedback";
+    fb.style.display = "none";
+    card.appendChild(fb);
+
+    // Wire up events (only when not locked)
+    if (!locked){
+      setTimeout(() => wireHunt(c, stage, lens, lensSvg, overlay, fb), 0);
+    }
+
+    return card;
+  }
+
+  function wireHunt(c, stageEl, lens, lensSvg, overlay, fb){
+    let inside = false;
+
+    function moveLens(clientX, clientY){
+      const rect = stageEl.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height){
+        if (inside){ inside = false; lens.classList.remove("show"); }
+        return;
+      }
+      if (!inside){ inside = true; lens.classList.add("show"); }
+      lens.style.left = x + "px";
+      lens.style.top = y + "px";
+      // Move the SVG inside the lens so the magnified portion under cursor is centered.
+      // The lens shows a 110px circle, but the SVG inside is 240px wide.
+      // We want the point (x,y) of the original (rect.width-sized) to appear at the center (55,55) of the lens.
+      // Scale factor between lensSvg size and stage:
+      const lensSize = 800; // matches lensSvg width - bigger = more magnification
+      const scale = lensSize / rect.width; // how much bigger the lens content is per stage pixel
+      const halfLens = 55; // half the visible lens window (110/2)
+      const lx = halfLens - x * scale;
+      const ly = halfLens - y * scale;
+      lensSvg.style.left = lx + "px";
+      lensSvg.style.top = ly + "px";
+    }
+
+    function handleTap(clientX, clientY){
+      const rect = stageEl.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) return;
+      // Convert to 0-400 coords
+      const sx = x / rect.width * 400;
+      const sy = y / rect.height * 400;
+      const dx = sx - c.xray.hotspot.cx;
+      const dy = sy - c.xray.hotspot.cy;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const correct = dist <= c.xray.hotspot.r;
+
+      state.cases[state.caseIndex].locatedTaps += 1;
+
+      // Drop a marker
+      const m = el("div", "tap-marker " + (correct ? "correct" : "wrong"));
+      m.style.left = x + "px";
+      m.style.top = y + "px";
+      overlay.appendChild(m);
+      if (!correct){
+        // Auto-remove wrong marker after animation
+        setTimeout(() => { try { overlay.removeChild(m); } catch(e){} }, 700);
+        stageEl.classList.remove("shake");
+        void stageEl.offsetWidth;
+        stageEl.classList.add("shake");
+
+        fb.style.display = "block";
+        fb.className = "feedback-strip error";
+        const taps = state.cases[state.caseIndex].locatedTaps;
+        let msg = `<strong>Not quite.</strong> Look more carefully - radiologists train for years to spot subtle changes.`;
+        if (taps >= 3){
+          msg = `<strong>Hint:</strong> ${c.hint}`;
+          showHintArrow(c, overlay);
+        }
+        fb.innerHTML = msg;
+      } else {
+        // Correct - lock in, advance to diagnosis
+        fb.style.display = "block";
+        fb.className = "feedback-strip success";
+        const taps = state.cases[state.caseIndex].locatedTaps;
+        const efficiency = taps === 1 ? "Eagle-eye!" : taps === 2 ? "Sharp eye." : "Got it.";
+        fb.innerHTML = `<strong>${efficiency}</strong> You found the abnormality. Now make the diagnosis.`;
+        // Hide lens
+        lens.classList.remove("show");
+        saveState();
+        setTimeout(() => {
+          state.phase = "diagnosis";
+          saveState();
+          renderCase();
+        }, 1100);
+      }
+      saveState();
+    }
+
+    stageEl.addEventListener("mousemove", e => moveLens(e.clientX, e.clientY));
+    stageEl.addEventListener("mouseleave", () => { inside = false; lens.classList.remove("show"); });
+    stageEl.addEventListener("click", e => handleTap(e.clientX, e.clientY));
+
+    // Touch support
+    stageEl.addEventListener("touchstart", e => {
+      if (e.touches.length){ moveLens(e.touches[0].clientX, e.touches[0].clientY); }
+    }, {passive:true});
+    stageEl.addEventListener("touchmove", e => {
+      if (e.touches.length){ moveLens(e.touches[0].clientX, e.touches[0].clientY); }
+    }, {passive:true});
+    stageEl.addEventListener("touchend", e => {
+      if (e.changedTouches.length){
+        handleTap(e.changedTouches[0].clientX, e.changedTouches[0].clientY);
+        inside = false;
+        lens.classList.remove("show");
+      }
+    });
+  }
+
+  function showHintArrow(c, overlay){
+    // Drop an arrow pointing toward the hotspot, just outside it
+    if (overlay.querySelector(".hint-arrow")) return;
+    const arrow = document.createElement("div");
+    arrow.className = "hint-arrow";
+    // Position: toward the hotspot, offset 18% to one side
+    const cxPct = c.xray.hotspot.cx / 400 * 100;
+    const cyPct = c.xray.hotspot.cy / 400 * 100;
+    // Place arrow 22% to the left of hotspot, pointing right
+    const ax = Math.max(8, cxPct - 22);
+    arrow.style.left = ax + "%";
+    arrow.style.top = cyPct + "%";
+    arrow.textContent = "➤";
+    overlay.appendChild(arrow);
+  }
+
+  // ----- Diagnosis multiple choice -----
+  function renderDiagnosis(c){
+    return renderQuestionCard(
+      "Step 2: Diagnosis",
+      c.diagnosis,
+      (correct, idx) => {
+        state.cases[state.caseIndex].dxAttempts += 1;
+        saveState();
+        if (correct){
+          setTimeout(() => {
+            state.phase = "treatment";
+            saveState();
+            renderCase();
+          }, 1300);
+        }
+      }
+    );
+  }
+
+  // ----- Treatment multiple choice -----
+  function renderTreatment(c){
+    return renderQuestionCard(
+      "Step 3: Treatment",
+      c.treatment,
+      (correct, idx) => {
+        state.cases[state.caseIndex].txAttempts += 1;
+        saveState();
+        if (correct){
+          state.cases[state.caseIndex].completed = true;
+          saveState();
+          setTimeout(() => {
+            state.phase = "done";
+            saveState();
+            renderCase();
+          }, 1300);
+        }
+      }
+    );
+  }
+
+  function renderQuestionCard(title, qData, onAnswer){
+    const card = el("div","card");
+    card.appendChild(el("div","card-title", `<span class="card-title-dot"></span>${title}`));
+    card.appendChild(el("div","mc-question", qData.question));
+    const list = el("div","mc-list");
+    const fb = el("div","feedback-strip");
+    fb.style.display = "none";
+    let answered = false;
+
+    qData.options.forEach((opt, i) => {
+      const b = document.createElement("button");
+      b.className = "mc-btn";
+      b.innerHTML = `<span class="letter">${String.fromCharCode(65+i)}</span><span>${opt.text}</span>`;
+      b.addEventListener("click", () => {
+        if (answered && opt.correct) return;
+        if (opt.correct){
+          // Mark correct, freeze interactions
+          b.classList.add("correct");
+          fb.style.display = "block";
+          fb.className = "feedback-strip success";
+          fb.innerHTML = `<strong>Correct.</strong> ${opt.why}`;
+          // Disable all
+          list.querySelectorAll(".mc-btn").forEach(x => {
+            if (x !== b){ x.classList.add("disabled"); }
+          });
+          answered = true;
+          onAnswer(true, i);
+        } else {
+          b.classList.add("wrong","disabled");
+          fb.style.display = "block";
+          fb.className = "feedback-strip error";
+          fb.innerHTML = `<strong>Not this one.</strong> ${opt.why}`;
+          onAnswer(false, i);
+        }
+      });
+      list.appendChild(b);
+    });
+    card.appendChild(list);
+    card.appendChild(fb);
+    return card;
+  }
+
+  // ----- Doctor's note + next case button -----
+  function renderDocNote(c){
+    const card = el("div","card");
+    card.appendChild(el("div","card-title", `<span class="card-title-dot"></span>Step 4: Sign-Off`));
+
+    const success = el("div","feedback-strip success");
+    const tx = state.cases[state.caseIndex].txAttempts;
+    const dx = state.cases[state.caseIndex].dxAttempts;
+    const taps = state.cases[state.caseIndex].locatedTaps;
+    success.innerHTML = `<strong>Case closed.</strong> ${c.patient.name} has been admitted with the right diagnosis and a clear treatment plan. Tap accuracy: ${taps} ${taps===1?"tap":"taps"} | Diagnosis attempts: ${dx} | Treatment attempts: ${tx}.`;
+    card.appendChild(success);
+
+    const note = el("div","doc-note");
+    note.appendChild(el("div","doc-note-tag", "🩺 Doctor's Note"));
+    note.appendChild(el("div","doc-note-text", c.docNote));
+    card.appendChild(note);
+
+    const btnRow = el("div","btn-row");
+    const isLast = state.caseIndex >= CASES.length - 1;
+    const next = el("button","btn", isLast ? "Finish Shift →" : "Next Patient →");
+    next.addEventListener("click", () => {
+      if (isLast){
+        state.phase = "all-done";
+      } else {
+        state.caseIndex += 1;
+        state.phase = "briefing";
+      }
+      saveState();
+      renderCase();
+    });
+    btnRow.appendChild(next);
+    card.appendChild(btnRow);
+    return card;
+  }
+
+  // ----- Completion screen -----
+  function renderComplete(){
+    stage.innerHTML = "";
+    const cmp = el("div","complete");
+
+    cmp.appendChild(el("div","complete-head", "Shift Complete"));
+    cmp.appendChild(el("div","complete-big", "Six patients diagnosed.<br>You think like a radiologist."));
+
+    const totalTaps = state.cases.reduce((a,b) => a + b.locatedTaps, 0);
+    const totalDx = state.cases.reduce((a,b) => a + b.dxAttempts, 0);
+    const totalTx = state.cases.reduce((a,b) => a + b.txAttempts, 0);
+
+    const stats = el("div","complete-stats");
+    const s1 = el("div","complete-stat");
+    s1.appendChild(el("div","complete-stat-num", "6/6"));
+    s1.appendChild(el("div","complete-stat-label", "Cases Closed"));
+    stats.appendChild(s1);
+    const s2 = el("div","complete-stat");
+    s2.appendChild(el("div","complete-stat-num", String(totalTaps)));
+    s2.appendChild(el("div","complete-stat-label", "Total Taps"));
+    stats.appendChild(s2);
+    const s3 = el("div","complete-stat");
+    s3.appendChild(el("div","complete-stat-num", String(totalDx + totalTx)));
+    s3.appendChild(el("div","complete-stat-label", "MC Attempts"));
+    stats.appendChild(s3);
+    cmp.appendChild(stats);
+
+    // Skill rating based on performance
+    const idealMin = 6 + 6 + 6; // 1 tap + 1 dx + 1 tx per case
+    const score = totalTaps + totalDx + totalTx;
+    let badge, blurb;
+    if (score <= idealMin + 2){
+      badge = "🏅 Attending Radiologist";
+      blurb = "Eagle-eye reads on every case. The kind of speed and accuracy hospitals pay six figures for.";
+    } else if (score <= idealMin + 6){
+      badge = "🎖 Resident Radiologist";
+      blurb = "Solid clinical reasoning. A few extra looks - that's how real residents learn.";
+    } else {
+      badge = "🩺 Junior Radiologist";
+      blurb = "You worked the cases. Real radiology training takes 5 years post-medical school - extra looks are part of the job.";
+    }
+    const cta = el("div","complete-cta");
+    cta.innerHTML = `<strong>${badge}</strong><br>${blurb}<br><br><strong>Bay Area pathway:</strong> UCSF Benioff Children's Oakland trains pediatric radiologists. Stanford and UCSF medical schools both run radiology residencies. Radiology techs (the ones who shoot the X-ray) are a 2-year associate's degree at City College of SF or Foothill - $85-110k starting in the Bay Area.`;
+    cmp.appendChild(cta);
+
+    const reset = el("button","reset-link","↻ Reset all cases");
+    reset.addEventListener("click", () => {
+      if (confirm("Reset all 6 cases and start over?")){
+        localStorage.removeItem(STORAGE_KEY);
+        state.caseIndex = 0;
+        state.phase = "briefing";
+        state.cases = CASES.map(()=>({locatedTaps:0, dxAttempts:0, txAttempts:0, completed:false}));
+        state.started = false;
+        renderCase();
+      }
+    });
+    cmp.appendChild(reset);
+
+    stage.appendChild(cmp);
+  }
+
+  // ============================================================
+  // UTILS
+  // ============================================================
+  function el(tag, cls, html){
+    const e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  // ============================================================
+  // BOOT
+  // ============================================================
+  renderCase();
+
+})();
+</script>
+</body>
+</html>
