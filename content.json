@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 — Middle School",
+    "title": "Chabot STEM 2026 \u2014 Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -1056,6 +1056,46 @@
               "content": "Materials Needed: Stethoscopes, Blood pressure cuffs, Pulse oximeters, Stopwatches, Vital signs sheets, Tablets for the app"
             },
             {
+              "type": "heading",
+              "content": "Take Your Vital Signs"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Before you touch the EKG, take your real vital signs with the stethoscope, BP cuff, and pulse oximeter. Use the Vital Signs Interpreter to record each reading and watch the app classify it (Normal, Elevated, Low, Critical). The classifications come from real clinical guidelines."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Interactive App: Launch the Vital Signs Interpreter. Enter the readings you take in real life. The app shows you what each number means clinically."
+            },
+            {
+              "type": "app",
+              "title": "Vital Signs Interpreter",
+              "url": "apps/vital-signs-interpreter.html",
+              "embed": true
+            },
+            {
+              "type": "step",
+              "content": "Measure heart rate: Find your radial pulse (wrist) and count beats for 15 seconds. Multiply by 4 for your heart rate. Enter the number into the Vital Signs Interpreter and watch how it classifies your reading."
+            },
+            {
+              "type": "step",
+              "content": "Measure oxygen saturation: Use the pulse oximeter to measure your oxygen saturation (SpO2). Enter your SpO2 and pulse rate into the Vital Signs Interpreter to see what range they fall in."
+            },
+            {
+              "type": "step",
+              "content": "Measure blood pressure: Practice taking a blood pressure reading with the cuff and stethoscope. Enter your systolic and diastolic values into the Vital Signs Interpreter to see if they're in the healthy range."
+            },
+            {
+              "type": "step",
+              "content": "Exercise and retest: Do 20 jumping jacks, then immediately re-measure your heart rate, SpO2, and pulse. Enter the new readings into the Vital Signs Interpreter and compare to your resting numbers."
+            },
+            {
+              "type": "heading",
+              "content": "Cardiac Rhythms: EKG Basics"
+            },
+            {
               "type": "text",
               "content": "Use the EKG Waveform Explorer to study 5 different cardiac rhythms. Explore Normal Sinus Rhythm first, then compare it to Tachycardia, Bradycardia, AFib, and STEMI. When you feel ready, test yourself in Quiz Mode."
             },
@@ -1069,22 +1109,6 @@
               "title": "EKG Waveform Explorer",
               "url": "apps/ekg-waveform-explorer.html",
               "embed": true
-            },
-            {
-              "type": "step",
-              "content": "Measure heart rate: Find your radial pulse (wrist) and count beats for 15 seconds. Multiply by 4 for your heart rate."
-            },
-            {
-              "type": "step",
-              "content": "Measure oxygen saturation: Use the pulse oximeter to measure your oxygen saturation (SpO2). Record the number."
-            },
-            {
-              "type": "step",
-              "content": "Measure blood pressure: Practice taking a blood pressure reading with the cuff and stethoscope. Record systolic and diastolic values."
-            },
-            {
-              "type": "step",
-              "content": "Exercise and retest: Do 20 jumping jacks, then immediately re-measure your heart rate and SpO2. Compare to your resting values."
             },
             {
               "type": "checklist",
