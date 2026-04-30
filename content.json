@@ -1736,6 +1736,36 @@
               "content": "Fill in YOUR case data from the workshop: which evidence types you used, which AI tools you tried, where AI helped, where AI got it wrong. Export the final page as PDF."
             },
             {
+              "type": "heading",
+              "content": "Ship It Live: Deploy to Netlify"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "A Canvas preview disappears when you close the tab. Today you ship a REAL public app. Your facilitator runs the deploy on a classroom Netlify account so the whole class can do this safely (Netlify requires age 13+ to make a personal account). You hand off your downloaded HTML, your facilitator drags it in, and you get a live URL to share."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/mIciIho-05s"
+            },
+            {
+              "type": "step",
+              "content": "In Gemini Canvas, click the download icon and save the .html file with YOUR NAME at the start (like 'maya-deepfake-app.html'). Hand the file to your facilitator on a flash drive, AirDrop, email, or shared Google Drive folder."
+            },
+            {
+              "type": "step",
+              "content": "Your facilitator will log in to the classroom Netlify account, drag your .html file in, and Netlify will give it a live URL in seconds (looks like https://maya-deepfake-app.netlify.app or a randomly-generated one)."
+            },
+            {
+              "type": "step",
+              "content": "Your facilitator will share your live URL with you. Paste it in your Woven notebook. Open it on your phone. You just shipped a real, public web app."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Walkthrough for facilitators (and for when you turn 13 and can do this yourself): https://blog.julietedjere.com/posts/vibe-coding-how-to-host-websites-from-gemini-canvas-on-netlify-for-free covers the Canvas-to-Netlify path with screenshots."
+            },
+            {
               "type": "step",
               "content": "Final reflection (in your notebook): what AI tool did you use the MOST this week? Where did it help your case? Where did it almost lead you wrong? What's the ONE skill from this week you'll use after the workshop ends?"
             },
