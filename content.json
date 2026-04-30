@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 \u2014 Middle School",
+    "title": "Chabot STEM 2026 — Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -653,6 +653,15 @@
               "content": "Welcome to Day 4! Today you will become a digital detective."
             },
             {
+              "type": "heading",
+              "content": "What Are Deepfakes?"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Deepfakes are images, videos, or audio recordings created or changed with artificial intelligence so that a person appears to say or do something they did not actually say or do. Deepfakes can involve face swapping, voice cloning, lip syncing, AI-generated images, and AI-generated audio. Some synthetic media is creative, educational, or helpful. Some is used to trick people, impersonate someone, spread misinformation, damage reputations, or manipulate public opinion."
+            },
+            {
               "type": "callout",
               "style": "case",
               "content": "Today's Case Briefing:: A key piece of evidence is a photograph, but the defense claims it was manipulated with AI. Your mission: use digital forensics techniques to determine whether the image is authentic or fake."
@@ -706,6 +715,51 @@
             {
               "type": "step",
               "content": "Present findings: Present your findings to the class with evidence supporting your conclusions."
+            },
+            {
+              "type": "step",
+              "content": "Hands-on practice (Detect Fakes structure): for each example your facilitator shows, choose Real / AI-generated / Not sure yet. Then rate your confidence Low / Medium / High. Then check off which clue you noticed: face too smooth, eyes/blinking strange, voice robotic or mismatched, lips not matching audio, lighting or shadows wrong, background blurry or distorted, hands/fingers/teeth/text unusual, source or context suspicious, or no clear evidence. Tracking the EVIDENCE not the gut feeling is the skill."
+            },
+            {
+              "type": "heading",
+              "content": "Digital Truth Checklist"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Deepfakes are getting better. Sometimes there are visual clues, sometimes there are not. A real image can also be shared with a false caption. Digital investigators don't only ask 'does this look fake?', they ask 'where did it come from, who shared it, what is the source, can I verify it somewhere else?'"
+            },
+            {
+              "type": "step",
+              "content": "Pause before reacting. Strong emotion is a manipulation signal."
+            },
+            {
+              "type": "step",
+              "content": "Identify the claim. What is the post or video actually asserting?"
+            },
+            {
+              "type": "step",
+              "content": "Look for visual or audio clues. Use the evidence list (face too smooth, weird eyes/blinking, robotic or mismatched voice, lips not matching audio, off lighting/shadows, blurred background, odd hands/fingers/teeth/text, suspicious context)."
+            },
+            {
+              "type": "step",
+              "content": "Check the source. Who runs the account or site? Is this their normal posting pattern?"
+            },
+            {
+              "type": "step",
+              "content": "Search for the same claim elsewhere. Two or more independent reputable sources reporting the same thing is a basic credibility floor."
+            },
+            {
+              "type": "step",
+              "content": "Use SIFT or lateral reading. Stop, Investigate the source, Find better coverage, Trace claims back to original."
+            },
+            {
+              "type": "step",
+              "content": "Decide: Real / Probably Real / Misleading / Probably Fake / Need More Information."
+            },
+            {
+              "type": "step",
+              "content": "Think before sharing. Sharing a deepfake amplifies it even if you debunk it."
             },
             {
               "type": "checklist",
@@ -808,6 +862,15 @@
             },
             {
               "type": "heading",
+              "content": "Ethics Reflection"
+            },
+            {
+              "type": "callout",
+              "style": "notebook",
+              "content": "Ethics check-in (Woven notebook): when could AI-generated media be useful or creative? When could it become harmful or unethical? What responsibility do people have when they create or share AI-generated media? Write 2-3 sentences for each, focused on real situations you have actually seen online."
+            },
+            {
+              "type": "heading",
               "content": "Launch the Deepfake Detector"
             },
             {
@@ -837,6 +900,11 @@
               "type": "callout",
               "style": "tip",
               "content": "Hands are the #1 deepfake tell as of 2024. Count fingers. Look for fused fingers, missing nails, weird thumbs. AI image generators still struggle with hand geometry."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Today's deepfake content is built from three professional sources that you can revisit anytime: PBS NewsHour / MediaWise (mediawise.org) for civic and misinformation literacy, Northwestern / MIT Detect Fakes (detectfakes.kellogg.northwestern.edu) for the hands-on detection structure, and AI for Education's 'Uncovering Deepfakes' classroom guide for the ethics framework. All three are free to access."
             },
             {
               "type": "checklist",
