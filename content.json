@@ -26,11 +26,11 @@
             },
             {
               "type": "text",
-              "content": "Your fingerprints are unlike anyone else's on the planet - not even identical twins share the same prints. From the moment you were born, your unique ridge patterns have been the most reliable way to identify you."
+              "content": "Welcome to Day 1 of the Chabot STEM Workshop! Today you will become a fingerprint analyst."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 1 of the Chabot STEM Workshop! Today you will become a fingerprint analyst."
+              "content": "Your fingerprints are unlike anyone else's on the planet - not even identical twins share the same prints. From the moment you were born, your unique ridge patterns have been the most reliable way to identify you."
             },
             {
               "type": "callout",
@@ -241,11 +241,11 @@
             },
             {
               "type": "text",
-              "content": "When a drop of blood hits a surface, its shape tells a story. Forensic scientists use physics to calculate exactly where it came from."
+              "content": "Welcome to Day 2! Today you will become a bloodstain pattern analyst."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 2! Today you will become a bloodstain pattern analyst."
+              "content": "When a drop of blood hits a surface, its shape tells a story. Forensic scientists use physics to calculate exactly where it came from."
             },
             {
               "type": "callout",
@@ -465,11 +465,11 @@
             },
             {
               "type": "text",
-              "content": "Every contact leaves a trace. A single hair, a clothing fiber, or a grain of soil can place a suspect at a crime scene."
+              "content": "Welcome to Day 3! Today you will examine microscopic evidence like a forensic scientist."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 3! Today you will examine microscopic evidence like a forensic scientist."
+              "content": "Every contact leaves a trace. A single hair, a clothing fiber, or a grain of soil can place a suspect at a crime scene."
             },
             {
               "type": "callout",
@@ -680,11 +680,11 @@
             },
             {
               "type": "text",
-              "content": "In a world where AI can generate realistic photos, videos, and text, how do you know what is real?"
+              "content": "Welcome to Day 4! Today you will become a digital detective."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 4! Today you will become a digital detective."
+              "content": "In a world where AI can generate realistic photos, videos, and text, how do you know what is real?"
             },
             {
               "type": "heading",
@@ -970,11 +970,11 @@
             },
             {
               "type": "text",
-              "content": "Your heart beats roughly 100,000 times a day. Each beat creates an electrical signal that tells doctors exactly what is happening inside your chest."
+              "content": "Welcome to Day 5! Today you step into Mini Med School as a clinical technician."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 5! Today you step into Mini Med School as a clinical technician."
+              "content": "Your heart beats roughly 100,000 times a day. Each beat creates an electrical signal that tells doctors exactly what is happening inside your chest."
             },
             {
               "type": "callout",
@@ -1202,11 +1202,11 @@
             },
             {
               "type": "text",
-              "content": "Surgeons spend years perfecting the art of closing wounds. A good suture is not just functional - it is precise, even, and promotes healing."
+              "content": "Welcome to Day 6! Today you will learn to suture like a surgeon."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 6! Today you will learn to suture like a surgeon."
+              "content": "Surgeons spend years perfecting the art of closing wounds. A good suture is not just functional - it is precise, even, and promotes healing."
             },
             {
               "type": "callout",
@@ -1417,11 +1417,11 @@
             },
             {
               "type": "text",
-              "content": "Doctors use X-rays, CT scans, and MRIs to see inside the body without making a single cut. Reading these images is both a science and an art."
+              "content": "Welcome to Day 7! Today you will think like a diagnostician."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 7! Today you will think like a diagnostician."
+              "content": "Doctors use X-rays, CT scans, and MRIs to see inside the body without making a single cut. Reading these images is both a science and an art."
             },
             {
               "type": "callout",
@@ -1634,11 +1634,11 @@
             },
             {
               "type": "text",
-              "content": "Real investigators don't rely on a single piece of evidence. They combine fingerprints, blood spatter, trace evidence, digital forensics, and medical data to build a complete picture."
+              "content": "Welcome to Day 8 - the final day! Today you will solve a multi-evidence case using everything you have learned."
             },
             {
               "type": "text",
-              "content": "Welcome to Day 8 - the final day! Today you will solve a multi-evidence case using everything you have learned."
+              "content": "Real investigators don't rely on a single piece of evidence. They combine fingerprints, blood spatter, trace evidence, digital forensics, and medical data to build a complete picture."
             },
             {
               "type": "callout",
@@ -1733,6 +1733,15 @@
               "type": "callout",
               "style": "info",
               "content": "Gemini Canvas (gemini.google.com/canvas) is a 'vibe coding' tool - you describe what you want, and Gemini builds it as a live web page. Today you'll build your final case presentation WITHOUT writing any code."
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Gemini Canvas is a vibe-coding tool: you describe what you want in plain English and it builds a working web page on the right side. Watch the 90-second walkthrough below first so you know where the buttons are, then try the prompt yourself."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/CF62dLM5Gb4"
             },
             {
               "type": "step",
