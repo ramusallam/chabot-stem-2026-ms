@@ -738,7 +738,13 @@
             },
             {
               "type": "step",
-              "content": "Analyze image sets: Open the Deepfake Detector app (in Part III below or via the Launch button) - it has 8 AI-generated images built in. For each one, decide Real or AI-generated and rate your confidence (Low/Medium/High)."
+              "content": "Image analysis using Detect Fakes Practice: Open the Deepfake Detector app (Part III below or via the Launch button on this page if embedded). Tap the 'Detect Fakes Practice' mode (4th option). For each of 8 images, choose Real / AI-generated / Not sure yet, rate your confidence Low / Medium / High, and pick which evidence you noticed. Submit to see what was actually real, what was AI, and how your accuracy and confidence calibration compare across the set. The methodology comes from Northwestern Kellogg's published Detect Fakes research."
+            },
+            {
+              "type": "app",
+              "title": "Deepfake Detector",
+              "url": "apps/deepfake-detector.html",
+              "embed": true
             },
             {
               "type": "step",

@@ -553,7 +553,236 @@
     </div>);
   }
 
-  // ===== Mode 4: Quiz =====
+  // ===== Mode 4: Detect Fakes Practice =====
+  // Northwestern Kellogg Detect Fakes methodology: per image -> Real or AI? -> Confidence Low/Med/High -> Evidence checklist -> Reveal -> Summary
+  // Reuses IMAGES[] from Spot mode. The 8th image (isReal=true) is the trap real photo.
+
+  const EVIDENCE_OPTIONS = [
+    {id:"face",  label:"Face looks too smooth"},
+    {id:"eyes",  label:"Eyes or blinking seem strange"},
+    {id:"voice", label:"Voice or audio mismatched (skip for image)"},
+    {id:"lips",  label:"Lips do not match audio (skip for image)"},
+    {id:"light", label:"Lighting or shadows seem wrong"},
+    {id:"bg",    label:"Background looks blurry or distorted"},
+    {id:"hands", label:"Hands, fingers, teeth or text look unusual"},
+    {id:"src",   label:"Source or context seems suspicious"},
+    {id:"none",  label:"No clear evidence"},
+  ];
+
+  // Confidence rank: Low=1, Medium=2, High=3
+  const CONF_RANK = {Low:1, Medium:2, High:3};
+
+  function DetectFakesMode({onBack}) {
+    const [idx, setIdx] = useState(0);
+    const [judge, setJudge] = useState(null);    // "Real" | "AI" | "NotSure"
+    const [conf, setConf] = useState(null);      // "Low" | "Medium" | "High"
+    const [evidence, setEvidence] = useState([]);
+    const [revealed, setRevealed] = useState(false);
+    const [results, setResults] = useState([]);
+    const [done, setDone] = useState(false);
+
+    const img = IMAGES[idx];
+
+    const toggleEvidence = (id) => {
+      if (revealed) return;
+      // "none" is exclusive
+      if (id === "none") {
+        setEvidence(evidence.includes("none") ? [] : ["none"]);
+      } else {
+        const without = evidence.filter(e => e !== "none");
+        if (without.includes(id)) setEvidence(without.filter(e => e !== id));
+        else setEvidence([...without, id]);
+      }
+    };
+
+    const submit = () => {
+      if (!judge || !conf) return;
+      setRevealed(true);
+    };
+
+    const advance = () => {
+      const correct = (judge === "Real" && img.isReal) || (judge === "AI" && !img.isReal);
+      const next = [...results, {imgId: img.id, judge, conf, evidence, correct, isReal: img.isReal}];
+      setResults(next);
+      if (idx + 1 >= IMAGES.length) {
+        setDone(true);
+      } else {
+        setIdx(idx + 1);
+        setJudge(null);
+        setConf(null);
+        setEvidence([]);
+        setRevealed(false);
+      }
+    };
+
+    const reset = () => {
+      setIdx(0); setJudge(null); setConf(null); setEvidence([]);
+      setRevealed(false); setResults([]); setDone(false);
+    };
+
+    if (done) {
+      const correctCount = results.filter(r => r.correct).length;
+      const correctConfs = results.filter(r => r.correct).map(r => CONF_RANK[r.conf]);
+      const wrongConfs   = results.filter(r => !r.correct).map(r => CONF_RANK[r.conf]);
+      const avg = (arr) => arr.length ? (arr.reduce((s,n)=>s+n,0)/arr.length) : 0;
+      const labelFromAvg = (a) => a >= 2.34 ? "High" : a >= 1.67 ? "Medium" : a > 0 ? "Low" : "—";
+      const avgCorrect = labelFromAvg(avg(correctConfs));
+      const avgWrong   = labelFromAvg(avg(wrongConfs));
+      const dangerous  = results.filter(r => !r.correct && r.conf === "High").length;
+
+      return (<div className="fade-in">
+        <Card style={{textAlign:"center"}}>
+          <div style={{fontSize:48,marginBottom:8}}>🧪</div>
+          <div style={{fontSize:32,fontWeight:800,color:NAVY,lineHeight:1}}>{correctCount} / {IMAGES.length}</div>
+          <div style={{fontSize:13,color:MED,margin:"8px 0"}}>Images correctly identified</div>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,margin:"14px 0",textAlign:"left"}}>
+            <div style={{padding:"10px 12px",background:"#E8F8F1",border:`2px solid ${GREEN}33`,borderRadius:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:GREEN,textTransform:"uppercase",letterSpacing:1}}>When Right</div>
+              <div style={{fontSize:18,fontWeight:800,color:NAVY,marginTop:4}}>Avg conf: {avgCorrect}</div>
+            </div>
+            <div style={{padding:"10px 12px",background:"#FFF5F5",border:`2px solid ${RED}33`,borderRadius:10}}>
+              <div style={{fontSize:11,fontWeight:700,color:RED,textTransform:"uppercase",letterSpacing:1}}>When Wrong</div>
+              <div style={{fontSize:18,fontWeight:800,color:NAVY,marginTop:4}}>Avg conf: {avgWrong}</div>
+            </div>
+          </div>
+          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,color:DARK,lineHeight:1.6,textAlign:"left"}}>
+            <strong>Confidence calibration is the meta-skill.</strong> High confidence + wrong answer is the riskiest combination ({dangerous} of yours). The Northwestern Kellogg researchers track exactly this metric, because over-confident humans are easier to fool than under-confident ones.
+          </div>
+          <div style={{padding:"12px 14px",background:"#F0FBF8",borderLeft:`4px solid ${TEAL}`,borderRadius:10,marginBottom:14,fontSize:12,color:MED,lineHeight:1.6,textAlign:"left",fontStyle:"italic"}}>
+            Methodology adapted from Northwestern Kellogg's Detect Fakes research project (Kamali, Kumar, Nakamura, Chatzimparmpas, Hullman, Groh - PNAS 2022). Their public site is age 18+, so this is the in-workshop version of the same research methodology.
+          </div>
+          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
+            <Btn primary onClick={reset}>Try Again</Btn>
+            <Btn onClick={onBack}>Menu</Btn>
+          </div>
+        </Card>
+      </div>);
+    }
+
+    const judgeBtnStyle = (key, picked) => ({
+      flex:1,
+      padding:"10px 12px",
+      borderRadius:10,
+      fontSize:13,
+      fontWeight:700,
+      cursor:"pointer",
+      fontFamily:"inherit",
+      transition:"all .2s",
+      border:`2px solid ${picked?TEAL:"#E0E8EE"}`,
+      background:picked?"#F0FBF8":WHITE,
+      color:picked?TEAL_DARK:DARK,
+    });
+
+    const confBtnStyle = (key, picked, disabled) => ({
+      flex:1,
+      padding:"10px 12px",
+      borderRadius:10,
+      fontSize:13,
+      fontWeight:700,
+      cursor:disabled?"not-allowed":"pointer",
+      fontFamily:"inherit",
+      transition:"all .2s",
+      border:`2px solid ${picked?GOLD:"#E0E8EE"}`,
+      background:picked?"#FFF9E6":WHITE,
+      color:disabled?"#bbb":(picked?"#8A6A1A":DARK),
+      opacity:disabled?0.55:1,
+    });
+
+    return (<div>
+      <Card className="slide-up">
+        <SectionLabel>Image {idx+1} of {IMAGES.length}</SectionLabel>
+        <div style={{fontSize:15,fontWeight:800,color:NAVY,marginBottom:4}}>{img.title}</div>
+        <p style={{fontSize:12,color:MED,marginBottom:12,fontStyle:"italic"}}>News headline says: {img.caption}</p>
+
+        {/* Centered viewport */}
+        <div style={{position:"relative",width:"100%",aspectRatio:"4/3",background:img.bgColor,borderRadius:10,overflow:"hidden",border:"2px solid "+NAVY,marginBottom:14}}>
+          <svg viewBox="0 0 100 75" preserveAspectRatio="none" style={{position:"absolute",inset:0,width:"100%",height:"100%"}}>
+            <ellipse cx="50" cy="32" rx="14" ry="17" fill="rgba(255,255,255,0.18)"/>
+            <path d="M20,75 Q20,52 50,52 Q80,52 80,75 Z" fill="rgba(255,255,255,0.12)"/>
+            <circle cx="44" cy="30" r="1.4" fill="rgba(255,255,255,0.6)"/>
+            <circle cx="56" cy="30" r="1.4" fill="rgba(255,255,255,0.6)"/>
+            <path d="M46,38 Q50,40 54,38" stroke="rgba(255,255,255,0.4)" strokeWidth="0.8" fill="none"/>
+          </svg>
+          <div style={{position:"absolute",top:8,right:10,background:"rgba(0,0,0,0.6)",color:"#0ABAB5",fontFamily:"Courier New, monospace",fontSize:11,fontWeight:700,padding:"4px 10px",borderRadius:6,textShadow:"0 0 6px rgba(10,186,181,0.6)"}}>
+            DETECT FAKES PRACTICE
+          </div>
+        </div>
+
+        {/* Q1 - Real or AI? */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:NAVY,marginBottom:8}}>1. Real or AI-generated?</div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={() => !revealed && setJudge("Real")} disabled={revealed} style={judgeBtnStyle("Real", judge==="Real")}>Real photo</button>
+            <button onClick={() => !revealed && setJudge("AI")} disabled={revealed} style={judgeBtnStyle("AI", judge==="AI")}>AI-generated</button>
+            <button onClick={() => !revealed && setJudge("NotSure")} disabled={revealed} style={judgeBtnStyle("NotSure", judge==="NotSure")}>Not sure yet</button>
+          </div>
+        </div>
+
+        {/* Q2 - Confidence */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:judge?NAVY:"#aaa",marginBottom:8}}>2. How confident are you?</div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={() => judge && !revealed && setConf("Low")} disabled={!judge || revealed} style={confBtnStyle("Low", conf==="Low", !judge || revealed)}>Low</button>
+            <button onClick={() => judge && !revealed && setConf("Medium")} disabled={!judge || revealed} style={confBtnStyle("Medium", conf==="Medium", !judge || revealed)}>Medium</button>
+            <button onClick={() => judge && !revealed && setConf("High")} disabled={!judge || revealed} style={confBtnStyle("High", conf==="High", !judge || revealed)}>High</button>
+          </div>
+        </div>
+
+        {/* Q3 - Evidence */}
+        <div style={{marginBottom:14}}>
+          <div style={{fontSize:13,fontWeight:700,color:NAVY,marginBottom:4}}>3. What evidence did you notice? <span style={{fontWeight:500,color:MED,fontStyle:"italic"}}>(optional, but encouraged)</span></div>
+          <div style={{display:"grid",gap:6}}>
+            {EVIDENCE_OPTIONS.map(opt => {
+              const picked = evidence.includes(opt.id);
+              return (<div key={opt.id} onClick={() => toggleEvidence(opt.id)} style={{padding:"8px 12px",border:`2px solid ${picked?TEAL:"#E0E8EE"}`,borderRadius:8,cursor:revealed?"default":"pointer",background:picked?"#F0FBF8":WHITE,fontSize:12,color:picked?TEAL_DARK:DARK,fontWeight:picked?700:500,transition:"all .15s"}}>
+                <input type="checkbox" checked={picked} readOnly style={{marginRight:8,accentColor:TEAL}}/>{opt.label}
+              </div>);
+            })}
+          </div>
+        </div>
+
+        {!revealed && (
+          <div style={{textAlign:"right"}}>
+            <Btn primary onClick={submit} style={{opacity:(judge && conf)?1:0.5,cursor:(judge && conf)?"pointer":"not-allowed"}}>Submit</Btn>
+          </div>
+        )}
+
+        {revealed && (() => {
+          const correct = (judge === "Real" && img.isReal) || (judge === "AI" && !img.isReal);
+          const truth = img.isReal ? "Real photo" : "AI-generated";
+          const tells = img.artifacts.map(a => a.label);
+          return (<div className="fade-in">
+            <div style={{padding:"12px 14px",background:correct?"#E8F8F1":"#FFF5F5",borderLeft:`4px solid ${correct?GREEN:RED}`,borderRadius:8,fontSize:13,color:DARK,lineHeight:1.5,marginBottom:10}}>
+              <strong>{correct ? "Correct." : (judge === "NotSure" ? "Unresolved." : "Other way around.")}</strong>{" "}
+              The actual answer was <strong>{truth}</strong>. You judged <strong>{judge === "NotSure" ? "Not sure" : (judge === "Real" ? "Real photo" : "AI-generated")}</strong> with <strong>{conf}</strong> confidence.
+            </div>
+            <div style={{padding:"10px 14px",background:"#F8F9FA",borderRadius:8,fontSize:12,color:MED,lineHeight:1.5,marginBottom:10}}>
+              <strong style={{color:NAVY}}>Doctor's note:</strong>{" "}
+              {img.isReal
+                ? "This is a real human photograph with EXIF data intact. Real photos in a deepfake set are the over-triage trap. If you flagged it as AI with high confidence, that is exactly the kind of jumpy analysis that gets a Trust and Safety team into trouble. Sometimes the right call is 'I see no clear AI tells.'"
+                : "This image is AI-generated. The artifacts that exist in this scene are listed below. Compare them to the evidence boxes you checked. The skill is not just getting the verdict right, it is getting the EVIDENCE right."
+              }
+              {tells.length > 0 && (<>
+                <div style={{marginTop:6,color:NAVY,fontWeight:700}}>Evidence that existed:</div>
+                <ul style={{marginTop:4,paddingLeft:18}}>
+                  {tells.map((t,i) => <li key={i}>{t}</li>)}
+                </ul>
+              </>)}
+            </div>
+            <div style={{textAlign:"right"}}>
+              <Btn primary onClick={advance}>{idx + 1 < IMAGES.length ? "Next Image →" : "View Summary"}</Btn>
+            </div>
+          </div>);
+        })()}
+
+        <div style={{marginTop:14,padding:"10px 12px",background:"#F0FBF8",borderLeft:`3px solid ${TEAL}`,borderRadius:6,fontSize:11,color:MED,lineHeight:1.5,fontStyle:"italic"}}>
+          Methodology adapted from Northwestern Kellogg's Detect Fakes research project (Kamali, Kumar, Nakamura, Chatzimparmpas, Hullman, Groh - PNAS 2022). Their public site is age 18+, so this is the in-workshop version of the same research methodology.
+        </div>
+      </Card>
+    </div>);
+  }
+
+  // ===== Mode 5: Quiz =====
   const QUIZ = [
     {q:"The first deepfake video appeared in what year and on what platform?",opts:["1995, broadcast TV","2017, Reddit","2020, TikTok","2010, Vimeo"],ans:1,exp:"The term 'deepfake' was coined on Reddit in late 2017, originally for face-swapped videos."},
     {q:"What's the FASTEST visual tell that an image is AI-generated?",opts:["Hair texture","Background scenery","Hands and fingers","Clothing patterns"],ans:2,exp:"Hands are notoriously hard for current image AI. Wrong finger counts, fused fingers, and missing nails are the most reliable tell."},
@@ -648,8 +877,9 @@
           <div style={{display:"grid",gap:12,marginBottom:20}}>
             {[
               {key:"spot",icon:"🎭",title:"Spot the Tells",desc:"8 AI images with hidden artifacts. Click each tell. The 8th is a real photo - try not to over-triage.",color:TEAL},
+              {key:"detect",icon:"🧪",title:"Detect Fakes Practice",desc:"8 images, Northwestern Kellogg-style methodology. Real or AI? How confident? What evidence? Track your accuracy and confidence calibration.",color:NAVY},
               {key:"voice",icon:"🔊",title:"Voice Analyzer",desc:"4 voice clips with annotated waveforms. Real human or AI clone? You decide.",color:GOLD},
-              {key:"chain",icon:"🔍",title:"Source Verification Chain",desc:"How a fake spreads through 4 stages. Pick the right verification step at each stage.",color:NAVY},
+              {key:"chain",icon:"🔍",title:"Source Verification Chain",desc:"How a fake spreads through 4 stages. Pick the right verification step at each stage.",color:"#7A2D4E"},
               {key:"quiz",icon:"🎯",title:"Quiz",desc:"8 questions on deepfake history, hand artifacts, EXIF, and Bay Area Trust & Safety careers.",color:RED},
             ].map(m => (<div key={m.key} onClick={() => setScreen(m.key)} style={{background:WHITE,borderRadius:R,padding:"18px 20px",boxShadow:SHADOW,border:"2px solid #E0E8EE",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:16}} onMouseOver={e=>{e.currentTarget.style.borderColor=m.color;e.currentTarget.style.transform="translateY(-2px)"}} onMouseOut={e=>{e.currentTarget.style.borderColor="#E0E8EE";e.currentTarget.style.transform="none"}}>
               <div style={{width:52,height:52,borderRadius:14,background:`${m.color}12`,border:`2px solid ${m.color}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{m.icon}</div>
@@ -666,12 +896,13 @@
     }
 
     return (<div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
-      <AppHeader subtitle={screen==="spot"?"Spot the Tells":screen==="voice"?"Voice Analyzer":screen==="chain"?"Verification Chain":"Quiz"}/>
+      <AppHeader subtitle={screen==="spot"?"Spot the Tells":screen==="detect"?"Detect Fakes Practice":screen==="voice"?"Voice Analyzer":screen==="chain"?"Verification Chain":"Quiz"}/>
       <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 24px",flex:1,width:"100%"}}>
         <div style={{marginBottom:14}}>
           <button onClick={() => setScreen("welcome")} style={{background:"none",border:`2px solid ${TEAL}`,color:TEAL,borderRadius:10,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>← Menu</button>
         </div>
         {screen === "spot" && <SpotMode onBack={() => setScreen("welcome")}/>}
+        {screen === "detect" && <DetectFakesMode onBack={() => setScreen("welcome")}/>}
         {screen === "voice" && <VoiceMode onBack={() => setScreen("welcome")}/>}
         {screen === "chain" && <ChainMode onBack={() => setScreen("welcome")}/>}
         {screen === "quiz" && <QuizMode onBack={() => setScreen("welcome")}/>}
