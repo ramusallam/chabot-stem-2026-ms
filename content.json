@@ -7,6 +7,10 @@
     "deployUrl": "https://chabot-stem-2026-ms.vercel.app",
     "slug": "chabot-stem-2026-ms"
   },
+  "weeks": [
+    { "label": "Week 1 - Forensics and the Digital Detective", "dayIndices": [0,1,2,3] },
+    { "label": "Week 2 - Mini Med School and the Clinical AI", "dayIndices": [4,5,6,7] }
+  ],
   "days": [
     {
       "title": "Day 1: Biometrics",
@@ -35,7 +39,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing: You step into the role of a fingerprint examiner trainee. Your mission: learn the three major fingerprint pattern types (Loop, Whorl, Arch) and train a real machine learning model in Teachable Machine to spot them. By Day 8 you'll use these skills on a real multi-evidence case."
+              "content": "Today's Case Briefing: You step into the role of a fingerprint examiner trainee. Your mission: learn the three major fingerprint pattern types (Loop, Whorl, Arch) and train a real machine learning model in Teachable Machine to spot them. By Day 4 you'll use these skills on the Week 1 forensics case."
             },
             {
               "type": "video",
@@ -250,7 +254,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing: You train as a bloodstain pattern analyst. Your mission: learn how the SHAPE of a blood drop tells you the ANGLE it hit a surface, then prove it by dropping simulated blood at known angles and measuring. By Day 8 you'll use this skill to reconstruct an event in your final case."
+              "content": "Today's Case Briefing: You train as a bloodstain pattern analyst. Your mission: learn how the SHAPE of a blood drop tells you the ANGLE it hit a surface, then prove it by dropping simulated blood at known angles and measuring. By Day 4 you'll use this skill in your Week 1 case."
             },
             {
               "type": "video",
@@ -474,7 +478,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing: You train as a trace evidence examiner. Your mission: learn to compare hair and fiber samples under a microscope, the same way real lab examiners do every day. By Day 8 you'll use trace evidence as one piece of a multi-evidence case."
+              "content": "Today's Case Briefing: You train as a trace evidence examiner. Your mission: learn to compare hair and fiber samples under a microscope, the same way real lab examiners do every day. By Day 4 you'll use trace evidence as one piece of the Week 1 case."
             },
             {
               "type": "video",
@@ -913,14 +917,95 @@
         },
         {
           "style": "maroon",
-          "title": "Part IV: End of Day",
+          "title": "Part IV: Week 1 Case Finale",
           "duration": "",
           "instructorNotes": "",
           "blocks": [
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: Part IV, End of Day. Look back at your Hook questions, your lab data, and your AI audit. What changed? What is still open? Close the day with one sentence on what you would do differently tomorrow."
+              "content": "Woven notebook: Part IV, Week 1 Case Finale. This is where 4 days of detective training come together. Write what you find at every station and the suspect you pick at the end."
+            },
+            {
+              "type": "heading",
+              "content": "The Pine Hills Case (Week 1 finale)"
+            },
+            {
+              "type": "callout",
+              "style": "case",
+              "content": "You've finished your detective training. Time for a real case. A break-in at a Pine Hills jewelry store in Oakland left 4 pieces of evidence. Your team has 30 minutes to work all 4 stations and pick the most likely suspect from a 3-person lineup."
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Case file: Suspect A: Tomas, history of property crime, alibi for that night. Suspect B: Maya, recent ex-employee with grudge, no alibi. Suspect C: Jordan, no prior record but seen on a social-media video allegedly at the scene."
+            },
+            {
+              "type": "heading",
+              "content": "Station 1: Fingerprint (Day 1)"
+            },
+            {
+              "type": "step",
+              "content": "Use the Fingerprint Ridge Classifier. The partial print recovered is a Loop with 7 ridge endings. Suspect A's known print is a Whorl. Suspect B's is a Loop. Suspect C's is an Arch. Match the print, write your finding."
+            },
+            {
+              "type": "heading",
+              "content": "Station 2: Blood Spatter (Day 2)"
+            },
+            {
+              "type": "step",
+              "content": "The spatter on the wall measures width 6mm, length 12mm. Use the Spatter Angle Calculator. The angle tells you whether the suspect was standing tall (angle near 90), crouched (angle ~45), or low (angle ~30). Write the angle and what it suggests about height."
+            },
+            {
+              "type": "heading",
+              "content": "Station 3: Trace Evidence (Day 3)"
+            },
+            {
+              "type": "step",
+              "content": "Use the Trace Evidence Microscope. The fiber recovered is a blue cotton thread. Suspect A wore a denim jacket (cotton, blue). Suspect B wore a black wool coat. Suspect C wore a polyester windbreaker. Which suspect's clothes match the trace?"
+            },
+            {
+              "type": "heading",
+              "content": "Station 4: Digital Evidence (Day 4)"
+            },
+            {
+              "type": "step",
+              "content": "The viral social-media video allegedly shows Suspect C at the scene. Open the Deepfake Detector and run the video through Detect Fakes Practice. Is it real footage, or could it be AI-generated and trying to frame Suspect C? Use the Digital Truth Checklist."
+            },
+            {
+              "type": "heading",
+              "content": "Render the Verdict"
+            },
+            {
+              "type": "step",
+              "content": "Combine your 4 station findings. Which suspect is most likely guilty, A, B, or C? Could the digital evidence have been faked to mislead you? Write a 1-paragraph verdict with your evidence."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Real detectives do this every day, weigh evidence from multiple sources and decide who's most likely responsible. You just did the same thing."
+            },
+            {
+              "type": "checklist",
+              "items": [
+                { "text": "I worked all 4 stations" },
+                { "text": "I picked a suspect" },
+                { "text": "I considered whether the digital evidence was reliable" },
+                { "text": "I wrote my verdict" }
+              ]
+            }
+          ]
+        },
+        {
+          "style": "maroon",
+          "title": "Part V: End of Day",
+          "duration": "",
+          "instructorNotes": "",
+          "blocks": [
+            {
+              "type": "callout",
+              "style": "notebook",
+              "content": "Woven notebook: Part V, End of Day. Look back at your Hook questions, your lab data, your AI audit, and your Pine Hills verdict. What changed? What is still open? Close the day with one sentence on what you would do differently tomorrow."
             },
             {
               "type": "heading",
@@ -938,7 +1023,7 @@
             {
               "type": "callout",
               "style": "tip",
-              "content": "Save your work: Save your Digital Truth Toolkit - you will use your verification skills in the final case!"
+              "content": "Save your work: Save your Digital Truth Toolkit and your Pine Hills verdict. Week 1 wraps here. Week 2 starts tomorrow with the same skills, applied to medicine."
             },
             {
               "type": "checklist",
@@ -963,6 +1048,11 @@
           "duration": "",
           "instructorNotes": "",
           "blocks": [
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Bridge, Week 1 to Week 2: You finished your detective training. Same skills, new world: medicine. Today you'll question medical AI the same way you questioned the deepfakes and fake headlines yesterday."
+            },
             {
               "type": "callout",
               "style": "notebook",
@@ -1634,16 +1724,16 @@
             },
             {
               "type": "text",
-              "content": "Welcome to Day 8 - the final day! Today you will solve a multi-evidence case using everything you have learned."
+              "content": "Welcome to Day 8, the close of Week 2. Today you will solve a clinical case using everything you have learned in Mini Med School."
             },
             {
               "type": "text",
-              "content": "Real investigators don't rely on a single piece of evidence. They combine fingerprints, blood spatter, trace evidence, digital forensics, and medical data to build a complete picture."
+              "content": "Real clinical teams don't rely on a single test. They combine vital signs, surgical thinking, X-ray findings, and a careful look at the AI tools that touch each step to build a complete picture."
             },
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing: This is it. The full integrated case. Your mission: apply every skill from Days 1-7 (fingerprints, spatter, trace evidence, digital truth, vitals, surgery, diagnostics) to a complete case AND build a presentation that makes your evidence-based verdict clear. Day 8 IS the case all your training built toward."
+              "content": "Today's Case Briefing: Week 2's clinical case finale. Your mission: take a complex patient case and apply every Week 2 skill (vital signs, surgical thinking, X-ray reading, AI ethics) to render a diagnosis. Build a clear presentation of your evidence-based reasoning."
             },
             {
               "type": "video",
@@ -1673,31 +1763,31 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Materials Needed: Case file packets, Lab materials from Days 1-7, Evidence bags, Labels, Presentation materials, Timer, Certificates"
+              "content": "Materials Needed: Clinical case file packets, Lab materials from Days 5-7 (stethoscopes, BP cuffs, suture kits, X-ray cards), Tablets, Presentation materials, Timer, Certificates"
             },
             {
               "type": "step",
-              "content": "Read case file: Read your team's case file carefully. Note what evidence is available at each station."
+              "content": "Read case file: Read your team's clinical case file carefully. Note the patient's symptoms, vitals, surgical history, and imaging findings."
             },
             {
               "type": "step",
-              "content": "Station 1 - Fingerprints: Analyze the prints using your classification skills from Day 1."
+              "content": "Station 1 - Vital Signs (Day 5): Take the patient's vitals from the case file. Run them through the Vital Signs Interpreter. Flag anything outside the normal range."
             },
             {
               "type": "step",
-              "content": "Station 2 - Fluid Patterns: Calculate the impact angle from the blood spatter evidence."
+              "content": "Station 2 - Surgical Thinking (Day 6): Walk through the surgical decision in the case file. Which suture pattern fits? What's the simplest plan that gets the job done?"
             },
             {
               "type": "step",
-              "content": "Station 3 - Trace Evidence: Examine the microscopic samples and compare to known references."
+              "content": "Station 3 - X-Ray Reading (Day 7): Open the Radiology Detective. Match the patient's X-ray to the closest case in the app. What do you see? What might be missed?"
             },
             {
               "type": "step",
-              "content": "Station 4 - Digital Evidence: Verify the authenticity of the digital evidence."
+              "content": "Station 4 - AI Ethics: For each of the 3 stations above, ask: did an AI help or could one have helped? Where would you trust it? Where would you double-check the AI's call?"
             },
             {
               "type": "step",
-              "content": "Final presentation: Compile all your findings and prepare a 3-minute team presentation with your verdict."
+              "content": "Final presentation: Compile your findings and prepare a 3-minute team presentation with your diagnosis and your AI-trust call."
             },
             {
               "type": "checklist",
