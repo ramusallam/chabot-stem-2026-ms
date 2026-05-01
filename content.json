@@ -732,48 +732,13 @@
               "content": "Materials Needed: Laptops or Chromebooks with Chrome, Digital Truth Checklist (in the app below), Lab notebooks, Pens or pencils."
             },
             {
-              "type": "callout",
-              "style": "tip",
-              "content": "Image source: the Deepfake Detector app (embedded in Part III below) has 8 AI-generated images built in. Use those for your analysis. No printed image packs needed today, the lab runs entirely from the app."
-            },
-            {
-              "type": "step",
-              "content": "Image analysis: launch the Deepfake Detector below and tap Detect Fakes Practice. For each of 8 images, choose Real / AI-generated / Not sure yet, rate your confidence Low / Medium / High, and pick which evidence you noticed. Submit to see what was actually real, what was AI, and how your accuracy compared to your confidence. The methodology is from Northwestern Kellogg's published Detect Fakes research."
-            },
-            {
-              "type": "app",
-              "title": "Deepfake Detector",
-              "url": "apps/deepfake-detector.html",
-              "embed": true
-            },
-            {
-              "type": "step",
-              "content": "Use Digital Truth Checklist: Use the \"Digital Truth Checklist\" to analyze each image for telltale signs of AI generation."
-            },
-            {
-              "type": "step",
-              "content": "Compare with group: Compare notes with your group. Did you agree on which images were fake?"
-            },
-            {
-              "type": "step",
-              "content": "Analyze metadata: Analyze the metadata of the digital files using the tools provided on your Chromebook."
-            },
-            {
-              "type": "step",
-              "content": "Present findings: Present your findings to the class with evidence supporting your conclusions."
-            },
-            {
-              "type": "step",
-              "content": "Hands-on practice (Detect Fakes structure): for each example your facilitator shows, choose Real / AI-generated / Not sure yet. Then rate your confidence Low / Medium / High. Then check off which clue you noticed: face too smooth, eyes/blinking strange, voice robotic or mismatched, lips not matching audio, lighting or shadows wrong, background blurry or distorted, hands/fingers/teeth/text unusual, source or context suspicious, or no clear evidence. Tracking the EVIDENCE not the gut feeling is the skill."
-            },
-            {
               "type": "heading",
-              "content": "Digital Truth Checklist"
+              "content": "Step 1: Study the Digital Truth Checklist"
             },
             {
               "type": "callout",
               "style": "info",
-              "content": "Deepfakes are getting better. Sometimes there are visual clues, sometimes there are not. A real image can also be shared with a false caption. Digital investigators don't only ask 'does this look fake?', they ask 'where did it come from, who shared it, what is the source, can I verify it somewhere else?'"
+              "content": "Before you analyze any image, expand the checklist below and read all 8 items. These are the questions a real digital forensics analyst asks themselves about every piece of media. You will use them as your evidence guide in the practice activity that follows."
             },
             {
               "type": "collapsible-checklist",
@@ -788,6 +753,25 @@
                 "Decide: Real / Probably Real / Misleading / Probably Fake / Need More Information.",
                 "Think before sharing. Sharing a deepfake amplifies it even if you debunk it."
               ]
+            },
+            {
+              "type": "heading",
+              "content": "Step 2: Practice on 8 Images"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Now apply the checklist. The Deepfake Detector app below has 8 real images (4 actual photographs, 4 AI-generated). Go through each one using the checklist as your guide."
+            },
+            {
+              "type": "step",
+              "content": "Image analysis: launch the Deepfake Detector below and tap Detect Fakes Practice. For each of 8 images, choose Real / AI-generated / Not sure yet, rate your confidence Low / Medium / High, and pick which evidence you noticed. Submit to see what was actually real, what was AI, and how your accuracy compared to your confidence. The methodology is from Northwestern Kellogg's published Detect Fakes research."
+            },
+            {
+              "type": "app",
+              "title": "Deepfake Detector",
+              "url": "apps/deepfake-detector.html",
+              "embed": true
             },
             {
               "type": "checklist",
