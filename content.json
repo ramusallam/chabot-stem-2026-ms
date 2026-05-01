@@ -371,11 +371,6 @@
             },
             {
               "type": "callout",
-              "style": "info",
-              "content": "Teachable Machine is a free Google tool that lets you train a real machine learning model in your browser - no coding, no login. You'll train it to classify blood drop angles into 3 categories. This is the SAME kind of model the LAPD uses, just smaller."
-            },
-            {
-              "type": "callout",
               "style": "tip",
               "content": "Refresher: same Teachable Machine you used on Day 1. If you need a reminder of the buttons, the 3 tutorial videos are in your Day 1 notebook. Setup is the same, just different classes."
             },
@@ -707,13 +702,14 @@
             },
             {
               "type": "video",
-              "url": "https://www.youtube.com/embed/KkrZgHA_NGA"
+              "title": "Fake Obama created using AI video tool (BBC News)",
+              "url": "https://www.youtube.com/embed/AmUC4m6w1wo"
             },
             {
               "type": "checklist",
               "items": [
                 {
-                  "text": "I read the case briefing and watched the chromatography video"
+                  "text": "I read the case briefing and watched the deepfake video"
                 }
               ]
             }
@@ -733,11 +729,16 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Materials Needed: Printed image sets, Digital Truth Checklist, Laptops or Chromebooks, Filter paper, Markers, Water cups, Lab notebooks"
+              "content": "Materials Needed: Laptops or Chromebooks with Chrome, Digital Truth Checklist (in the app below), Lab notebooks, Pens or pencils."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Image source: the Deepfake Detector app (embedded in Part III below) has 8 AI-generated images built in. Use those for your analysis. No printed image packs needed today, the lab runs entirely from the app."
             },
             {
               "type": "step",
-              "content": "Analyze image sets: Examine the set of images provided. For each one, determine if it is real or AI-generated."
+              "content": "Analyze image sets: Open the Deepfake Detector app (in Part III below or via the Launch button) - it has 8 AI-generated images built in. For each one, decide Real or AI-generated and rate your confidence (Low/Medium/High)."
             },
             {
               "type": "step",
@@ -769,42 +770,24 @@
               "content": "Deepfakes are getting better. Sometimes there are visual clues, sometimes there are not. A real image can also be shared with a false caption. Digital investigators don't only ask 'does this look fake?', they ask 'where did it come from, who shared it, what is the source, can I verify it somewhere else?'"
             },
             {
-              "type": "step",
-              "content": "Pause before reacting. Strong emotion is a manipulation signal."
-            },
-            {
-              "type": "step",
-              "content": "Identify the claim. What is the post or video actually asserting?"
-            },
-            {
-              "type": "step",
-              "content": "Look for visual or audio clues. Use the evidence list (face too smooth, weird eyes/blinking, robotic or mismatched voice, lips not matching audio, off lighting/shadows, blurred background, odd hands/fingers/teeth/text, suspicious context)."
-            },
-            {
-              "type": "step",
-              "content": "Check the source. Who runs the account or site? Is this their normal posting pattern?"
-            },
-            {
-              "type": "step",
-              "content": "Search for the same claim elsewhere. Two or more independent reputable sources reporting the same thing is a basic credibility floor."
-            },
-            {
-              "type": "step",
-              "content": "Use SIFT or lateral reading. Stop, Investigate the source, Find better coverage, Trace claims back to original."
-            },
-            {
-              "type": "step",
-              "content": "Decide: Real / Probably Real / Misleading / Probably Fake / Need More Information."
-            },
-            {
-              "type": "step",
-              "content": "Think before sharing. Sharing a deepfake amplifies it even if you debunk it."
+              "type": "collapsible-checklist",
+              "title": "Digital Truth Checklist (click to expand)",
+              "items": [
+                "Pause before reacting. Strong emotion is a manipulation signal.",
+                "Identify the claim. What is the post or video actually asserting?",
+                "Look for visual or audio clues (face too smooth, weird eyes/blinking, robotic or mismatched voice, lips not matching audio, off lighting/shadows, blurred background, odd hands/fingers/teeth/text, suspicious context).",
+                "Check the source. Who runs the account or site?",
+                "Search for the same claim elsewhere. Two or more independent reputable sources is the credibility floor.",
+                "Use SIFT or lateral reading: Stop, Investigate the source, Find better coverage, Trace claims back to original.",
+                "Decide: Real / Probably Real / Misleading / Probably Fake / Need More Information.",
+                "Think before sharing. Sharing a deepfake amplifies it even if you debunk it."
+              ]
             },
             {
               "type": "checklist",
               "items": [
                 {
-                  "text": "I completed the digital forensics analysis and chromatography lab"
+                  "text": "I completed the digital forensics image analysis"
                 }
               ]
             }
@@ -851,6 +834,20 @@
             {
               "type": "step",
               "content": "Train the model. Test with new faces - some real, some AI. Watch the confidence score. Note: your model will likely fail on faces from races / ages / lighting it didn't see in training. THAT'S BIAS. Same problem big AI systems have."
+            },
+            {
+              "type": "heading",
+              "content": "How to Build a Gemini Gem"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Before you build your own Gem, watch this 3-minute tutorial. Gems are mini AI assistants you can build for any topic. The video walks you through every button so you can spend lab time on YOUR Gem, not on figuring out the interface."
+            },
+            {
+              "type": "video",
+              "title": "How to use Gemini Gems - Tutorial for Beginners",
+              "url": "https://www.youtube.com/embed/QqwNue_KL-4"
             },
             {
               "type": "heading",
@@ -1135,6 +1132,20 @@
               "type": "callout",
               "style": "case",
               "content": "Bleeding-edge: the Apple Watch Series 11 (2025) and Galaxy Watch 8 (2025) can now detect 14 heart conditions, including atrial fibrillation, sleep apnea, and even early-stage anemia from skin tone changes. The AI runs ON your wrist - no internet needed. But: the FDA has flagged 2,400 false-positive cases this year alone."
+            },
+            {
+              "type": "heading",
+              "content": "How to Build a Gemini Gem"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Before you build your own Gem, watch this 3-minute tutorial. Gems are mini AI assistants you can build for any topic. The video walks you through every button so you can spend lab time on YOUR Gem, not on figuring out the interface."
+            },
+            {
+              "type": "video",
+              "title": "How to use Gemini Gems - Tutorial for Beginners",
+              "url": "https://www.youtube.com/embed/QqwNue_KL-4"
             },
             {
               "type": "heading",
@@ -1555,6 +1566,20 @@
               "type": "callout",
               "style": "case",
               "content": "Bleeding-edge: as of 2025, the FDA has approved over 1,000 AI/ML-enabled medical devices - and 70% of them are radiology tools. Aidoc, Viz.ai, and Annalise.ai are catching strokes and brain bleeds 17 minutes faster than a human radiologist on average. But: 90% of these systems were trained on majority-white patient populations."
+            },
+            {
+              "type": "heading",
+              "content": "How to Build a Gemini Gem"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Before you build your own Gem, watch this 3-minute tutorial. Gems are mini AI assistants you can build for any topic. The video walks you through every button so you can spend lab time on YOUR Gem, not on figuring out the interface."
+            },
+            {
+              "type": "video",
+              "title": "How to use Gemini Gems - Tutorial for Beginners",
+              "url": "https://www.youtube.com/embed/QqwNue_KL-4"
             },
             {
               "type": "heading",
