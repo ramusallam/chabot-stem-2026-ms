@@ -1497,16 +1497,16 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Materials Needed: Printed X-rays, Printed CT scans, Reference images, Light boxes, Case scenario cards, Diagnostic checklists, Lab notebooks"
+              "content": "Materials Needed: Laptops or Chromebooks with Chrome (one per pair), case notebooks, pens or pencils. All X-rays for today's lab are built into the Radiology Detective app, no printed images required."
             },
             {
               "type": "text",
-              "content": "Before you touch the printed X-rays, warm up your eye with six digital cases. The Radiology Detective puts you in a real radiologist's chair: a patient briefing rolls in, an X-ray opens on screen, and you have to spot the abnormality, name the diagnosis, and pick the treatment. Six patients. Get them all right and you earn the Attending Radiologist badge."
+              "content": "Today you shadow a radiologist at UCSF Benioff Children's Hospital Oakland. Six new cases just rolled in from the ER and the doctor needs your eyes on every X-ray before she signs off. You will work all six cases inside the Radiology Detective app, applying the same systematic approach a real radiologist uses."
             },
             {
               "type": "callout",
               "style": "tip",
-              "content": "Interactive App: Launch Radiology Detective. Use the Launch button below to open the app inline. Drag the magnifier across each X-ray and tap on whatever shouldn't be there. Work all six cases in your notebook before moving on."
+              "content": "Interactive App: Launch the Radiology Detective. Use the Launch button below to open it inline. Drag the magnifier across each X-ray and tap on whatever shouldn't be there. The app walks you through six full patient cases (forearm fracture, swallowed coin, and four more) with prompts, decision trees, and doctor's notes after each one."
             },
             {
               "type": "app",
@@ -1515,37 +1515,40 @@
               "embed": true
             },
             {
-              "type": "text",
-              "content": "Now your eye is trained. Move to the printed X-rays at your station and use the same systematic approach: scan the bones, scan the soft tissue, scan the air spaces, then compare to a normal reference."
+              "type": "step",
+              "content": "Read the patient story first. Each case opens with a short briefing - patient age, complaint, and how they arrived in the ER. Treat this like a real consult: the story shapes what you should look for on the X-ray."
             },
             {
               "type": "step",
-              "content": "Examine first X-ray: Examine your first X-ray image. Use the systematic approach: check orientation, then scan bones, soft tissue, and air spaces."
+              "content": "Apply the radiologist's systematic approach to each X-ray: check the orientation first (which side is left, which is right), then scan the bones, then the soft tissue, then the air spaces (lungs, sinuses). Don't jump to the obvious abnormality - work the whole image so you don't miss a second finding."
             },
             {
               "type": "step",
-              "content": "Compare to normal: Compare the normal reference image to your patient's X-ray. Identify any differences."
+              "content": "Use the magnifier on every case. Drag it across the image and tap on whatever shouldn't be there. The app tells you immediately whether you found the right thing and why."
             },
             {
               "type": "step",
-              "content": "Analyze CT scan: Move to the CT scan station. Identify the organs visible in the cross-section."
+              "content": "Read the doctor's note after each case. Real radiologists keep mental field cards of common findings (forearm fractures top the pediatric ER list; swallowed coins orient face-on in the esophagus, edge-on in the windpipe). Capture each doctor's note in your case notebook."
             },
             {
               "type": "step",
-              "content": "Record observations: For each image, write your observations and your best diagnosis on the case card."
+              "content": "Work all six cases. Earn the Attending Radiologist badge by getting them all right. If you miss one, read the explanation, then circle back to that case and try again. Real residents do exactly this with case archives."
             },
             {
               "type": "step",
-              "content": "Team discussion: Discuss your findings with your team and agree on a final diagnosis."
+              "content": "Team discussion: pair up with another team. Walk each other through your hardest case (which one tricked you, what you almost picked, what gave it away in the end). Explaining a case out loud is how radiology residents learn it for life."
             },
             {
               "type": "checklist",
               "items": [
                 {
-                  "text": "I worked all 6 cases in Radiology Detective"
+                  "text": "I worked all 6 cases in the Radiology Detective"
                 },
                 {
-                  "text": "I completed the printed X-ray analysis at my station"
+                  "text": "I captured the doctor's note for each case in my notebook"
+                },
+                {
+                  "text": "I walked a teammate through my hardest case"
                 }
               ]
             }
