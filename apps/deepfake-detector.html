@@ -207,127 +207,6 @@
     },
   ];
 
-  function ImageCard({img, onComplete}) {
-    const [foundIds, setFoundIds] = useState([]);
-    const [wrongClicks, setWrongClicks] = useState(0);
-    const [feedback, setFeedback] = useState(null);
-    const [done, setDone] = useState(false);
-
-    const totalArtifacts = img.artifacts.length;
-    const allFound = foundIds.length === totalArtifacts;
-
-    const click = (kind, item) => {
-      if (done) return;
-      if (kind === "artifact") {
-        if (!foundIds.includes(item.id)) {
-          setFoundIds([...foundIds, item.id]);
-          setFeedback({type: "good", text: item.label + ". " + item.explain});
-        }
-      } else {
-        setWrongClicks(wrongClicks + 1);
-        setFeedback({type: "bad", text: item.why || "Nothing wrong here."});
-      }
-    };
-
-    const finish = () => {
-      setDone(true);
-      const score = foundIds.length - Math.floor(wrongClicks * 0.5);
-      onComplete({total: totalArtifacts, found: foundIds.length, wrong: wrongClicks, score: Math.max(0, score), isRealCase: img.isReal});
-    };
-
-    return (
-      <div className="slide-up">
-        <Card>
-          <SectionLabel>Image {img.id} of {IMAGES.length}</SectionLabel>
-          <div style={{fontSize:15,fontWeight:800,color:NAVY,marginBottom:4}}>{img.title}</div>
-          <p style={{fontSize:12,color:MED,marginBottom:12,fontStyle:"italic"}}>{img.caption}</p>
-
-          {/* Embedded photograph with clickable artifact zones */}
-          <div style={{position:"relative",width:"100%",maxWidth:500,margin:"0 auto",aspectRatio:"4/3",background:"#1a1a1a",borderRadius:10,overflow:"hidden",border:"2px solid "+NAVY}}>
-            {/* Real embedded photograph */}
-            <img src={img.src} alt={img.title} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"contain",background:"#1a1a1a"}}/>
-            {/* Artifact zones */}
-            {img.artifacts.map(a => (
-              <div key={a.id} className={"artifact-zone " + (foundIds.includes(a.id) ? "found" : "")}
-                onClick={() => click("artifact", a)}
-                style={{left:a.x+"%", top:a.y+"%", width:48, height:48, transform:"translate(-50%,-50%)"}}>
-              </div>
-            ))}
-            {/* Decoy zones */}
-            {img.decoys.map((d, i) => (
-              <div key={"d"+i} className="artifact-zone"
-                onClick={() => click("decoy", d)}
-                style={{left:d.x+"%", top:d.y+"%", width:48, height:48, transform:"translate(-50%,-50%)"}}>
-              </div>
-            ))}
-            {/* Found counter */}
-            <div style={{position:"absolute",top:8,right:10,background:"rgba(0,0,0,0.6)",color:"#0ABAB5",fontFamily:"Courier New, monospace",fontSize:13,fontWeight:700,padding:"4px 10px",borderRadius:6,textShadow:"0 0 6px rgba(10,186,181,0.6)"}}>
-              {img.isReal ? "REAL? CLICK 'CONFIRM REAL' BELOW" : `${foundIds.length}/${totalArtifacts} FOUND`}
-            </div>
-          </div>
-
-          {feedback && (
-            <div className="fade-in" style={{marginTop:12,padding:"10px 14px",background:feedback.type==="good"?"#E8F8F1":"#FFF5F5",borderLeft:`4px solid ${feedback.type==="good"?GREEN:RED}`,borderRadius:8,fontSize:13,color:DARK,lineHeight:1.5}}>
-              {feedback.text}
-            </div>
-          )}
-
-          <div style={{display:"flex",gap:8,marginTop:12,flexWrap:"wrap"}}>
-            {!img.isReal && (
-              <Btn primary onClick={finish}>{allFound ? "All Found - Continue →" : `Submit (${foundIds.length}/${totalArtifacts})`}</Btn>
-            )}
-            {img.isReal && (
-              <Btn primary onClick={() => { setFeedback({type:"good",text:"Correct! This was a real photo. Trusting your eye instead of over-triaging is half the skill."}); setTimeout(finish, 600); }}>Confirm Real Photo</Btn>
-            )}
-          </div>
-          <div style={{marginTop:10,fontSize:11,color:MED}}>Wrong clicks: {wrongClicks}</div>
-        </Card>
-      </div>
-    );
-  }
-
-  function SpotMode({onBack}) {
-    const [idx, setIdx] = useState(0);
-    const [results, setResults] = useState([]);
-    const [done, setDone] = useState(false);
-
-    const handleComplete = (r) => {
-      const next = [...results, r];
-      setResults(next);
-      if (idx + 1 >= IMAGES.length) {
-        setDone(true);
-      } else {
-        setTimeout(() => setIdx(idx + 1), 800);
-      }
-    };
-
-    if (done) {
-      const totalScore = results.reduce((s,r) => s + r.score, 0);
-      const totalFound = results.reduce((s,r) => s + r.found, 0);
-      const totalArtifacts = results.reduce((s,r) => s + r.total, 0);
-      const totalWrong = results.reduce((s,r) => s + r.wrong, 0);
-      return (<div className="fade-in">
-        <Card style={{textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:8}}>🎭</div>
-          <div style={{fontSize:32,fontWeight:800,color:NAVY,lineHeight:1}}>{totalFound} / {totalArtifacts}</div>
-          <div style={{fontSize:13,color:MED,margin:"8px 0"}}>Real artifacts found</div>
-          <div style={{fontSize:13,color:MED,marginBottom:14}}>Wrong clicks (false positives): {totalWrong}</div>
-          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
-            <strong>Field Pearl:</strong> {randomPearl()}
-          </div>
-          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-            <Btn primary onClick={() => { setIdx(0); setResults([]); setDone(false); }}>Try Again</Btn>
-            <Btn onClick={onBack}>Menu</Btn>
-          </div>
-        </Card>
-      </div>);
-    }
-
-    return (<div>
-      <ImageCard key={idx} img={IMAGES[idx]} onComplete={handleComplete}/>
-    </div>);
-  }
-
   // ===== Mode 2: Voice Analyzer =====
   const VOICE_SAMPLES = [
     {
@@ -455,121 +334,65 @@
     </div>);
   }
 
-  // ===== Mode 3: Source Verification Chain =====
-  const STAGES = [
-    {
-      stage: 1,
-      title: "Stage 1: AI Generation",
-      desc: "An AI image is generated by a free online tool. The metadata of who made it is buried in code.",
-      options: [
-        {text:"Reverse image search", correct:false, why:"Won't help yet — the image hasn't been uploaded anywhere yet, so there's nothing to search against."},
-        {text:"Inspect EXIF metadata", correct:true, why:"Yes — many AI tools embed a 'Generated by [tool]' tag in EXIF or the file's SynthID watermark. First-line defense."},
-        {text:"Run through Reality Defender", correct:true, why:"Reality Defender, Sensity, and Truepic are real tools that score images for AI-generation likelihood. Industry standard."},
-      ],
-    },
-    {
-      stage: 2,
-      title: "Stage 2: Posted on Social Media",
-      desc: "Someone uploads the AI image to TikTok or X. EXIF gets stripped automatically.",
-      options: [
-        {text:"Check EXIF metadata", correct:false, why:"EXIF is gone — social platforms strip it on upload. This trick no longer works at this stage."},
-        {text:"Reverse image search", correct:true, why:"Yes — Google Images and TinEye can find earlier copies of the same image, including the original AI source if it leaked."},
-        {text:"Look at uploader account history", correct:true, why:"Account credibility matters. New accounts, low followers, or spam-pattern posting are red flags."},
-      ],
-    },
-    {
-      stage: 3,
-      title: "Stage 3: Reposted with 'BREAKING' Headline",
-      desc: "The image now has a viral caption like 'BREAKING: [politician] caught doing [shocking thing]!'",
-      options: [
-        {text:"Check the original news source", correct:true, why:"Yes — if mainstream outlets aren't reporting it, it's likely fake. Real breaking news shows up in 3+ credible sources within an hour."},
-        {text:"Trust because lots of people are sharing", correct:false, why:"Virality is not credibility. Many fakes go viral specifically BECAUSE they're outrageous."},
-        {text:"Ask: 'Who benefits if I believe this?'", correct:true, why:"This is the strongest defense against ANY misinformation. Follow the incentive."},
-      ],
-    },
-    {
-      stage: 4,
-      title: "Stage 4: Mainstream News Picks It Up",
-      desc: "A real news outlet runs the story without verification. Now the fake is 'real news'.",
-      options: [
-        {text:"Wait 24 hours for retractions", correct:true, why:"Legitimate outlets retract within 24 hours when caught. The fact-check trail emerges fast."},
-        {text:"Assume it's true now that it's on the news", correct:false, why:"News outlets get duped too. They just have to retract publicly when caught — but the damage is done."},
-        {text:"Check fact-checking sites (Snopes, AP Fact Check)", correct:true, why:"Yes — fact-checkers move fast on viral content. Within hours of a story breaking, there's usually a verdict."},
-      ],
-    },
-  ];
+  // ===== Mode 3: Teachable Machine Image Bank =====
+  // Click-to-enlarge thumbnails so students can hold a webcam to the screen
+  // and capture each image into a Teachable Machine class (Real Person vs AI Generated).
+  function TMBankMode({onBack}) {
+    const [enlarged, setEnlarged] = useState(null);
+    const aiFaces = IMAGES.filter(i => !i.isReal);
+    const realFaces = IMAGES.filter(i => i.isReal);
 
-  function ChainMode({onBack}) {
-    const [stageIdx, setStageIdx] = useState(0);
-    const [picks, setPicks] = useState({});
-
-    const togglePick = (optIdx) => {
-      const key = stageIdx + "-" + optIdx;
-      setPicks({...picks, [key]: !picks[key]});
-    };
-
-    const stage = STAGES[stageIdx];
-    const stageDone = Object.keys(picks).filter(k => k.startsWith(stageIdx + "-") && picks[k]).length > 0;
-
-    const nextStage = () => {
-      if (stageIdx + 1 < STAGES.length) setStageIdx(stageIdx + 1);
-      else setStageIdx(STAGES.length);
-    };
-
-    if (stageIdx >= STAGES.length) {
-      let correct = 0, total = 0;
-      STAGES.forEach((s, si) => {
-        s.options.forEach((o, oi) => {
-          total++;
-          const picked = picks[si + "-" + oi];
-          if (o.correct === !!picked) correct++;
-        });
-      });
+    if (enlarged) {
       return (<div className="fade-in">
-        <Card style={{textAlign:"center"}}>
-          <div style={{fontSize:48,marginBottom:8}}>🔍</div>
-          <div style={{fontSize:32,fontWeight:800,color:NAVY}}>{correct} / {total}</div>
-          <div style={{fontSize:13,color:MED,margin:"8px 0 14px"}}>Correct verification picks</div>
-          <div style={{padding:"12px 14px",background:"#FFF9E6",borderLeft:`4px solid ${GOLD}`,borderRadius:10,marginBottom:14,fontSize:13,fontStyle:"italic",color:DARK,lineHeight:1.6,textAlign:"left"}}>
-            <strong>Field Pearl:</strong> {randomPearl()}
+        <Card>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
+            <SectionLabel>{enlarged.isReal ? "Real Photo" : "AI Generated"}</SectionLabel>
+            <Btn onClick={() => setEnlarged(null)}>← Back to grid</Btn>
           </div>
-          <div style={{display:"flex",gap:10,justifyContent:"center"}}>
-            <Btn primary onClick={() => {setStageIdx(0); setPicks({});}}>Try Again</Btn>
-            <Btn onClick={onBack}>Menu</Btn>
+          <div style={{textAlign:"center",background:"#1a1a1a",borderRadius:10,padding:10,marginBottom:10}}>
+            <img src={enlarged.src} alt={enlarged.title} style={{maxHeight:400,width:"auto",maxWidth:"100%",borderRadius:8}}/>
           </div>
+          <p style={{fontSize:13,color:DARK,lineHeight:1.6,marginBottom:6}}><strong>{enlarged.title}</strong></p>
+          <p style={{fontSize:12,color:MED,lineHeight:1.6}}>Hold your laptop's webcam up to this image and click "Hold to Record" in Teachable Machine on the matching class. Right-click the image to save a copy.</p>
         </Card>
       </div>);
     }
 
-    return (<div>
-      <Card className="slide-up">
-        <SectionLabel>{stage.title}</SectionLabel>
-        <p style={{fontSize:14,color:DARK,lineHeight:1.6,marginBottom:14}}>{stage.desc}</p>
-        <div style={{fontSize:12,color:MED,fontWeight:600,marginBottom:8}}>Pick ALL verification steps that work at this stage:</div>
-        <div style={{display:"flex",flexDirection:"column",gap:8}}>
-          {stage.options.map((o, oi) => {
-            const key = stageIdx + "-" + oi;
-            const isPicked = !!picks[key];
-            return (<div key={oi} onClick={() => togglePick(oi)} style={{padding:"12px 14px",border:`2px solid ${isPicked?TEAL:"#E0E8EE"}`,borderRadius:10,cursor:"pointer",background:isPicked?"#F0FBF8":WHITE,transition:"all .2s"}}>
-              <div style={{fontSize:13,fontWeight:700,color:isPicked?TEAL_DARK:DARK,marginBottom:isPicked?6:0}}>
-                <input type="checkbox" checked={isPicked} readOnly style={{marginRight:8,accentColor:TEAL}}/>{o.text}
-              </div>
-              {isPicked && (<div className="fade-in" style={{fontSize:12,color:o.correct?GREEN:RED,fontWeight:600,marginLeft:24}}>
-                {o.correct ? "✓ " : "✗ "}{o.why}
-              </div>)}
-            </div>);
-          })}
-        </div>
-        <div style={{textAlign:"right",marginTop:14}}>
-          <Btn primary onClick={nextStage}>{stageIdx + 1 < STAGES.length ? "Next Stage →" : "View Results"}</Btn>
+    const Grid = ({faces, title, color}) => (
+      <Card>
+        <SectionLabel>{title}</SectionLabel>
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill, minmax(110px, 1fr))",gap:8}}>
+          {faces.map((f, i) => (
+            <div key={f.id} onClick={() => setEnlarged(f)} style={{cursor:"pointer",borderRadius:8,overflow:"hidden",border:`2px solid ${color}`,background:"#1a1a1a",aspectRatio:"1/1",position:"relative",transition:"transform .15s"}} onMouseOver={e=>{e.currentTarget.style.transform="scale(1.04)"}} onMouseOut={e=>{e.currentTarget.style.transform="none"}}>
+              <img src={f.src} alt={f.title} style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover"}}/>
+              <div style={{position:"absolute",bottom:0,left:0,right:0,background:"rgba(0,0,0,0.65)",color:WHITE,fontSize:10,fontWeight:700,padding:"3px 6px",textAlign:"center"}}>{i+1}</div>
+            </div>
+          ))}
         </div>
       </Card>
+    );
+
+    return (<div className="fade-in">
+      <Card>
+        <div style={{fontSize:15,fontWeight:800,color:NAVY,marginBottom:6}}>Train a Teachable Machine deepfake spotter</div>
+        <p style={{fontSize:13,color:DARK,lineHeight:1.6,marginBottom:8}}>In Teachable Machine, create an Image Project with 2 classes: <strong>Real Person</strong> and <strong>AI Generated</strong>. Click each thumbnail below to enlarge it, hold your laptop's webcam up to the screen, then click "Hold to Record" for 5 to 10 seconds on the matching class.</p>
+        <p style={{fontSize:12,color:MED,lineHeight:1.6,margin:0}}><strong>Tip:</strong> Train on as many faces as you can, then test your spotter on a face you did NOT use during training. The more variety you train on, the better your spotter.</p>
+      </Card>
+      <Grid faces={aiFaces} title={`AI-Generated Faces (${aiFaces.length})`} color={GOLD}/>
+      <Grid faces={realFaces} title={`Real Photos (${realFaces.length})`} color={TEAL}/>
+      <div style={{padding:"12px 14px",background:"#FFF9E6",border:`2px solid ${GOLD}`,borderRadius:R,fontSize:12,color:DARK,lineHeight:1.6}}>
+        <strong>Want more variety?</strong> Generate fresh AI faces at thispersondoesnotexist.com (each refresh is a new StyleGAN2 face) and pull more real-face photos from pexels.com (Pexels License, free for any use). Train your Teachable Machine on a bigger set and your spotter gets sharper.
+      </div>
+      <div style={{textAlign:"center",marginTop:12}}>
+        <Btn onClick={onBack}>Menu</Btn>
+      </div>
     </div>);
   }
 
+
   // ===== Mode 4: Detect Fakes Practice =====
   // Northwestern Kellogg Detect Fakes methodology: per image -> Real or AI? -> Confidence Low/Med/High -> Evidence checklist -> Reveal -> Summary
-  // Reuses IMAGES[] from Spot mode. The 8th image (isReal=true) is the trap real photo.
+  // Uses IMAGES[]. The 8th image (isReal=true) is the trap real photo.
 
   const EVIDENCE_OPTIONS = [
     {id:"face",  label:"Face looks too smooth"},
@@ -1205,10 +1028,9 @@
           <div style={{display:"grid",gap:12,marginBottom:20}}>
             {[
               {key:"detect",icon:"🧪",title:"Detect Fakes Practice",desc:"8 images, Northwestern Kellogg-style methodology. Real or AI? How confident? What evidence? Track your accuracy and confidence calibration. Start here.",color:NAVY},
-              {key:"headline",icon:"📰",title:"Headline Lab",desc:"5 headlines + 3 articles + 3 social posts. Practice SIFT and lateral reading on real misinformation patterns. Apply your Gem here.",color:"#7A2D4E"},
-              {key:"spot",icon:"🎭",title:"Spot the Tells",desc:"8 AI images with hidden artifacts. Click each tell. The 8th is a real photo - try not to over-triage.",color:TEAL},
               {key:"voice",icon:"🔊",title:"Voice Analyzer",desc:"4 voice clips with annotated waveforms. Real human or AI clone? You decide.",color:GOLD},
-              {key:"chain",icon:"🔍",title:"Source Verification Chain",desc:"How a fake spreads through 4 stages. Pick the right verification step at each stage.",color:"#7A2D4E"},
+              {key:"tmbank",icon:"🤖",title:"Teachable Machine Image Bank",desc:"AI faces and real faces ready to train a deepfake spotter in Teachable Machine. Click each thumbnail to enlarge for webcam capture.",color:TEAL},
+              {key:"headline",icon:"📰",title:"Headline Lab",desc:"5 headlines + 3 articles + 3 social posts. Practice SIFT and lateral reading on real misinformation patterns. Apply your Gem here.",color:"#7A2D4E"},
               {key:"quiz",icon:"🎯",title:"Quiz",desc:"8 questions on deepfake history, hand artifacts, EXIF, and Bay Area Trust & Safety careers.",color:RED},
             ].map(m => (<div key={m.key} onClick={() => setScreen(m.key)} style={{background:WHITE,borderRadius:R,padding:"18px 20px",boxShadow:SHADOW,border:"2px solid #E0E8EE",cursor:"pointer",transition:"all .25s",display:"flex",alignItems:"center",gap:16}} onMouseOver={e=>{e.currentTarget.style.borderColor=m.color;e.currentTarget.style.transform="translateY(-2px)"}} onMouseOut={e=>{e.currentTarget.style.borderColor="#E0E8EE";e.currentTarget.style.transform="none"}}>
               <div style={{width:52,height:52,borderRadius:14,background:`${m.color}12`,border:`2px solid ${m.color}25`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{m.icon}</div>
@@ -1228,15 +1050,14 @@
     }
 
     return (<div style={{minHeight:"100vh",display:"flex",flexDirection:"column"}}>
-      <AppHeader subtitle={screen==="spot"?"Spot the Tells":screen==="detect"?"Detect Fakes Practice":screen==="voice"?"Voice Analyzer":screen==="chain"?"Verification Chain":screen==="headline"?"Headline Lab":"Quiz"}/>
+      <AppHeader subtitle={screen==="detect"?"Detect Fakes Practice":screen==="voice"?"Voice Analyzer":screen==="tmbank"?"Teachable Machine Image Bank":screen==="headline"?"Headline Lab":"Quiz"}/>
       <div style={{maxWidth:700,margin:"0 auto",padding:"16px 16px 24px",flex:1,width:"100%"}}>
         <div style={{marginBottom:14}}>
           <button onClick={() => setScreen("welcome")} style={{background:"none",border:`2px solid ${TEAL}`,color:TEAL,borderRadius:10,padding:"8px 16px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>← Menu</button>
         </div>
-        {screen === "spot" && <SpotMode onBack={() => setScreen("welcome")}/>}
         {screen === "detect" && <DetectFakesMode onBack={() => setScreen("welcome")}/>}
         {screen === "voice" && <VoiceMode onBack={() => setScreen("welcome")}/>}
-        {screen === "chain" && <ChainMode onBack={() => setScreen("welcome")}/>}
+        {screen === "tmbank" && <TMBankMode onBack={() => setScreen("welcome")}/>}
         {screen === "headline" && <HeadlineMode onBack={() => setScreen("welcome")}/>}
         {screen === "quiz" && <QuizMode onBack={() => setScreen("welcome")}/>}
       </div>

@@ -729,7 +729,7 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Materials Needed: Laptops or Chromebooks with Chrome, Digital Truth Checklist (in the app below), Lab notebooks, Pens or pencils."
+              "content": "Materials: Laptops or Chromebooks, Woven notebooks, pens. Everything else is in the app."
             },
             {
               "type": "heading",
@@ -738,7 +738,7 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Before you analyze any image, expand the checklist below and read all 8 items. These are the questions a real digital forensics analyst asks themselves about every piece of media. You will use them as your evidence guide in the practice activity that follows."
+              "content": "Before you practice, expand the checklist below and read all 8 items. These are the questions a real digital forensics analyst asks themselves about every piece of media. You will use them as your guide for the rest of Part II."
             },
             {
               "type": "collapsible-checklist",
@@ -756,16 +756,12 @@
             },
             {
               "type": "heading",
-              "content": "Step 2: Practice on 8 Images"
+              "content": "Step 2: Test AI Images"
             },
             {
               "type": "callout",
               "style": "info",
-              "content": "Now apply the checklist. The Deepfake Detector app below has 8 real images (4 actual photographs, 4 AI-generated). Go through each one using the checklist as your guide."
-            },
-            {
-              "type": "step",
-              "content": "Image analysis: launch the Deepfake Detector below and tap Detect Fakes Practice. For each of 8 images, choose Real / AI-generated / Not sure yet, rate your confidence Low / Medium / High, and pick which evidence you noticed. Submit to see what was actually real, what was AI, and how your accuracy compared to your confidence. The methodology is from Northwestern Kellogg's published Detect Fakes research."
+              "content": "Open the Deepfake Detector below and tap Detect Fakes Practice. Work all 8 images. After each one, the app reveals what was real, what was AI, and tracks your accuracy plus your confidence calibration."
             },
             {
               "type": "app",
@@ -774,11 +770,40 @@
               "embed": true
             },
             {
+              "type": "heading",
+              "content": "Step 3: Listen to Voice Clips"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "In the same app, tap Voice Analyzer. 4 voice clips with annotated waveforms. Real human or AI clone? Listen and decide. The app reveals the AI tells (flat-line volume, no breathing pauses, robotic 's' sounds)."
+            },
+            {
+              "type": "heading",
+              "content": "Step 4: Train Your Own Deepfake Spotter"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Open Teachable Machine (teachablemachine.withgoogle.com). Create an Image Project with 2 classes: Real Person and AI Generated. In the same Deepfake Detector below, tap Teachable Machine Image Bank. Click each thumbnail to enlarge it. Hold your laptop's webcam to the screen and click 'Hold to Record' on the matching class. Train, then test on a thumbnail you didn't use during training. Did your spotter get it right?"
+            },
+            {
+              "type": "heading",
+              "content": "Step 5: Triage Headlines and Social Posts"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "In the Deepfake Detector, tap Headline Lab. Three tabs: Lateral Reading (3 articles), SIFT Headlines (5 headlines), Social Posts (3 platform-styled posts). Pick Real / Misleading / Fake / Need More Info, then click Reveal to see the verdict. Use the Digital Truth Checklist from Step 1 as your guide."
+            },
+            {
               "type": "checklist",
               "items": [
-                {
-                  "text": "I completed the digital forensics image analysis"
-                }
+                {"text": "I studied the Digital Truth Checklist"},
+                {"text": "I worked all 8 Detect Fakes Practice images"},
+                {"text": "I judged 4 voice clips"},
+                {"text": "I trained and tested a Teachable Machine spotter"},
+                {"text": "I worked the Headline Lab"}
               ]
             }
           ]
@@ -797,7 +822,16 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Bleeding-edge: Sora 2 (OpenAI's video model, 2025) and Veo 3 (Google's, 2026) can now generate 60-second videos that fool 80% of viewers in studies. The 2026 election cycle saw 4,200 verified deepfake videos in just the first 3 months. Detection is no longer optional - it's a survival skill."
+              "content": "Bleeding-edge: Sora 2 (OpenAI's video model, 2025) and Veo 3 (Google's, 2026) can now generate 60-second videos that fool 80% of viewers in studies. The 2026 election cycle saw 4,200 verified deepfake videos in just the first 3 months. Detection is no longer optional, it's a survival skill."
+            },
+            {
+              "type": "heading",
+              "content": "Build a Misinformation Triage Gem"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Now turn the Digital Truth Checklist into your own AI assistant. You will build a Gemini Gem that runs the checklist for you, then test it against the same social posts you triaged in Part II."
             },
             {
               "type": "heading",
@@ -814,57 +848,18 @@
               "url": "https://www.youtube.com/embed/QqwNue_KL-4"
             },
             {
-              "type": "heading",
-              "content": "Build a Misinformation Triage Gem"
+              "type": "step",
+              "content": "Open Gemini, sign in, go to Gems, and build a new Gem called 'Misinformation Triage.' Paste these instructions: 'When the user describes a viral image, video, or post, ask 5 questions: (1) Where did you see it? (2) Who posted it? (3) Does it make you feel angry, scared, or excited? (4) Can you find it in 2 mainstream sources? (5) Is the URL correct? Then give a Real / Probably Fake / Need More Info verdict.'"
             },
             {
               "type": "step",
-              "content": "Back in Gemini, build a new Gem called 'Misinformation Triage.' Instructions: 'When the user describes a viral image, video, or post, ask 5 questions: (1) Where did you see it? (2) Who posted it? (3) Does it make you feel angry/scared/excited? (4) Can you find it in 2 mainstream sources? (5) Is the URL correct? Then give a Real / Probably Fake / Need More Info verdict.'"
-            },
-            {
-              "type": "step",
-              "content": "Test your Gem on 3 real-world social media posts. Open the Deepfake Detector below and tap Headline Lab > Social Posts. For each post, hit Copy Post Text and paste it into your Misinformation Triage Gem to see what the Gem says. Then click Reveal Verdict in the app to see what the actual platform verification or fact-check would conclude. Compare your Gem's answer to the verdict. Where does it nail it? Where does it miss?"
+              "content": "Test your Gem on the 3 social posts in the Headline Lab. Open the Deepfake Detector below, tap Headline Lab, switch to Social Posts. Copy each post's text into your Gem. Compare your Gem's verdict to what Reveal shows. Where does the Gem nail it? Where does it miss?"
             },
             {
               "type": "app",
-              "title": "Deepfake Detector - Headline Lab",
+              "title": "Deepfake Detector",
               "url": "apps/deepfake-detector.html",
               "embed": true
-            },
-            {
-              "type": "callout",
-              "style": "tip",
-              "content": "What you built: a personal deepfake / disinformation defense system. Most adults DON'T have one. By 2030, every person on the internet will need this. You're already ahead."
-            },
-            {
-              "type": "callout",
-              "style": "tip",
-              "content": "Media Literacy Field Card: this is the BIG ONE. Free tools to bookmark today: (1) Snopes.com - quick myth-busting. (2) AP Fact Check (apnews.com/hub/ap-fact-check) - news-specific. (3) Google Fact Check Explorer (toolbox.google.com/factcheck) - search any claim. (4) Reverse image search (right-click any image -> Search Image with Google). (5) Common Sense Media's News Literacy quiz (commonsensemedia.org)."
-            },
-            {
-              "type": "heading",
-              "content": "Media Literacy: SIFT Through 5 Real Headlines"
-            },
-            {
-              "type": "callout",
-              "style": "info",
-              "content": "Beyond images and videos, FAKE NEWS IN TEXT FORM is responsible for more harm than deepfakes. Stanford's SIFT method is the gold standard for catching it. Today you'll use it on 5 real headlines pulled from social media this week."
-            },
-            {
-              "type": "step",
-              "content": "Learn SIFT (4 steps, takes 30 seconds per article): (1) STOP - notice your reaction. Strong emotion = manipulation tool. (2) INVESTIGATE the source - who runs this site? Open Wikipedia in another tab and look up the publication. (3) FIND better coverage - is the same claim reported by 3+ established outlets? (4) TRACE the claim - if the article cites a study, find the actual study. If it doesn't exist, the claim is fake."
-            },
-            {
-              "type": "step",
-              "content": "Apply SIFT to 5 headlines. Open the Deepfake Detector below and tap Headline Lab > SIFT Headlines. For each, rate Real / Misleading / Fake / Need More Info, then click Reveal Verdict to see the actual call plus which SIFT step (Stop, Investigate, Find, Trace) would catch it. Note the surprises in your Woven notebook."
-            },
-            {
-              "type": "step",
-              "content": "Build your free fact-check bookmarks bar. Add: Snopes.com, AP Fact Check, Google Fact Check Explorer, AllSides Media Bias, MediaWise. Take a screenshot of your new bookmarks bar. From now on, you have the same fact-check toolkit a professional uses."
-            },
-            {
-              "type": "step",
-              "content": "Common Sense Media challenge: open commonsensemedia.org/news-and-media-literacy and complete one of their grade-7-8 quizzes. Print or screenshot your score. Compare across the room - who scored highest? What did they notice that you missed?"
             },
             {
               "type": "heading",
@@ -876,48 +871,26 @@
               "content": "Ethics check-in (Woven notebook): when could AI-generated media be useful or creative? When could it become harmful or unethical? What responsibility do people have when they create or share AI-generated media? Write 2-3 sentences for each, focused on real situations you have actually seen online."
             },
             {
-              "type": "heading",
-              "content": "Launch the Deepfake Detector"
+              "type": "callout",
+              "style": "tip",
+              "content": "What you built: a personal deepfake and disinformation defense system. Most adults don't have one. By 2030, every person on the internet will need this. You're already ahead. Trust and Safety analyst is the entry-level Bay Area career that turns this skill into a paycheck ($70k to $130k)."
             },
             {
               "type": "callout",
               "style": "info",
-              "content": "You watched a real disinformation case study. Now train your eye on 8 AI-generated images, 4 voice clips, and a 4-stage source verification chain. This is what Bay Area Trust & Safety analysts do every morning."
-            },
-            {
-              "type": "app",
-              "title": "Deepfake Detector",
-              "url": "apps/deepfake-detector.html",
-              "embed": true
-            },
-            {
-              "type": "step",
-              "content": "Tap 'Spot the Tells.' Click suspicious elements on each AI image (weird hands, mismatched earrings, garbled text). Each correct click reveals the tell + explanation. The 8th image is a TRAP - it's a real photo, so don't click anything. Tests over-triage."
-            },
-            {
-              "type": "step",
-              "content": "Switch to 'Voice Analyzer.' 4 voice transcripts with annotated waveforms. Look for AI tells: unnaturally consistent volume, no breathing pauses, robotic 's' sounds. Pick 'Real Human' or 'AI Generated.'"
-            },
-            {
-              "type": "step",
-              "content": "Finish with 'Source Verification Chain.' Watch a fake travel through 4 stages (AI generation -> social post -> viral repost -> mainstream news). At each stage, pick the verification step that would catch it. Then take the quiz."
-            },
-            {
-              "type": "callout",
-              "style": "tip",
-              "content": "Hands are the #1 deepfake tell as of 2024. Count fingers. Look for fused fingers, missing nails, weird thumbs. AI image generators still struggle with hand geometry."
-            },
-            {
-              "type": "callout",
-              "style": "tip",
               "content": "Today's deepfake content is built from three professional sources that you can revisit anytime: PBS NewsHour / MediaWise (mediawise.org) for civic and misinformation literacy, Northwestern / MIT Detect Fakes (detectfakes.kellogg.northwestern.edu) for the hands-on detection structure, and AI for Education's 'Uncovering Deepfakes' classroom guide for the ethics framework. All three are free to access."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Media Literacy Field Card: free tools to bookmark today. (1) Snopes.com for quick myth-busting. (2) AP Fact Check (apnews.com/hub/ap-fact-check) for news-specific checks. (3) Google Fact Check Explorer (toolbox.google.com/factcheck) to search any claim. (4) Reverse image search (right-click any image, Search Image with Google). (5) Common Sense Media's News Literacy quiz (commonsensemedia.org)."
             },
             {
               "type": "checklist",
               "items": [
-                {
-                  "text": "I read the case study and built my Digital Truth Toolkit"
-                }
+                {"text": "I built my Misinformation Triage Gem"},
+                {"text": "I tested it against the Headline Lab social posts"},
+                {"text": "I wrote my Ethics Reflection in my Woven notebook"}
               ]
             }
           ]
