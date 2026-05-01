@@ -625,7 +625,7 @@
       const correctConfs = results.filter(r => r.correct).map(r => CONF_RANK[r.conf]);
       const wrongConfs   = results.filter(r => !r.correct).map(r => CONF_RANK[r.conf]);
       const avg = (arr) => arr.length ? (arr.reduce((s,n)=>s+n,0)/arr.length) : 0;
-      const labelFromAvg = (a) => a >= 2.34 ? "High" : a >= 1.67 ? "Medium" : a > 0 ? "Low" : "—";
+      const labelFromAvg = (a) => a >= 2.34 ? "High" : a >= 1.67 ? "Medium" : a > 0 ? "Low" : "-";
       const avgCorrect = labelFromAvg(avg(correctConfs));
       const avgWrong   = labelFromAvg(avg(wrongConfs));
       const dangerous  = results.filter(r => !r.correct && r.conf === "High").length;
