@@ -35,7 +35,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A set of unidentified fingerprints was recovered from a crime scene. Your mission: learn the three major fingerprint pattern types - Loop, Whorl, and Arch - then use your new skills to classify prints and identify a suspect."
+              "content": "Today's Case Briefing: You step into the role of a fingerprint examiner trainee. Your mission: learn the three major fingerprint pattern types (Loop, Whorl, Arch) and train a real machine learning model in Teachable Machine to spot them. By Day 8 you'll use these skills on a real multi-evidence case."
             },
             {
               "type": "video",
@@ -250,7 +250,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: Investigators found blood drops at a scene, but they need to know the angle of impact to determine what happened. Your mission: use the relationship between drop shape and impact angle to reconstruct the event."
+              "content": "Today's Case Briefing: You train as a bloodstain pattern analyst. Your mission: learn how the SHAPE of a blood drop tells you the ANGLE it hit a surface, then prove it by dropping simulated blood at known angles and measuring. By Day 8 you'll use this skill to reconstruct an event in your final case."
             },
             {
               "type": "video",
@@ -474,7 +474,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: Fibers and hair samples were recovered from a crime scene. Your mission: use microscopy to compare these unknown samples against known reference materials and determine if they match."
+              "content": "Today's Case Briefing: You train as a trace evidence examiner. Your mission: learn to compare hair and fiber samples under a microscope, the same way real lab examiners do every day. By Day 8 you'll use trace evidence as one piece of a multi-evidence case."
             },
             {
               "type": "video",
@@ -698,7 +698,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A key piece of evidence is a photograph, but the defense claims it was manipulated with AI. Your mission: use digital forensics techniques to determine whether the image is authentic or fake."
+              "content": "Today's Case Briefing: You train as a digital forensics analyst. Your mission: learn to spot AI-generated images and AI-cloned voices, build the verification habits real Trust and Safety teams use, and train a Teachable Machine deepfake spotter of your own. By Day 8 you'll know whether a 'breaking' video deserves to be trusted."
             },
             {
               "type": "video",
@@ -979,7 +979,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A patient arrives with an abnormal heart rhythm. Your mission: learn to measure vital signs, interpret EKG waveforms, and determine what rhythm the patient is in."
+              "content": "Today's Case Briefing: You train as a clinical technician. Your mission: learn to take real vital signs (heart rate, blood pressure, oxygen saturation) and read EKG basics, then audit how a phone's heart-rate AI behaves. By Day 8 you'll use this medical literacy in your final integrated case."
             },
             {
               "type": "video",
@@ -1211,7 +1211,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A patient needs a wound closed after a procedure. Your mission: learn the simple interrupted suture technique and practice until your stitches are clean, even, and secure."
+              "content": "Today's Case Briefing: You train as a surgical assistant. Your mission: learn to suture using the simple interrupted technique, the foundational skill every member of an OR team uses. By Day 8 you'll use this hands-on skill in your final case work."
             },
             {
               "type": "video",
@@ -1426,7 +1426,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A patient presents with symptoms but the cause is unclear. Your mission: analyze medical images, identify abnormalities, and build a differential diagnosis."
+              "content": "Today's Case Briefing: You shadow a radiologist at UCSF Benioff Children's Hospital Oakland. Your mission: read 6 real pediatric X-ray cases the way a radiologist does and learn to spot bias in medical AI. By Day 8 these diagnostic skills pull into your final case."
             },
             {
               "type": "video",
@@ -1643,7 +1643,7 @@
             {
               "type": "callout",
               "style": "case",
-              "content": "Today's Case Briefing:: A complex case requires analysis from every discipline you have studied. Your team will rotate through evidence stations, collect findings from each, and present a final verdict supported by evidence."
+              "content": "Today's Case Briefing: This is it. The full integrated case. Your mission: apply every skill from Days 1-7 (fingerprints, spatter, trace evidence, digital truth, vitals, surgery, diagnostics) to a complete case AND build a presentation that makes your evidence-based verdict clear. Day 8 IS the case all your training built toward."
             },
             {
               "type": "video",
