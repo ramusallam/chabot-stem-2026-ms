@@ -117,7 +117,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -358,7 +358,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -577,7 +577,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -799,11 +799,21 @@
             {
               "type": "checklist",
               "items": [
-                {"text": "I studied the Digital Truth Checklist"},
-                {"text": "I worked all 8 Detect Fakes Practice images"},
-                {"text": "I judged 4 voice clips"},
-                {"text": "I trained and tested a Teachable Machine spotter"},
-                {"text": "I worked the Headline Lab"}
+                {
+                  "text": "I studied the Digital Truth Checklist"
+                },
+                {
+                  "text": "I worked all 8 Detect Fakes Practice images"
+                },
+                {
+                  "text": "I judged 4 voice clips"
+                },
+                {
+                  "text": "I trained and tested a Teachable Machine spotter"
+                },
+                {
+                  "text": "I worked the Headline Lab"
+                }
               ]
             }
           ]
@@ -817,7 +827,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -888,9 +898,15 @@
             {
               "type": "checklist",
               "items": [
-                {"text": "I built my Misinformation Triage Gem"},
-                {"text": "I tested it against the Headline Lab social posts"},
-                {"text": "I wrote my Ethics Reflection in my Woven notebook"}
+                {
+                  "text": "I built my Misinformation Triage Gem"
+                },
+                {
+                  "text": "I tested it against the Headline Lab social posts"
+                },
+                {
+                  "text": "I wrote my Ethics Reflection in my Woven notebook"
+                }
               ]
             }
           ]
@@ -1069,7 +1085,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -1298,7 +1314,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -1506,7 +1522,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
@@ -1702,7 +1718,7 @@
             {
               "type": "callout",
               "style": "notebook",
-              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Write down what each AI tool said, what you trusted, and what you flagged as wrong. Your notebook is the audit log a forensic AI auditor would submit."
+              "content": "Woven notebook: this is Part III, AI & Digital Literacy. Capture what each AI tool said, what you decided to trust, and what you flagged as wrong. Your notebook becomes the evidence trail for how you evaluated AI today, the same way a professional double-checks every AI output before they rely on it."
             },
             {
               "type": "callout",
