@@ -1754,13 +1754,16 @@
     intro.style.background = "transparent";
     intro.style.border = "none";
     intro.style.padding = "0 0 6px 0";
-    intro.innerHTML = "The cartoony X-ray you just read showed the finding clearly. Below is what the same kind of finding looks like in a real X-ray a radiologist would actually use. The red circle marks the diagnostic feature.";
+    intro.innerHTML = "The cartoony X-ray you just read showed the finding clearly. Want to see what a real X-ray of the same kind of finding looks like? Tap the box below.";
     panel.appendChild(intro);
 
-    const toggle = el("button","real-xray-toggle", "Hide the real X-ray");
-    let shown = true;
+    const toggle = el("button","real-xray-toggle", "🩻 Tap to reveal the real X-ray");
+    toggle.style.cssText = "display:block;width:100%;padding:18px 20px;margin:8px 0 4px;background:#fff8f0;border:3px dashed #d4a843;border-radius:12px;color:#7a5f1a;font-size:15px;font-weight:700;cursor:pointer;text-align:center;font-family:inherit;letter-spacing:0.3px;transition:all 0.2s;";
+    toggle.addEventListener("mouseenter", () => { toggle.style.background = "#fef0d9"; toggle.style.borderColor = "#b8902f"; });
+    toggle.addEventListener("mouseleave", () => { toggle.style.background = "#fff8f0"; toggle.style.borderColor = "#d4a843"; });
+    let shown = false;
     const body = el("div","real-xray-body");
-    body.style.display = "block";
+    body.style.display = "none";
 
     const wrap = el("div","real-xray-image-wrap");
     const img = document.createElement("img");
@@ -1788,7 +1791,7 @@
     toggle.addEventListener("click", () => {
       shown = !shown;
       body.style.display = shown ? "block" : "none";
-      toggle.textContent = shown ? "Hide the real X-ray" : "Show me what this looks like in real life";
+      toggle.textContent = shown ? "🩻 Hide the real X-ray" : "🩻 Tap to reveal the real X-ray";
     });
     panel.appendChild(toggle);
     panel.appendChild(body);
