@@ -334,12 +334,11 @@
             "{sample.label.replace(/^Voice clip [A-D]: /,'')}"
           </div>
         </div>
-        <audio ref={audioRef} src={sample.audioSrc} onEnded={() => setVoiceState('idle')} preload="auto"/>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:12,gap:10}}>
-          <Btn primary onClick={playClip} style={{minWidth:160}}>{voiceState==='playing' ? '⏸ Pause' : '▶ Play voice clip'}</Btn>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
+          <audio ref={audioRef} src={sample.audioSrc} onEnded={() => setVoiceState('idle')} onError={(e) => { console.error('Audio element error', e.target.error); setVoiceState('error'); }} controls preload="auto" style={{width:"100%",maxWidth:420}}/>
         </div>
-        {voiceState==='error' && <div style={{fontSize:12,color:RED,marginBottom:8,textAlign:"center"}}>Audio failed to play. Make sure your laptop volume is on. Try clicking the Launch button to open this app in its own tab if you're embedded in a workshop page.</div>}
-        <div style={{fontSize:11,color:MED,marginBottom:10,fontStyle:"italic",textAlign:"center"}}>Real audio clip pre-recorded with macOS text-to-speech voices. Each clip uses a different voice profile so cadence, pitch, and naturalness vary. Listen carefully.</div>
+        {voiceState==='error' && <div style={{fontSize:12,color:RED,marginBottom:8,textAlign:"center"}}>Audio file failed to load. Open the browser console (Cmd+Option+J) for details, or click Launch above to open this app in its own tab.</div>}
+        <div style={{fontSize:11,color:MED,marginBottom:10,fontStyle:"italic",textAlign:"center"}}>Real audio clip pre-recorded with macOS text-to-speech. Tap the play button on the audio bar above. Each clip uses a different voice profile so cadence, pitch, and naturalness vary.</div>
         <div style={{fontSize:12,color:MED,marginBottom:10,fontStyle:"italic"}}>After listening, pick one:</div>
         {!feedback && (
           <div style={{display:"flex",gap:10}}>
