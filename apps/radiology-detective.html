@@ -1373,6 +1373,11 @@
       root.appendChild(renderDocNote(c));
     }
 
+    // Always-available real X-ray comparison panel - even before signing off the case
+    if (c.realXray && state.phase !== "done" && state.phase !== "all-done"){
+      root.appendChild(renderRealXrayPanel(c));
+    }
+
     // Always-available case navigation footer (so students never get stuck)
     if (state.phase !== "done" && state.phase !== "all-done"){
       const navFooter = el("div","case-nav-footer");
