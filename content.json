@@ -1078,6 +1078,19 @@
               "content": "Bridge, Week 1 to Week 2: You finished your detective training. Same skills, new world: medicine. Today you'll question medical AI the same way you questioned the deepfakes and fake headlines yesterday."
             },
             {
+              "type": "heading",
+              "content": "Watch First: How the Heart Pumps Blood"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Before you touch a stethoscope or read an EKG, build the mental model. The 5-minute TED-Ed animation below shows how the heart actually pumps blood through its 4-chamber system, the figure-eight circulation through the lungs and body, and why each beat matters. Watch it first. Everything else today builds on this picture."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/ruM4Xxhx32U"
+            },
+            {
               "type": "callout",
               "style": "notebook",
               "content": "Woven notebook: open your notebook to start Part I, The Hook. Write your first reactions to today's Case Briefing. What does the case demand of you? What evidence will you need? Your notebook is the running record of your thinking from briefing to verdict."
