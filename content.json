@@ -1796,31 +1796,36 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Materials Needed: Clinical case file packets, Lab materials from Days 5-7 (stethoscopes, BP cuffs, suture kits, X-ray cards), Tablets, Presentation materials, Timer, Certificates"
+              "content": "Materials Needed: Laptops or Chromebooks, stethoscopes + BP cuffs + pulse oximeters from Day 5, lab notebooks. The patient case is on this page, no printed packets needed."
+            },
+            {
+              "type": "heading",
+              "content": "Today's Patient: Jordan, age 14"
+            },
+            {
+              "type": "callout",
+              "style": "case",
+              "content": "Patient briefing: Jordan is 14, plays varsity soccer at a Bay Area middle school. During practice yesterday they collapsed mid-run, holding their chest. They say it felt like a 'punch from the inside' and they got dizzy. They are awake and talking now, but pale, and their parents brought them to the urgent care where you are shadowing today. Symptoms: sudden chest pain, dizziness, weak pulse, mild shortness of breath. Vitals at intake: heart rate 142 bpm (elevated), blood pressure 100/60 (on the low side), SpO2 95 percent (low side of normal). Surgical history: minor knee surgery 2 years ago, no complications. Imaging: a chest X-ray was just taken and the radiologist flagged what might be an enlarged heart shadow."
             },
             {
               "type": "step",
-              "content": "Read case file: Read your team's clinical case file carefully. Note the patient's symptoms, vitals, surgical history, and imaging findings."
+              "content": "Station 1 - Vital Signs (Day 5 skill): Open the Vital Signs Interpreter. Enter Jordan's intake vitals from the case briefing above (HR 142, BP 100/60, SpO2 95). Note which numbers fall outside the normal range. What does the combination tell you?"
             },
             {
               "type": "step",
-              "content": "Station 1 - Vital Signs (Day 5): Take the patient's vitals from the case file. Run them through the Vital Signs Interpreter. Flag anything outside the normal range."
+              "content": "Station 2 - Surgical Thinking (Day 6 skill): Jordan's symptoms suggest a heart problem, not a surgical wound. But surgical thinking applies: 'what could go wrong if we do nothing?' List 2 possible bad outcomes if this patient is sent home without further care. This is the same risk-thinking that surgeons do before every operation."
             },
             {
               "type": "step",
-              "content": "Station 2 - Surgical Thinking (Day 6): Walk through the surgical decision in the case file. Which suture pattern fits? What's the simplest plan that gets the job done?"
+              "content": "Station 3 - X-Ray Reading (Day 7 skill): Open the Radiology Detective. Click any case that involves a chest X-ray. Practice the systematic approach (orientation, bones, soft tissue, air spaces) on that case. Then describe what you would look for on Jordan's chest X-ray to confirm the 'enlarged heart shadow' finding."
             },
             {
               "type": "step",
-              "content": "Station 3 - X-Ray Reading (Day 7): Open the Radiology Detective. Match the patient's X-ray to the closest case in the app. What do you see? What might be missed?"
+              "content": "Station 4 - AI Ethics: A cardiac AI app on a phone could have flagged Jordan's heart rate as abnormal much earlier. Should youth athletes wear devices like that during practice? List one reason yes, one reason no. Real cardiologists are arguing about this exact question right now."
             },
             {
               "type": "step",
-              "content": "Station 4 - AI Ethics: For each of the 3 stations above, ask: did an AI help or could one have helped? Where would you trust it? Where would you double-check the AI's call?"
-            },
-            {
-              "type": "step",
-              "content": "Final presentation: Compile your findings and prepare a 3-minute team presentation with your diagnosis and your AI-trust call."
+              "content": "Final presentation: As a team, agree on (1) what you think is happening with Jordan, (2) what should happen next (refer to cardiologist? send home? emergency? more imaging?), and (3) where AI helped or could help your reasoning. Prepare a 3-minute presentation."
             },
             {
               "type": "checklist",
