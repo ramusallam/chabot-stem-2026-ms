@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 — Middle School",
+    "title": "Chabot STEM 2026 \u2014 Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -961,12 +961,24 @@
               "content": "Station 1: Fingerprint (Day 1)"
             },
             {
+              "type": "app",
+              "title": "Fingerprint Ridge Classifier",
+              "url": "apps/fingerprint-classifier.html",
+              "embed": true
+            },
+            {
               "type": "step",
               "content": "Use the Fingerprint Ridge Classifier. The partial print recovered is a Loop with 7 ridge endings. Suspect A's known print is a Whorl. Suspect B's is a Loop. Suspect C's is an Arch. Match the print, write your finding."
             },
             {
               "type": "heading",
               "content": "Station 2: Blood Spatter (Day 2)"
+            },
+            {
+              "type": "app",
+              "title": "Blood Spatter Angle Calculator",
+              "url": "apps/blood-spatter-calculator.html",
+              "embed": true
             },
             {
               "type": "step",
@@ -977,12 +989,24 @@
               "content": "Station 3: Trace Evidence (Day 3)"
             },
             {
+              "type": "app",
+              "title": "Trace Evidence Microscope",
+              "url": "apps/trace-microscope.html",
+              "embed": true
+            },
+            {
               "type": "step",
               "content": "Use the Trace Evidence Microscope. The fiber recovered is a blue cotton thread. Suspect A wore a denim jacket (cotton, blue). Suspect B wore a black wool coat. Suspect C wore a polyester windbreaker. Which suspect's clothes match the trace?"
             },
             {
               "type": "heading",
               "content": "Station 4: Digital Evidence (Day 4)"
+            },
+            {
+              "type": "app",
+              "title": "Deepfake Detector",
+              "url": "apps/deepfake-detector.html",
+              "embed": true
             },
             {
               "type": "step",
@@ -1857,12 +1881,24 @@
               "content": "Patient briefing: Jordan is 14, plays varsity soccer at a Bay Area middle school. During practice yesterday they collapsed mid-run, holding their chest. They say it felt like a 'punch from the inside' and they got dizzy. They are awake and talking now, but pale, and their parents brought them to the urgent care where you are shadowing today. Symptoms: sudden chest pain, dizziness, weak pulse, mild shortness of breath. Vitals at intake: heart rate 142 bpm (elevated), blood pressure 100/60 (on the low side), SpO2 95 percent (low side of normal). Surgical history: minor knee surgery 2 years ago, no complications. Imaging: a chest X-ray was just taken and the radiologist flagged what might be an enlarged heart shadow."
             },
             {
+              "type": "app",
+              "title": "Vital Signs Interpreter",
+              "url": "apps/vital-signs-interpreter.html",
+              "embed": true
+            },
+            {
               "type": "step",
               "content": "Station 1 - Vital Signs (Day 5 skill): Open the Vital Signs Interpreter. Enter Jordan's intake vitals from the case briefing above (HR 142, BP 100/60, SpO2 95). Note which numbers fall outside the normal range. What does the combination tell you?"
             },
             {
               "type": "step",
               "content": "Station 2 - Surgical Thinking (Day 6 skill): Jordan's symptoms suggest a heart problem, not a surgical wound. But surgical thinking applies: 'what could go wrong if we do nothing?' List 2 possible bad outcomes if this patient is sent home without further care. This is the same risk-thinking that surgeons do before every operation."
+            },
+            {
+              "type": "app",
+              "title": "Radiology Detective",
+              "url": "apps/radiology-detective.html",
+              "embed": true
             },
             {
               "type": "step",
