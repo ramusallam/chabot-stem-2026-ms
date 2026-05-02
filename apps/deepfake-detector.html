@@ -271,6 +271,17 @@
       setPicks([...picks, correct]);
     };
 
+    // ALL hooks must be called UNCONDITIONALLY before any early return (Rules of Hooks)
+    const audioRef = React.useRef(null);
+    const [voiceState, setVoiceState] = useState('idle');
+    React.useEffect(() => {
+      // New clip - force the audio element to load the new src (browsers don't auto-reload on src change)
+      if (audioRef.current){
+        try { audioRef.current.pause(); audioRef.current.currentTime = 0; audioRef.current.load(); } catch(e){}
+      }
+      setVoiceState('idle');
+    }, [idx]);
+
     const next = () => {
       setFeedback(null);
       if (idx + 1 < VOICE_SAMPLES.length) setIdx(idx + 1);
@@ -296,15 +307,6 @@
     }
 
     const sample = VOICE_SAMPLES[idx];
-    const audioRef = React.useRef(null);
-    const [voiceState, setVoiceState] = useState('idle');
-    React.useEffect(() => {
-      // New clip - force the audio element to load the new src (browsers don't auto-reload on src change)
-      if (audioRef.current){
-        try { audioRef.current.pause(); audioRef.current.currentTime = 0; audioRef.current.load(); } catch(e){}
-      }
-      setVoiceState('idle');
-    }, [idx]);
     return (<div>
       <Card className="slide-up">
         <SectionLabel>Voice clip {idx+1} of {VOICE_SAMPLES.length}</SectionLabel>
