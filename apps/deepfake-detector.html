@@ -310,10 +310,16 @@
       utt.pitch = isAI ? 1.0 : (sampleId === 2 ? 1.1 : 0.95);
       utt.volume = 1.0;
       utt.onend = () => setVoiceState('idle');
-      utt.onerror = (e) => { setVoiceState('error'); console.error('TTS error', e); };
-      synth.cancel();
-      // Tiny delay helps Chrome's queue
-      setTimeout(() => synth.speak(utt), 50);
+      utt.onerror = (e) => {
+        // 'interrupted' and 'canceled' fire during normal stop - ignore silently
+        if (e && (e.error === 'interrupted' || e.error === 'canceled')) {
+          setVoiceState('idle');
+          return;
+        }
+        setVoiceState('error');
+        console.error('TTS error', e);
+      };
+      synth.speak(utt);
       setVoiceState('playing');
     };
     const playClip = () => {
@@ -322,13 +328,18 @@
         alert("This browser does not support voice playback. Open the app in Chrome, Edge, or Safari directly (not inside an iframe).");
         return;
       }
+      // If something is currently playing, stop it and return - user clicks again to play fresh
+      if (synth.speaking || synth.pending) {
+        synth.cancel();
+        setVoiceState('idle');
+        return;
+      }
       // Voices load async on Chrome - if empty, wait for voiceschanged
       if (!synth.getVoices().length) {
-        synth.onvoiceschanged = () => speakUtterance(cleanText, sample.isAI, sample.id);
-        // Trigger load
+        const speakOnce = () => { synth.onvoiceschanged = null; speakUtterance(cleanText, sample.isAI, sample.id); };
+        synth.onvoiceschanged = speakOnce;
         synth.getVoices();
-        // Fallback: speak after 500ms even if voices haven't loaded
-        setTimeout(() => speakUtterance(cleanText, sample.isAI, sample.id), 500);
+        setTimeout(() => { if (synth.onvoiceschanged) speakOnce(); }, 500);
       } else {
         speakUtterance(cleanText, sample.isAI, sample.id);
       }
