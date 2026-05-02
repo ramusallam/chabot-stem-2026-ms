@@ -293,23 +293,44 @@
 
     const sample = VOICE_SAMPLES[idx];
     const cleanText = sample.label.replace(/^Voice clip [A-D]: /,'').replace(/^"|"$/g,'').replace(/\[[^\]]*\]/g,'').trim();
-    const playClip = () => {
-      try {
-        window.speechSynthesis.cancel();
-        const utt = new SpeechSynthesisUtterance(cleanText);
-        const voices = window.speechSynthesis.getVoices();
-        // Pick a voice deliberately: AI clips get a flatter / more synthetic-sounding voice; "human" clips get the most natural-sounding voice available
-        const preferAI = ['Microsoft David','Google US English','Alex','Daniel'];
-        const preferHuman = ['Samantha','Google UK English Female','Karen','Moira','Microsoft Zira'];
-        const wanted = sample.isAI ? preferAI : preferHuman;
-        let v = voices.find(vo => wanted.some(name => vo.name.includes(name)));
-        if (!v && voices.length) v = voices[sample.id % voices.length];
+    const [voiceState, setVoiceState] = useState('idle');
+    const speakUtterance = (text, isAI, sampleId) => {
+      const synth = window.speechSynthesis;
+      const utt = new SpeechSynthesisUtterance(text);
+      const voices = synth.getVoices() || [];
+      if (voices.length) {
+        const preferAI = ['Microsoft David','Google US English','Alex','Daniel','Fred'];
+        const preferHuman = ['Samantha','Google UK English Female','Karen','Moira','Microsoft Zira','Victoria'];
+        const wanted = isAI ? preferAI : preferHuman;
+        let v = voices.find(vo => wanted.some(name => (vo.name||'').includes(name)));
+        if (!v) v = voices[sampleId % voices.length];
         if (v) utt.voice = v;
-        utt.rate = sample.isAI ? 1.05 : 0.95;
-        utt.pitch = sample.isAI ? 1.0 : (sample.id === 2 ? 1.1 : 0.95);
-        window.speechSynthesis.speak(utt);
-      } catch (e) {
-        alert("Your browser doesn't support voice playback. Try Chrome or Edge.");
+      }
+      utt.rate = isAI ? 1.05 : 0.95;
+      utt.pitch = isAI ? 1.0 : (sampleId === 2 ? 1.1 : 0.95);
+      utt.volume = 1.0;
+      utt.onend = () => setVoiceState('idle');
+      utt.onerror = (e) => { setVoiceState('error'); console.error('TTS error', e); };
+      synth.cancel();
+      // Tiny delay helps Chrome's queue
+      setTimeout(() => synth.speak(utt), 50);
+      setVoiceState('playing');
+    };
+    const playClip = () => {
+      const synth = window.speechSynthesis;
+      if (!synth) {
+        alert("This browser does not support voice playback. Open the app in Chrome, Edge, or Safari directly (not inside an iframe).");
+        return;
+      }
+      // Voices load async on Chrome - if empty, wait for voiceschanged
+      if (!synth.getVoices().length) {
+        synth.onvoiceschanged = () => speakUtterance(cleanText, sample.isAI, sample.id);
+        // Trigger load
+        synth.getVoices();
+        // Fallback: speak after 500ms even if voices haven't loaded
+        setTimeout(() => speakUtterance(cleanText, sample.isAI, sample.id), 500);
+      } else {
+        speakUtterance(cleanText, sample.isAI, sample.id);
       }
     };
     return (<div>
@@ -327,10 +348,12 @@
             "{sample.label.replace(/^Voice clip [A-D]: /,'')}"
           </div>
         </div>
-        <div style={{display:"flex",justifyContent:"center",marginBottom:12}}>
-          <Btn primary onClick={playClip} style={{minWidth:160}}>▶ Play voice clip</Btn>
+        <div style={{display:"flex",justifyContent:"center",marginBottom:12,gap:10}}>
+          <Btn primary onClick={playClip} style={{minWidth:160}}>{voiceState==='playing' ? '🔊 Playing...' : '▶ Play voice clip'}</Btn>
+          {voiceState==='playing' && <Btn onClick={() => { window.speechSynthesis.cancel(); setVoiceState('idle'); }}>Stop</Btn>}
         </div>
-        <div style={{fontSize:11,color:MED,marginBottom:10,fontStyle:"italic",textAlign:"center"}}>Audio uses your browser's voice synthesis. Each clip is rendered with a different voice profile to demonstrate the patterns. Listen for cadence, breathing, naturalness. Best on Chrome or Edge with sound on.</div>
+        {voiceState==='error' && <div style={{fontSize:12,color:RED,marginBottom:8,textAlign:"center"}}>Audio failed to play. Make sure your laptop volume is on and you're in Chrome or Edge. If embedded in a workshop page, click Launch to open the app full-screen and try again.</div>}
+        <div style={{fontSize:11,color:MED,marginBottom:10,fontStyle:"italic",textAlign:"center"}}>Audio uses your browser's voice synthesis. Each clip is rendered with a different voice profile. Listen for cadence, breathing, naturalness. Best on Chrome or Edge with sound on.</div>
         <div style={{fontSize:12,color:MED,marginBottom:10,fontStyle:"italic"}}>After listening, pick one:</div>
         {!feedback && (
           <div style={{display:"flex",gap:10}}>
