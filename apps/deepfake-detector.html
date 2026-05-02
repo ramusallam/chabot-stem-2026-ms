@@ -299,26 +299,12 @@
     const audioRef = React.useRef(null);
     const [voiceState, setVoiceState] = useState('idle');
     React.useEffect(() => {
-      // New clip - reset audio + state
-      if (audioRef.current){ try { audioRef.current.pause(); audioRef.current.currentTime = 0; } catch(e){} }
+      // New clip - force the audio element to load the new src (browsers don't auto-reload on src change)
+      if (audioRef.current){
+        try { audioRef.current.pause(); audioRef.current.currentTime = 0; audioRef.current.load(); } catch(e){}
+      }
       setVoiceState('idle');
     }, [idx]);
-    const playClip = () => {
-      const a = audioRef.current;
-      if (!a) return;
-      if (!a.paused){
-        try { a.pause(); a.currentTime = 0; } catch(e){}
-        setVoiceState('idle');
-        return;
-      }
-      try { a.currentTime = 0; } catch(e){}
-      const p = a.play();
-      if (p && p.then) p.then(() => setVoiceState('playing')).catch(err => {
-        console.error('Audio play failed', err);
-        setVoiceState('error');
-      });
-      else setVoiceState('playing');
-    };
     return (<div>
       <Card className="slide-up">
         <SectionLabel>Voice clip {idx+1} of {VOICE_SAMPLES.length}</SectionLabel>
@@ -335,7 +321,7 @@
           </div>
         </div>
         <div style={{display:"flex",justifyContent:"center",marginBottom:8}}>
-          <audio ref={audioRef} src={sample.audioSrc} onEnded={() => setVoiceState('idle')} onError={(e) => { console.error('Audio element error', e.target.error); setVoiceState('error'); }} controls preload="auto" style={{width:"100%",maxWidth:420}}/>
+          <audio key={`clip-${sample.id}`} ref={audioRef} src={sample.audioSrc} onEnded={() => setVoiceState('idle')} onError={(e) => { console.error('Audio element error', e.target.error); setVoiceState('error'); }} controls preload="auto" style={{width:"100%",maxWidth:420}}/>
         </div>
         {voiceState==='error' && <div style={{fontSize:12,color:RED,marginBottom:8,textAlign:"center"}}>Audio file failed to load. Open the browser console (Cmd+Option+J) for details, or click Launch above to open this app in its own tab.</div>}
         <div style={{fontSize:11,color:MED,marginBottom:10,fontStyle:"italic",textAlign:"center"}}>Real audio clip pre-recorded with macOS text-to-speech. Tap the play button on the audio bar above. Each clip uses a different voice profile so cadence, pitch, and naturalness vary.</div>
