@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 \u2014 Middle School",
+    "title": "Chabot STEM 2026 — Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -1139,6 +1139,11 @@
               "content": "Materials Needed: Stethoscopes, Blood pressure cuffs, Pulse oximeters, Stopwatches, Vital signs sheets, Tablets for the app"
             },
             {
+              "type": "callout",
+              "style": "case",
+              "content": "Lab Safety: today you'll take your own vitals (or a willing partner's, only with explicit consent). Wash hands before touching anyone's skin. Don't share pulse oximeter sensors without wiping them first. If a partner has a known heart condition, anxiety about medical procedures, or just doesn't want to participate, do all the readings on yourself, no pressure to use a partner. The goal is to learn the technique, not to push anyone outside their comfort zone."
+            },
+            {
               "type": "heading",
               "content": "Take Your Vital Signs"
             },
@@ -1366,13 +1371,40 @@
               "content": "Woven notebook: this is Part II, The Physical Lab. Record every measurement, calculation, and observation as you work. The lab data you capture here becomes the evidence base you defend in Part III."
             },
             {
-              "type": "callout",
-              "style": "info",
-              "content": "Materials Needed: Suture practice kits, Foam practice pads, Surgical gloves, Suture thread, Scissors, Assessment checklists"
+              "type": "heading",
+              "content": "Sharps Safety: read this BEFORE you touch a needle"
             },
             {
-              "type": "step",
-              "content": "Watch demonstration: Watch the suturing demonstration carefully before touching any materials."
+              "type": "callout",
+              "style": "case",
+              "content": "Today you'll work with real suture needles. They're sharp, that's how they work. Three rules that aren't optional: (1) needles always get held by the needle driver, never your fingers. (2) needles always go into the SHARPS CONTAINER (the red box), never on the table or in regular trash. (3) if you accidentally poke yourself or a partner, STOP immediately and tell your facilitator, wash with soap and water. We count needles at the end, every needle that came out has to come back."
+            },
+            {
+              "type": "heading",
+              "content": "The Tools You'll Use"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Needle driver = a clamp that holds the needle for you (so you never touch it directly). Tissue forceps = tweezers for picking up the skin gently, never crush. Scissors = for cutting your suture thread when you finish a stitch, never tape or paper. Practice picking the needle up with the driver before you try a stitch."
+            },
+            {
+              "type": "heading",
+              "content": "Watch First: How a Simple Interrupted Suture Works"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Children's Hospital of Philadelphia walkthrough on simple interrupted suturing and the instrument tie. Watch all the way through ONCE before you pick up a needle. Watch how the needle driver does the work, the fingers stay off the needle the whole time."
+            },
+            {
+              "type": "video",
+              "url": "https://www.youtube.com/embed/ld14-8Tq6a0"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Materials Needed: Suture practice kit (needle driver, tissue forceps, scissors), 3-0 nylon suture packets, foam suture practice pad, sharps container (red box, safety, non-negotiable), gloves."
             },
             {
               "type": "step",
@@ -1389,6 +1421,10 @@
             {
               "type": "step",
               "content": "Get feedback: Have a partner evaluate your sutures using the assessment checklist."
+            },
+            {
+              "type": "step",
+              "content": "Station Clean-Up: every needle goes into the sharps container (the red box), count them, every needle that came out must go back in. Used suture material also goes in the sharps container. Wipe down your instruments. Gloves go in the regular trash. Don't skip this, it's how real ORs stay safe."
             },
             {
               "type": "heading",
