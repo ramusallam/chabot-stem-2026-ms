@@ -796,7 +796,7 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "In the same app, tap Voice Analyzer. 4 voice clips with annotated waveforms. Real human or AI clone? Listen and decide. The app reveals the AI tells (flat-line volume, no breathing pauses, robotic 's' sounds)."
+              "content": "In the same app, tap Voice Analyzer. All 4 clips are AI-generated, modern voice cloning is too good now to spot AI by sound alone. Two clips are scam patterns (urgency + money asks), two are harmless casual voicemails. Listen and pick which is which by what the voice is actually saying. The app reveals the scam tells (specific dollar amounts, urgency, asking you to act fast)."
             },
             {
               "type": "heading",
