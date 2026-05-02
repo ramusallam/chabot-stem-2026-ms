@@ -1749,13 +1749,13 @@
     intro.style.background = "transparent";
     intro.style.border = "none";
     intro.style.padding = "0 0 6px 0";
-    intro.innerHTML = "The cartoony X-ray you just read showed the finding clearly. Want to see what the same kind of finding looks like in a real X-ray a radiologist would actually use?";
+    intro.innerHTML = "The cartoony X-ray you just read showed the finding clearly. Below is what the same kind of finding looks like in a real X-ray a radiologist would actually use. The red circle marks the diagnostic feature.";
     panel.appendChild(intro);
 
-    const toggle = el("button","real-xray-toggle", "Show me what this looks like in real life");
-    let shown = false;
+    const toggle = el("button","real-xray-toggle", "Hide the real X-ray");
+    let shown = true;
     const body = el("div","real-xray-body");
-    body.style.display = "none";
+    body.style.display = "block";
 
     const wrap = el("div","real-xray-image-wrap");
     const img = document.createElement("img");
