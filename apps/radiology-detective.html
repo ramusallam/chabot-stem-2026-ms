@@ -1186,6 +1186,15 @@
       const cell = document.createElement("div");
       cell.className = "progress-cell" + (state.cases[i].completed ? " done" : (i === state.caseIndex ? " active" : ""));
       cell.textContent = c.label;
+      cell.style.cursor = "pointer";
+      cell.title = "Jump to " + c.label;
+      cell.addEventListener("click", () => {
+        if (i === state.caseIndex) return;
+        state.caseIndex = i;
+        state.phase = "briefing";
+        saveState();
+        renderCase();
+      });
       bar.appendChild(cell);
     });
   }
@@ -1223,6 +1232,38 @@
     } else if (state.phase === "done"){
       root.appendChild(renderHunt(c, /*locked*/ true));
       root.appendChild(renderDocNote(c));
+    }
+
+    // Always-available case navigation footer (so students never get stuck)
+    if (state.phase !== "done" && state.phase !== "all-done"){
+      const navFooter = el("div","case-nav-footer");
+      navFooter.style.cssText = "display:flex;gap:10px;justify-content:center;margin-top:18px;padding:14px;border-top:1px dashed #cfd8dc;";
+      const prev = el("button","btn-link", "← Previous patient");
+      prev.style.cssText = "background:none;border:1px solid #cfd8dc;color:#4a6e6a;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;";
+      prev.disabled = state.caseIndex === 0;
+      if (state.caseIndex === 0) prev.style.opacity = "0.4";
+      prev.addEventListener("click", () => {
+        if (state.caseIndex === 0) return;
+        state.caseIndex -= 1;
+        state.phase = "briefing";
+        saveState();
+        renderCase();
+      });
+      const skip = el("button","btn-link", state.caseIndex >= CASES.length - 1 ? "Skip to Wrap-Up →" : "Skip to next patient →");
+      skip.style.cssText = "background:none;border:1px solid #cfd8dc;color:#4a6e6a;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;";
+      skip.addEventListener("click", () => {
+        if (state.caseIndex >= CASES.length - 1){
+          state.phase = "all-done";
+        } else {
+          state.caseIndex += 1;
+          state.phase = "briefing";
+        }
+        saveState();
+        renderCase();
+      });
+      navFooter.appendChild(prev);
+      navFooter.appendChild(skip);
+      root.appendChild(navFooter);
     }
 
     stage.appendChild(root);

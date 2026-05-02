@@ -8,8 +8,24 @@
     "slug": "chabot-stem-2026-ms"
   },
   "weeks": [
-    { "label": "Week 1 - Forensics and the Digital Detective", "dayIndices": [0,1,2,3] },
-    { "label": "Week 2 - Mini Med School and the Clinical AI", "dayIndices": [4,5,6,7] }
+    {
+      "label": "Week 1 - Forensics and the Digital Detective",
+      "dayIndices": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "label": "Week 2 - Mini Med School and the Clinical AI",
+      "dayIndices": [
+        4,
+        5,
+        6,
+        7
+      ]
+    }
   ],
   "days": [
     {
@@ -988,10 +1004,18 @@
             {
               "type": "checklist",
               "items": [
-                { "text": "I worked all 4 stations" },
-                { "text": "I picked a suspect" },
-                { "text": "I considered whether the digital evidence was reliable" },
-                { "text": "I wrote my verdict" }
+                {
+                  "text": "I worked all 4 stations"
+                },
+                {
+                  "text": "I picked a suspect"
+                },
+                {
+                  "text": "I considered whether the digital evidence was reliable"
+                },
+                {
+                  "text": "I wrote my verdict"
+                }
               ]
             }
           ]
@@ -1566,6 +1590,15 @@
             {
               "type": "step",
               "content": "Read the patient story first. Each case opens with a short briefing - patient age, complaint, and how they arrived in the ER. Treat this like a real consult: the story shapes what you should look for on the X-ray."
+            },
+            {
+              "type": "heading",
+              "content": "How a Radiologist Reads an X-Ray"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "Radiologists use a systematic approach so they don't miss anything. The order matters: (1) Orientation - which side is the patient's left? Most X-rays are flipped (your left is their right), (2) Bones - scan every bone for fractures, breaks, or anything that doesn't belong, (3) Soft tissue - muscles, organs, fat, look for swelling or things in the wrong place, (4) Air spaces - lungs and sinuses should be dark (full of air); bright spots in air spaces can mean fluid, infection, or something stuck. Doing it in this order keeps your eye honest. Don't jump to the obvious abnormality."
             },
             {
               "type": "step",
