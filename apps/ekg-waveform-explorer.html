@@ -267,6 +267,7 @@
     cursor: grab;
     user-select: none;
     touch-action: none;
+    touch-action: none;
     box-shadow: 0 2px 6px rgba(42,157,143,0.25);
     transition: transform 0.1s;
   }
@@ -640,10 +641,10 @@
       </div>
     </div>
     <div class="label-bank" id="labelBank">
-      <div class="label-chip" draggable="true" data-label="P">P wave</div>
-      <div class="label-chip" draggable="true" data-label="QRS">QRS</div>
-      <div class="label-chip" draggable="true" data-label="T">T wave</div>
-      <div class="label-chip" draggable="true" data-label="PR">PR interval</div>
+      <div class="label-chip" data-label="P">P wave</div>
+      <div class="label-chip" data-label="QRS">QRS</div>
+      <div class="label-chip" data-label="T">T wave</div>
+      <div class="label-chip" data-label="PR">PR interval</div>
     </div>
     <div class="score-row">
       <div class="score-badge" id="scoreBadge">Score: 0 / 4</div>
@@ -1240,32 +1241,22 @@
 
   drawQuizStill();
 
-  // ===== Drag and drop (mouse + touch) =====
+  // ===== Drag and drop (PointerEvents — unified mouse/touch/pen, iframe-safe) =====
   const labelBank = document.getElementById('labelBank');
   let draggingChip = null;
   let dragOffset = { x: 0, y: 0 };
   let floatingChip = null;
+  let dragPointerId = null;
 
-  function chipFromEvent(e){
-    return e.target.closest('.label-chip');
-  }
-
-  function getPoint(e){
-    if(e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    if(e.changedTouches && e.changedTouches[0]) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-    return { x: e.clientX, y: e.clientY };
-  }
-
-  function startDrag(e){
-    const chip = chipFromEvent(e);
+  function startDrag(e, sourceChip){
+    const chip = sourceChip || (e.target && e.target.closest && e.target.closest('.label-chip'));
     if(!chip) return;
-    e.preventDefault();
+    if(e.preventDefault) e.preventDefault();
     draggingChip = chip;
-    const pt = getPoint(e);
+    dragPointerId = (e.pointerId != null) ? e.pointerId : null;
     const rect = chip.getBoundingClientRect();
-    dragOffset.x = pt.x - rect.left;
-    dragOffset.y = pt.y - rect.top;
-    // Create floating clone
+    dragOffset.x = e.clientX - rect.left;
+    dragOffset.y = e.clientY - rect.top;
     floatingChip = chip.cloneNode(true);
     floatingChip.classList.add('placed');
     floatingChip.style.position = 'fixed';
@@ -1275,35 +1266,32 @@
     floatingChip.style.top = rect.top + 'px';
     document.body.appendChild(floatingChip);
     chip.classList.add('dragging');
+    // Capture so pointermove/up keep firing on this element even if pointer
+    // leaves it (or moves out of the iframe momentarily).
+    if(dragPointerId != null && chip.setPointerCapture){
+      try { chip.setPointerCapture(dragPointerId); } catch(err){}
+    }
   }
 
   function moveDrag(e){
     if(!draggingChip) return;
-    e.preventDefault();
-    const pt = getPoint(e);
-    floatingChip.style.left = (pt.x - dragOffset.x) + 'px';
-    floatingChip.style.top = (pt.y - dragOffset.y) + 'px';
+    if(e.preventDefault) e.preventDefault();
+    floatingChip.style.left = (e.clientX - dragOffset.x) + 'px';
+    floatingChip.style.top = (e.clientY - dragOffset.y) + 'px';
   }
 
   function endDrag(e){
     if(!draggingChip) return;
-    e.preventDefault();
-    const pt = getPoint(e);
+    if(e.preventDefault) e.preventDefault();
     const label = draggingChip.dataset.label;
     const wrapRect = quizWrap.getBoundingClientRect();
-    // Convert pt to wrap-local coords
-    const localX = pt.x - wrapRect.left;
-    const localY = pt.y - wrapRect.top;
-
-    // Only accept drop if inside quiz wrap area
+    const localX = e.clientX - wrapRect.left;
+    const localY = e.clientY - wrapRect.top;
     if(localX >= 0 && localX <= wrapRect.width && localY >= 0 && localY <= wrapRect.height){
-      // Store as canvas-internal coords
       const sx = quizCanvas.width / wrapRect.width;
       const sy = quizCanvas.height / wrapRect.height;
-      const cx = localX * sx;
-      const cy = localY * sy;
-      state.placed[label] = { x: cx, y: cy };
-      state.checked = false; // any new placement invalidates previous check
+      state.placed[label] = { x: localX * sx, y: localY * sy };
+      state.checked = false;
     }
     cleanupDrag();
     renderPlacedLabels();
@@ -1312,25 +1300,29 @@
 
   function cleanupDrag(){
     if(floatingChip){ floatingChip.remove(); floatingChip = null; }
-    if(draggingChip){ draggingChip.classList.remove('dragging'); draggingChip = null; }
+    if(draggingChip){
+      draggingChip.classList.remove('dragging');
+      if(dragPointerId != null && draggingChip.releasePointerCapture){
+        try { draggingChip.releasePointerCapture(dragPointerId); } catch(err){}
+      }
+      draggingChip = null;
+    }
+    dragPointerId = null;
   }
 
-  function cancelDrag(){
-    cleanupDrag();
+  // Attach pointer listeners DIRECTLY to each chip (not delegated) so any
+  // ancestor that swallows mousedown can't break us.
+  function attachChipListeners(chip){
+    chip.addEventListener('pointerdown', startDrag);
+    chip.addEventListener('pointermove', moveDrag);
+    chip.addEventListener('pointerup', endDrag);
+    chip.addEventListener('pointercancel', cleanupDrag);
+    // Block native HTML5 drag in case any browser still tries.
+    chip.addEventListener('dragstart', function(e){ e.preventDefault(); });
   }
-
-  labelBank.addEventListener('mousedown', startDrag);
-  labelBank.addEventListener('touchstart', startDrag, { passive:false });
-  document.addEventListener('mousemove', moveDrag);
-  document.addEventListener('touchmove', moveDrag, { passive:false });
-  document.addEventListener('mouseup', endDrag);
-  document.addEventListener('touchend', endDrag);
-  document.addEventListener('touchcancel', cancelDrag);
-
-  // Prevent native drag image
-  labelBank.querySelectorAll('.label-chip').forEach(c => {
-    c.addEventListener('dragstart', e => e.preventDefault());
-  });
+  labelBank.querySelectorAll('.label-chip').forEach(attachChipListeners);
+  // Expose so startDragPlaced can reuse on dynamically-created placed chips.
+  window.__ekgAttachChipListeners = attachChipListeners;
 
   // Rendering of placed labels
   const placedEls = {};
@@ -1360,8 +1352,7 @@
       el.style.left = (pos.x * sx) + 'px';
       el.style.top = (pos.y * sy) + 'px';
       el.style.transform = 'translate(-50%, -50%)';
-      el.addEventListener('mousedown', startDragPlaced);
-      el.addEventListener('touchstart', startDragPlaced, { passive:false });
+      el.addEventListener('pointerdown', startDragPlaced);
 
       if(state.checked){
         const correct = isCorrectPlacement(key, pos);
@@ -1390,26 +1381,15 @@
   function startDragPlaced(e){
     const chip = e.target.closest('.label-chip');
     if(!chip) return;
-    e.preventDefault();
-    // Remove from placed, then start drag as if from bank
-    delete state.placed[chip.dataset.label];
+    // Remove from placed, then start drag using the bank chip as the source.
+    const key = chip.dataset.label;
+    delete state.placed[key];
     state.checked = false;
     renderPlacedLabels();
-    // Synthesize drag from the bank chip
-    const bankChip = labelBank.querySelector('[data-label="'+chip.dataset.label+'"]');
+    const bankChip = labelBank.querySelector('[data-label="'+key+'"]');
     if(!bankChip) return;
     bankChip.style.display = '';
-    draggingChip = bankChip;
-    const pt = getPoint(e);
-    dragOffset.x = 30; dragOffset.y = 14;
-    floatingChip = bankChip.cloneNode(true);
-    floatingChip.style.position = 'fixed';
-    floatingChip.style.pointerEvents = 'none';
-    floatingChip.style.zIndex = 9999;
-    floatingChip.style.left = (pt.x - dragOffset.x) + 'px';
-    floatingChip.style.top = (pt.y - dragOffset.y) + 'px';
-    document.body.appendChild(floatingChip);
-    bankChip.classList.add('dragging');
+    startDrag(e, bankChip);
   }
 
   function labelText(key){
