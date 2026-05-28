@@ -1950,7 +1950,7 @@
             {
               "type": "callout",
               "style": "info",
-              "content": "Gemini Canvas is a vibe-coding tool: you describe what you want in plain English and it builds a working web page on the right side. Watch the 90-second walkthrough below first so you know where the buttons are, then try the prompt yourself."
+              "content": "Gemini Canvas is a vibe-coding tool: you describe what you want in plain English and it builds a working web page on the right side. Watch the short demo below first so you know where the buttons are, then try the prompt yourself. The video runs about 8 minutes, but the first 2 minutes show everything you need; pause once you have the layout. Important: Gemini does not run reliably in Safari, so make sure you are in Chrome before you start."
             },
             {
               "type": "video",
