@@ -235,20 +235,45 @@
   .quiz-canvas-wrap canvas { cursor: default; }
   .drop-target {
     position: absolute;
-    border: 2px dashed rgba(10,186,181,0.55);
-    border-radius: 6px;
-    background: rgba(10,186,181,0.08);
+    border: 2px dashed rgba(10,140,140,0.7);
+    border-radius: 8px;
+    background: rgba(10,186,181,0.10);
     pointer-events: none;
     transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  }
+  .drop-target::before {
+    content: attr(data-hint);
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    color: rgba(26,107,107,0.95);
+    background: rgba(255,255,255,0.92);
+    padding: 2px 8px;
+    border-radius: 10px;
+    white-space: nowrap;
+    border: 1px solid rgba(10,140,140,0.4);
   }
   .drop-target.filled {
     border-style: solid;
-    background: rgba(39,174,96,0.15);
+    background: rgba(39,174,96,0.18);
+    border-color: rgba(39,174,96,0.85);
+  }
+  .drop-target.filled::before {
+    color: #1E8449;
     border-color: rgba(39,174,96,0.7);
   }
   .drop-target.wrong {
-    border-color: rgba(192,57,43,0.8);
+    border-color: rgba(192,57,43,0.85);
     background: rgba(192,57,43,0.15);
+  }
+  .drop-target.wrong::before {
+    color: #922B21;
+    border-color: rgba(192,57,43,0.7);
   }
 
   .label-bank {
@@ -1231,16 +1256,25 @@
     const rect = quizCanvas.getBoundingClientRect();
     const sx = rect.width / quizCanvas.width;
     const sy = rect.height / quizCanvas.height;
+    // Slightly oversize the visible drop boxes so each target is unmistakable
+    // even though the underlying waveform features cluster tightly (~400ms span).
+    const visualPad = { P: 24, PR: 28, QRS: 26, T: 26 };
+    const hints = { P: 'P', PR: 'PR', QRS: 'QRS', T: 'T' };
     const keys = ['P','PR','QRS','T'];
     for(const k of keys){
       const f = quizFeatures[k];
+      const padX = visualPad[k] || 18;
+      const padY = (k === 'PR') ? 18 : visualPad[k] || 18;
+      const w = (f.w + padX*2);
+      const h = (f.h + padY*2);
       const el = document.createElement('div');
       el.className = 'drop-target';
       el.dataset.target = k;
-      el.style.left = ((f.x - f.w/2) * sx) + 'px';
-      el.style.top = ((f.y - f.h/2) * sy) + 'px';
-      el.style.width = (f.w * sx) + 'px';
-      el.style.height = (f.h * sy) + 'px';
+      el.dataset.hint = hints[k];
+      el.style.left = ((f.x - w/2) * sx) + 'px';
+      el.style.top = ((f.y - h/2) * sy) + 'px';
+      el.style.width = (w * sx) + 'px';
+      el.style.height = (h * sy) + 'px';
       quizWrap.appendChild(el);
       dropEls[k] = el;
     }
@@ -1450,7 +1484,10 @@
   function isCorrectPlacement(key, pos){
     const f = quizFeatures[key];
     if(!f) return false;
-    return (Math.abs(pos.x - f.x) <= f.w/2 + 6) && (Math.abs(pos.y - f.y) <= f.h/2 + 10);
+    // Generous hit zone: anywhere inside the visible dotted target box, with
+    // a healthy padding buffer so kids don't get marked wrong for placing
+    // a label that visually overlaps the right wave but slightly off-center.
+    return (Math.abs(pos.x - f.x) <= f.w/2 + 24) && (Math.abs(pos.y - f.y) <= f.h/2 + 24);
   }
 
   function updateScoreUI(showFeedback){
