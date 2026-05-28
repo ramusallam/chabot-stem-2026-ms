@@ -284,11 +284,13 @@
   .label-chip.placed {
     position: absolute;
     z-index: 5;
-    font-size: 12px;
-    padding: 5px 10px;
+    font-size: 10px;
+    padding: 2px 7px;
     background: linear-gradient(135deg, #27AE60, #1E8449);
-    box-shadow: 0 2px 6px rgba(39,174,96,0.4);
-    cursor: grab;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    cursor: pointer;
+    line-height: 1.4;
+    letter-spacing: 0.2px;
   }
   .label-chip.placed.wrong {
     background: linear-gradient(135deg, #C0392B, #922B21);
@@ -640,7 +642,7 @@
   <!-- Label quiz -->
   <div class="card">
     <div class="card-title"><span class="card-title-dot"></span>Label the Waves</div>
-    <div class="hint">Tap a label to arm it, then tap the spot on the trace to place it (or drag if you prefer). Tap a placed label to send it back to the bank. 4 labels, 4 spots.</div>
+    <div class="hint">Drag each label onto the matching part of the trace, or tap a label and then tap the spot to place it. Tap a placed label to send it back to the bank. 4 labels, 4 spots.</div>
     <div class="quiz-wrap">
       <div class="quiz-canvas-wrap" id="quizWrap">
         <canvas id="quizCanvas" width="680" height="220"></canvas>
@@ -677,7 +679,6 @@
 <script>
 (function(){
   'use strict';
-
   const STORAGE_KEY = 'ucsf-ekg-reader-progress';
 
   // ===== State =====
@@ -1163,6 +1164,9 @@
   const quizCanvas = document.getElementById('quizCanvas');
   const qctx = quizCanvas.getContext('2d');
   const quizWrap = document.getElementById('quizWrap');
+  // Hoisted: labelBank is referenced by renderPlacedLabels, which runs from
+  // drawQuizStill below. Keep all renderPlacedLabels deps declared before that call.
+  const labelBank = document.getElementById('labelBank');
 
   // Draw a static beat on the quiz canvas and return feature pixel positions.
   let quizFeatures = null;
@@ -1218,6 +1222,7 @@
 
   // Drop targets rendered as absolutely positioned divs in quizWrap (scaled to CSS size).
   const dropEls = {};
+  const placedEls = {};
   function renderDropTargets(){
     // Clear existing
     Object.values(dropEls).forEach(el => el.remove && el.remove());
@@ -1251,7 +1256,6 @@
   // Supports BOTH drag AND click-to-place (the click flow is the reliable
   // fallback if drag fails inside an iframe). Drag uses plain mouse + touch
   // events with global window listeners — the most compatible pattern.
-  const labelBank = document.getElementById('labelBank');
   let selectedKey = null;          // click-to-place: which chip is "armed"
   let draggingChip = null;
   let dragMoved = false;           // distinguish click from drag
@@ -1370,8 +1374,9 @@
   });
   window.__ekgAttachChipListeners = attachChipListeners;
 
-  // Rendering of placed labels
-  const placedEls = {};
+  // Rendering of placed labels (placedEls is declared earlier next to dropEls
+  // because renderPlacedLabels is invoked from renderDropTargets, which runs
+  // before this section of the script).
   function renderPlacedLabels(){
     Object.values(placedEls).forEach(el => el.remove());
     Object.keys(placedEls).forEach(k => delete placedEls[k]);
