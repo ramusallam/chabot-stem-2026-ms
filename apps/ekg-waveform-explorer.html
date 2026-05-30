@@ -233,47 +233,30 @@
     touch-action: none;
   }
   .quiz-canvas-wrap canvas { cursor: default; }
+  /* Drop zones are intentionally minimal so students don't read the answer
+     off the page. Visible only as a faint dotted outline; the colored zone
+     wakes up only when a chip is armed or a label has been placed. */
   .drop-target {
     position: absolute;
-    border: 2px dashed rgba(10,140,140,0.7);
+    border: 1px dashed rgba(120,140,140,0.32);
     border-radius: 8px;
-    background: rgba(10,186,181,0.10);
+    background: transparent;
     pointer-events: none;
     transition: all 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
   }
-  .drop-target::before {
-    content: attr(data-hint);
-    position: absolute;
-    top: -22px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: rgba(26,107,107,0.95);
-    background: rgba(255,255,255,0.92);
-    padding: 2px 8px;
-    border-radius: 10px;
-    white-space: nowrap;
-    border: 1px solid rgba(10,140,140,0.4);
+  /* When a chip is armed, brighten ALL drop boxes so the student sees the
+     valid landing zones — without revealing which letter goes where. */
+  .quiz-canvas-wrap.quiz-armed .drop-target {
+    border: 2px dashed rgba(245,183,49,0.85);
+    background: rgba(245,183,49,0.08);
   }
   .drop-target.filled {
-    border-style: solid;
-    background: rgba(39,174,96,0.18);
-    border-color: rgba(39,174,96,0.85);
-  }
-  .drop-target.filled::before {
-    color: #1E8449;
-    border-color: rgba(39,174,96,0.7);
+    border: 2px solid rgba(39,174,96,0.55);
+    background: rgba(39,174,96,0.10);
   }
   .drop-target.wrong {
-    border-color: rgba(192,57,43,0.85);
+    border: 2px solid rgba(192,57,43,0.85);
     background: rgba(192,57,43,0.15);
-  }
-  .drop-target.wrong::before {
-    color: #922B21;
-    border-color: rgba(192,57,43,0.7);
   }
 
   .label-bank {
@@ -1205,8 +1188,11 @@
     // We want a single beat visible cleanly. Simpler: draw procedural y values by x.
     const samples = [];
     const period = 0.8; // 75 bpm
-    const beatStartX = w * 0.22; // where beat begins
-    const pxPerSec = PX_PER_SEC;
+    const beatStartX = w * 0.12; // where beat begins (left-shifted to fit the stretched beat)
+    // Stretch the still beat ~3x compared to the live ECG so individual waves
+    // are far enough apart for kids to label them without the placed pills
+    // piling on top of each other.
+    const pxPerSec = PX_PER_SEC * 3;
     for(let x = 0; x < w; x++){
       const t = (x - beatStartX) / pxPerSec;
       if(t < 0 || t > period * 1.2){
@@ -1256,21 +1242,20 @@
     const rect = quizCanvas.getBoundingClientRect();
     const sx = rect.width / quizCanvas.width;
     const sy = rect.height / quizCanvas.height;
-    // Slightly oversize the visible drop boxes so each target is unmistakable
-    // even though the underlying waveform features cluster tightly (~400ms span).
-    const visualPad = { P: 24, PR: 28, QRS: 26, T: 26 };
-    const hints = { P: 'P', PR: 'PR', QRS: 'QRS', T: 'T' };
+    // Oversize the visible drop boxes so each target is a comfortably big
+    // landing zone. We do NOT label them with letters — that would reveal
+    // the answer before the student tries.
+    const visualPad = { P: 28, PR: 32, QRS: 30, T: 30 };
     const keys = ['P','PR','QRS','T'];
     for(const k of keys){
       const f = quizFeatures[k];
-      const padX = visualPad[k] || 18;
-      const padY = (k === 'PR') ? 18 : visualPad[k] || 18;
+      const padX = visualPad[k] || 20;
+      const padY = (k === 'PR') ? 22 : visualPad[k] || 20;
       const w = (f.w + padX*2);
       const h = (f.h + padY*2);
       const el = document.createElement('div');
       el.className = 'drop-target';
       el.dataset.target = k;
-      el.dataset.hint = hints[k];
       el.style.left = ((f.x - w/2) * sx) + 'px';
       el.style.top = ((f.y - h/2) * sy) + 'px';
       el.style.width = (w * sx) + 'px';
@@ -1310,6 +1295,8 @@
       else c.classList.remove('armed');
     });
     quizWrap.style.cursor = key ? 'crosshair' : '';
+    if(key) quizWrap.classList.add('quiz-armed');
+    else quizWrap.classList.remove('quiz-armed');
   }
 
   function placeAtClientPoint(label, clientX, clientY){
