@@ -650,7 +650,7 @@
   <!-- Label quiz -->
   <div class="card">
     <div class="card-title"><span class="card-title-dot"></span>Label the Waves</div>
-    <div class="hint">Drag each label onto the matching part of the trace, or tap a label and then tap the spot to place it. Tap a placed label to send it back to the bank. 4 labels, 4 spots.</div>
+    <div class="hint">Drag each label onto the matching part of the trace, or tap a label and then tap the spot to place it. Tap a placed label to send it back to the bank. <strong>Tip:</strong> the <strong>PR interval</strong> isn't a wave. It's the span from the P bump to the QRS spike, so drop it on the bracket below the trace.</div>
     <div class="quiz-wrap">
       <div class="quiz-canvas-wrap" id="quizWrap">
         <canvas id="quizCanvas" width="680" height="220"></canvas>
@@ -1077,7 +1077,7 @@
   // used in waveformMorph. For afib we show "Chaotic atria, irregular QRS".
   const PHASE_COPY = {
     P:    { tag:'P',   text:'<strong>P wave</strong>: SA node fires, atria depolarize and contract.' },
-    PR:   { tag:'PR',  text:'<strong>PR interval</strong>: AV node holds the signal so the ventricles fill before contracting.' },
+    PR:   { tag:'PR',  text:'<strong>PR interval</strong>: time from the start of the P wave to the start of the QRS. The signal crosses the atria, then the AV node holds it briefly so the ventricles fill before they fire.' },
     QRS:  { tag:'QRS', text:'<strong>QRS</strong>: bundle branches and Purkinje fibers light up, ventricles depolarize and pump.' },
     T:    { tag:'T',   text:'<strong>T wave</strong>: ventricles repolarize, electrical reset before the next beat.' },
     REST: { tag:'TP',  text:'Electrical rest. Heart waits for the next SA fire.' },
@@ -1178,10 +1178,12 @@
 
   // Draw a static beat on the quiz canvas and return feature pixel positions.
   let quizFeatures = null;
+  let quizBaseline = 0;
   function drawQuizStill(){
     const w = quizCanvas.width, h = quizCanvas.height;
     drawGrid(qctx, w, h);
     const baseline = Math.round(h * 0.62);
+    quizBaseline = baseline;
 
     // Draw one-and-a-bit beats clearly centered. We'll place a beat centered at about 0.55 of width.
     // Generate samples over time span Tspan seconds; PX_PER_SEC = 125 px/s, so w=680 -> 5.44 sec.
@@ -1215,16 +1217,43 @@
     // Compute feature pixel positions for the first beat (relative to canvas):
     // phase anchors:
     const p_center_t = 0.08;
-    const pr_mid_t = 0.13; // between p end and q
     const qrs_center_t = 0.22;
     const t_center_t = 0.42;
-
     function xAt(tInBeat){ return Math.round(beatStartX + tInBeat * pxPerSec); }
+
+    // The PR interval is a SPAN, not a point. Per the standard EKG definition it
+    // runs from the START of the P wave to the START of the QRS complex (it
+    // includes the P wave plus the flat PR segment). We draw it as a bracket
+    // UNDER the trace so it reads as a duration and sits in its own band, clear
+    // of the P bump above the baseline.
+    const pr_start_t = 0.035;  // onset of P wave
+    const pr_end_t   = 0.19;   // onset of QRS (just before Q)
+    const prStartX = xAt(pr_start_t);
+    const prEndX   = xAt(pr_end_t);
+    const prMidX   = Math.round((prStartX + prEndX) / 2);
+    const brY = baseline + 34; // bracket sits below the trace
+
+    qctx.strokeStyle = '#1A6B6B';
+    qctx.lineWidth = 2;
+    qctx.lineJoin = 'round';
+    qctx.beginPath();
+    qctx.moveTo(prStartX, brY - 9);
+    qctx.lineTo(prStartX, brY);
+    qctx.lineTo(prEndX, brY);
+    qctx.lineTo(prEndX, brY - 9);
+    qctx.stroke();
+    // A "?" under the bracket signals "identify this span" without naming it.
+    qctx.fillStyle = 'rgba(26,107,107,0.6)';
+    qctx.font = 'bold 13px Segoe UI, sans-serif';
+    qctx.textAlign = 'center';
+    qctx.fillText('?', prMidX, brY + 15);
+    qctx.textAlign = 'left';
+
     quizFeatures = {
-      P:   { x: xAt(p_center_t),  y: baseline - 12, w: 48, h: 46 },
-      PR:  { x: xAt(pr_mid_t),    y: baseline - 8,  w: 46, h: 30 },
+      P:   { x: xAt(p_center_t),   y: baseline - 22, w: 44, h: 40 },
       QRS: { x: xAt(qrs_center_t), y: baseline - 30, w: 58, h: 90 },
-      T:   { x: xAt(t_center_t),  y: baseline - 14, w: 60, h: 52 },
+      T:   { x: xAt(t_center_t),   y: baseline - 14, w: 60, h: 52 },
+      PR:  { x: prMidX, y: brY + 2, w: (prEndX - prStartX), h: 26, span: true, x0: prStartX, x1: prEndX },
     };
 
     // Draw faint drop target rectangles
@@ -1245,14 +1274,20 @@
     // Oversize the visible drop boxes so each target is a comfortably big
     // landing zone. We do NOT label them with letters — that would reveal
     // the answer before the student tries.
-    const visualPad = { P: 28, PR: 32, QRS: 30, T: 30 };
+    const visualPad = { P: 28, QRS: 30, T: 30 };
     const keys = ['P','PR','QRS','T'];
     for(const k of keys){
       const f = quizFeatures[k];
-      const padX = visualPad[k] || 20;
-      const padY = (k === 'PR') ? 22 : visualPad[k] || 20;
-      const w = (f.w + padX*2);
-      const h = (f.h + padY*2);
+      let w, h;
+      if(k === 'PR'){
+        // Wide, shallow landing band that matches the bracket span.
+        w = f.w + 26;
+        h = f.h + 18;
+      } else {
+        const pad = visualPad[k] || 20;
+        w = (f.w + pad*2);
+        h = (f.h + pad*2);
+      }
       const el = document.createElement('div');
       el.className = 'drop-target';
       el.dataset.target = k;
@@ -1471,10 +1506,16 @@
   function isCorrectPlacement(key, pos){
     const f = quizFeatures[key];
     if(!f) return false;
-    // Generous hit zone: anywhere inside the visible dotted target box, with
-    // a healthy padding buffer so kids don't get marked wrong for placing
-    // a label that visually overlaps the right wave but slightly off-center.
-    return (Math.abs(pos.x - f.x) <= f.w/2 + 24) && (Math.abs(pos.y - f.y) <= f.h/2 + 24);
+    const bandTop = quizBaseline + 14; // boundary between the wave region (above) and the PR bracket band (below)
+    if(key === 'PR'){
+      // PR is an interval: accept a drop anywhere along the P -> QRS span, as
+      // long as it lands in the bracket band beneath the trace.
+      return pos.y >= bandTop && pos.x >= f.x0 - 26 && pos.x <= f.x1 + 26;
+    }
+    // Waves (P, QRS, T) live on/above the trace. Reject drops that fall in the
+    // PR band so a wave label can't satisfy the PR zone and vice-versa.
+    if(pos.y >= bandTop) return false;
+    return (Math.abs(pos.x - f.x) <= f.w/2 + 24) && (Math.abs(pos.y - f.y) <= f.h/2 + 28);
   }
 
   function updateScoreUI(showFeedback){
