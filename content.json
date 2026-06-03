@@ -1010,7 +1010,7 @@
             },
             {
               "type": "step",
-              "content": "The viral social-media video allegedly shows Suspect C at the scene. Open the Deepfake Detector and run the video through Detect Fakes Practice. Is it real footage, or could it be AI-generated and trying to frame Suspect C? Use the Digital Truth Checklist."
+              "content": "Skill warm-up first: open the Deepfake Detector and play a few rounds of Detect Fakes Practice to train your eye on what AI-generated images look like. Now the case evidence: an anonymous account that was created just 2 days ago posted a 6-second clip captioned 'Suspect C at the Pine Hills heist!' Here is what your team notices in the clip: the face is strangely smooth with no skin texture, the person blinks only one time in 6 seconds, one frame shows a hand with six fingers, and the store sign in the background reads 'PNNE HILLS' instead of 'PINE HILLS.' Using the Digital Truth Checklist, decide: Real, Probably Fake, or Need More Info? Then explain what that means: was Suspect C really at the scene, or is someone using AI to frame them?"
             },
             {
               "type": "heading",
