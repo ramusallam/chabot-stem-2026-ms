@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Chabot STEM 2026 \u2014 Middle School",
+    "title": "Chabot STEM 2026 — Middle School",
     "program": "Middle School (Rising 7th-8th)",
     "dates": "June 8-18",
     "storageKey": "woven-chabot-2026-ms",
@@ -132,7 +132,7 @@
           "style": "gold",
           "title": "Part III: AI & Digital Literacy",
           "duration": "",
-          "instructorNotes": "",
+          "instructorNotes": "\n\nNO-CAMERA BACKUP (Chabot lab has no webcams): students train via image 'Upload', not 'Webcam'. Before class, photograph a shared set of Loop, Whorl, and Arch fingerprints and save it to a folder every computer can open (Google Drive or the desktop) so students without a phone can still upload. Confirm teachablemachine.withgoogle.com loads on the lab network. If the site is fully blocked, switch to the no-login, no-camera fallback Code.org 'AI for Oceans' (code.org/oceans), which teaches the same train-from-examples idea.",
           "blocks": [
             {
               "type": "callout",
@@ -177,6 +177,33 @@
             {
               "type": "step",
               "content": "Hold each of your inked prints up to your laptop's webcam. For each class, click 'Hold to Record' for 10 seconds. The model learns from the examples you show it."
+            },
+            {
+              "type": "heading",
+              "content": "No webcam? Upload your images instead"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "No camera on this computer? You can train the same model by uploading pictures instead of using a live webcam. On each class, click 'Upload' instead of 'Webcam', then add image files. Two ways to get the pictures:"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Phone as a camera: take a clear photo of your inked fingerprints, one pattern at a time, with good light and a plain background. Send the photos to the computer by emailing them to yourself and downloading, or by putting them in Google Drive and opening Drive on the computer. Then click 'Upload' on each class (Loop, Whorl, Arch) and add that class's photos."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "No phone? Ask your instructor for the shared print set, or use a partner's photos. Open the folder, click 'Upload' on each class, and add the Loop, Whorl, and Arch pictures."
+            },
+            {
+              "type": "step",
+              "content": "Add at least 10 to 15 pictures per class, then click 'Train Model'."
+            },
+            {
+              "type": "step",
+              "content": "Test it: click 'Upload' and add one new picture you did not use in training. Check the predicted class and the confidence percent. Did it get it right?"
             },
             {
               "type": "step",
@@ -373,7 +400,7 @@
           "style": "gold",
           "title": "Part III: AI & Digital Literacy",
           "duration": "",
-          "instructorNotes": "",
+          "instructorNotes": "\n\nNO-CAMERA BACKUP (Chabot lab has no webcams): students train via image 'Upload', not 'Webcam'. Before class, photograph a shared set of printed spatter cards at each angle (Steep, Medium, Shallow) and save it to a folder every computer can open (Google Drive or the desktop) so students without a phone can still upload. Confirm teachablemachine.withgoogle.com loads on the lab network. If the site is fully blocked, switch to the no-login, no-camera fallback Code.org 'AI for Oceans' (code.org/oceans), which teaches the same train-from-examples idea.",
           "blocks": [
             {
               "type": "callout",
@@ -401,6 +428,33 @@
             {
               "type": "step",
               "content": "Make 3 classes: 'Steep (60-90 degrees),' 'Medium (30-60),' and 'Shallow (under 30).' For each class, hold up your printed spatter samples to the webcam and click 'Hold to record' for 10 seconds. The model learns from your examples."
+            },
+            {
+              "type": "heading",
+              "content": "No webcam? Upload your images instead"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "No camera on this computer? You can train the same model by uploading pictures instead of using a live webcam. On each class, click 'Upload' instead of 'Webcam', then add image files. Two ways to get the pictures:"
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "Phone as a camera: take a clear photo of your printed spatter cards, one pattern at a time, with good light and a plain background. Send the photos to the computer by emailing them to yourself and downloading, or by putting them in Google Drive and opening Drive on the computer. Then click 'Upload' on each class (Steep, Medium, Shallow) and add that class's photos."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "No phone? Ask your instructor for the shared spatter set, or use a partner's photos. Click 'Upload' on each class and add the Steep, Medium, and Shallow pictures."
+            },
+            {
+              "type": "step",
+              "content": "Add at least 10 to 15 pictures per class, then click 'Train Model'."
+            },
+            {
+              "type": "step",
+              "content": "Test it: click 'Upload' and add one new picture you did not use in training. Check the predicted class and the confidence percent. Did it get it right?"
             },
             {
               "type": "step",
@@ -739,7 +793,7 @@
           "style": "coral",
           "title": "Part II: The Physical Lab",
           "duration": "",
-          "instructorNotes": "",
+          "instructorNotes": "\n\nNO-CAMERA BACKUP (Chabot lab has no webcams): students train via image 'Upload', not 'Webcam'. Before class, photograph a shared set of real and AI-generated faces (from the Image Bank) and save it to a folder every computer can open (Google Drive or the desktop) so students without a phone can still upload. Confirm teachablemachine.withgoogle.com loads on the lab network. If the site is fully blocked, switch to the no-login, no-camera fallback Code.org 'AI for Oceans' (code.org/oceans), which teaches the same train-from-examples idea.",
           "blocks": [
             {
               "type": "callout",
@@ -806,6 +860,28 @@
               "type": "callout",
               "style": "info",
               "content": "Open Teachable Machine (teachablemachine.withgoogle.com). Create an Image Project with 2 classes: Real Person and AI Generated. In the same Deepfake Detector below, tap Teachable Machine Image Bank. Click each thumbnail to enlarge it. Hold your laptop's webcam to the screen and click 'Hold to Record' on the matching class. Train, then test on a thumbnail you didn't use during training. Did your spotter get it right?"
+            },
+            {
+              "type": "heading",
+              "content": "No webcam? Upload the images instead"
+            },
+            {
+              "type": "callout",
+              "style": "info",
+              "content": "No camera on this computer? Train the same spotter by uploading pictures instead of holding them to a webcam. On each class, click 'Upload' instead of 'Webcam'."
+            },
+            {
+              "type": "callout",
+              "style": "tip",
+              "content": "In the Teachable Machine Image Bank inside the Deepfake Detector below, open each face full size and save it to the computer. Then in Teachable Machine click 'Upload' and add each face to the matching class, 'Real Person' or 'AI Generated'. Your instructor also has a shared face set if saving images is blocked."
+            },
+            {
+              "type": "step",
+              "content": "Add several faces to each class, then click 'Train Model'."
+            },
+            {
+              "type": "step",
+              "content": "Test it: click 'Upload' and add one face you did not use in training. Did the spotter label it correctly?"
             },
             {
               "type": "heading",
